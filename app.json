@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "IMSIYA",
+    "slug": "imsiya-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.imsiya.app"
+    },
+    "android": {
+      "package": "com.imsiya.app"
+    }
+  }
+}
