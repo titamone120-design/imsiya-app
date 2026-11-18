@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
@@ -49,17 +50,72 @@ export default function App() {
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
 
+  // Handle email confirmation links that open the IMSIYA app.
+  const handleAuthLink = async (url: string | null) => {
+    if (!url) return;
+
+    try {
+      const parsedUrl = new URL(url);
+      const code = parsedUrl.searchParams.get('code');
+
+      // Supabase PKCE confirmation link.
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) throw error;
+        return;
+      }
+
+      // Supabase token-based confirmation link.
+      const hash = parsedUrl.hash.startsWith('#')
+        ? parsedUrl.hash.substring(1)
+        : parsedUrl.hash;
+
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+
+      if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      Alert.alert(
+        'IMSIYA',
+        error.message || 'Could not verify your email. Please try again.'
+      );
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
     });
 
-    const { data: { subscription } } =
-      supabase.auth.onAuthStateChange((_event, newSession) => {
-        setSession(newSession);
-      });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
 
-    return () => subscription.unsubscribe();
+    // Handle a confirmation link when the app is already closed.
+    Linking.getInitialURL().then(handleAuthLink);
+
+    // Handle a confirmation link when the app is already open.
+    const linkingSubscription = Linking.addEventListener(
+      'url',
+      ({ url }) => {
+        handleAuthLink(url);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+      linkingSubscription.remove();
+    };
   }, []);
 
   const handleAuth = async () => {
@@ -80,6 +136,9 @@ export default function App() {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
+          options: {
+            emailRedirectTo: 'imsiya://',
+          },
         });
 
         if (error) throw error;
@@ -87,7 +146,7 @@ export default function App() {
         if (!data.session) {
           Alert.alert(
             'Check your email',
-            'Your account has been created. Please check your email to confirm your account before logging in.'
+            'Your account has been created. Open the confirmation link in your email to verify your account. The IMSIYA app should open after confirmation.'
           );
         } else {
           Alert.alert('IMSIYA', 'Your account has been created!');
@@ -109,8 +168,10 @@ export default function App() {
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) Alert.alert('IMSIYA', error.message);
-    else {
+
+    if (error) {
+      Alert.alert('IMSIYA', error.message);
+    } else {
       setCart([]);
       setScreen('home');
     }
@@ -151,13 +212,16 @@ export default function App() {
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
   const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity, 0
+    (sum, item) => sum + item.price * item.quantity,
+    0
   );
 
   const filteredProducts = products.filter(item => {
     const categoryMatch =
       category === 'All' || item.category === category;
+
     const searchMatch =
       item.name.toLowerCase().includes(search.toLowerCase());
 
@@ -327,13 +391,17 @@ export default function App() {
               <View style={styles.product} key={item.id}>
                 <Text style={styles.emoji}>{item.emoji}</Text>
                 <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+                <Text style={styles.price}>
+                  ${item.price.toFixed(2)}
+                </Text>
 
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => addToCart(item)}
                 >
-                  <Text style={styles.addButtonText}>+ Add to Cart</Text>
+                  <Text style={styles.addButtonText}>
+                    + Add to Cart
+                  </Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -357,14 +425,18 @@ export default function App() {
           <View style={styles.cartTitleRow}>
             <Text style={styles.heading}>My Shopping Cart</Text>
             <TouchableOpacity onPress={() => setScreen('home')}>
-              <Text style={styles.continueText}>Continue Shopping</Text>
+              <Text style={styles.continueText}>
+                Continue Shopping
+              </Text>
             </TouchableOpacity>
           </View>
 
           {cart.length === 0 ? (
             <View style={styles.emptyCart}>
               <Text style={styles.emptyEmoji}>🛒</Text>
-              <Text style={styles.emptyTitle}>Your cart is empty</Text>
+              <Text style={styles.emptyTitle}>
+                Your cart is empty
+              </Text>
               <Text style={styles.emptyText}>
                 Add some delicious sweets!
               </Text>
@@ -372,7 +444,9 @@ export default function App() {
                 style={styles.addButton}
                 onPress={() => setScreen('home')}
               >
-                <Text style={styles.addButtonText}>Start Shopping</Text>
+                <Text style={styles.addButtonText}>
+                  Start Shopping
+                </Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -382,7 +456,9 @@ export default function App() {
                   <Text style={styles.cartEmoji}>{item.emoji}</Text>
 
                   <View style={styles.cartInfo}>
-                    <Text style={styles.productName}>{item.name}</Text>
+                    <Text style={styles.productName}>
+                      {item.name}
+                    </Text>
                     <Text style={styles.price}>
                       ${(item.price * item.quantity).toFixed(2)}
                     </Text>
@@ -406,7 +482,9 @@ export default function App() {
                         <Text style={styles.quantityText}>+</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={() => removeItem(item.id)}>
+                      <TouchableOpacity
+                        onPress={() => removeItem(item.id)}
+                      >
                         <Text style={styles.removeText}>Remove</Text>
                       </TouchableOpacity>
                     </View>
@@ -455,7 +533,9 @@ export default function App() {
           onPress={() => setScreen('cart')}
         >
           <Text style={styles.navIcon}>🛒</Text>
-          <Text style={styles.navText}>Cart ({cartCount})</Text>
+          <Text style={styles.navText}>
+            Cart ({cartCount})
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -463,7 +543,10 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fffaf6' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fffaf6',
+  },
   header: {
     backgroundColor: '#512080',
     padding: 16,
@@ -482,18 +565,40 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 2,
   },
-  tagline: { color: '#f4dfff', fontSize: 12, marginTop: 3 },
+  tagline: {
+    color: '#f4dfff',
+    fontSize: 12,
+    marginTop: 3,
+  },
   cartButton: {
     backgroundColor: '#ff9d35',
     paddingVertical: 9,
     paddingHorizontal: 10,
     borderRadius: 12,
   },
-  cartButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
-  logoutButton: { paddingVertical: 5, paddingHorizontal: 10 },
-  logoutText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  welcomeBox: { paddingHorizontal: 16, paddingTop: 12 },
-  welcomeText: { color: '#512080', fontSize: 12, fontWeight: '700' },
+  cartButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  logoutButton: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  welcomeBox: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  welcomeText: {
+    color: '#512080',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   searchBox: {
     backgroundColor: '#fff',
     margin: 16,
@@ -501,7 +606,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eee2f2',
   },
-  searchInput: { padding: 13, fontSize: 14, color: '#24133b' },
+  searchInput: {
+    padding: 13,
+    fontSize: 14,
+    color: '#24133b',
+  },
   heading: {
     color: '#24133b',
     fontSize: 19,
@@ -510,7 +619,9 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 12,
   },
-  categories: { paddingHorizontal: 16 },
+  categories: {
+    paddingHorizontal: 16,
+  },
   category: {
     backgroundColor: '#f0e8f6',
     paddingVertical: 10,
@@ -518,9 +629,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 9,
   },
-  selectedCategory: { backgroundColor: '#512080' },
-  categoryText: { color: '#512080', fontWeight: '700' },
-  selectedCategoryText: { color: '#fff' },
+  selectedCategory: {
+    backgroundColor: '#512080',
+  },
+  categoryText: {
+    color: '#512080',
+    fontWeight: '700',
+  },
+  selectedCategoryText: {
+    color: '#fff',
+  },
   products: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -537,7 +655,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0e8f6',
   },
-  emoji: { fontSize: 48, marginVertical: 8 },
+  emoji: {
+    fontSize: 48,
+    marginVertical: 8,
+  },
   productName: {
     color: '#24133b',
     fontSize: 14,
@@ -560,17 +681,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  addButtonText: { color: '#fff', fontWeight: 'bold' },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   banner: {
     backgroundColor: '#512080',
     margin: 16,
     padding: 20,
     borderRadius: 15,
   },
-  bannerTitle: { color: '#fff', fontSize: 18, fontWeight: '900' },
-  bannerText: { color: '#f4dfff', marginTop: 8 },
-  emptyText: { textAlign: 'center', color: '#777', padding: 20 },
-  cartPage: { paddingBottom: 30 },
+  bannerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  bannerText: {
+    color: '#f4dfff',
+    marginTop: 8,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#777',
+    padding: 20,
+  },
+  cartPage: {
+    paddingBottom: 30,
+  },
   cartTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -582,9 +719,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginHorizontal: 16,
   },
-  emptyCart: { alignItems: 'center', padding: 35 },
-  emptyEmoji: { fontSize: 65, marginBottom: 15 },
-  emptyTitle: { fontSize: 20, fontWeight: '900', color: '#24133b' },
+  emptyCart: {
+    alignItems: 'center',
+    padding: 35,
+  },
+  emptyEmoji: {
+    fontSize: 65,
+    marginBottom: 15,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#24133b',
+  },
   cartItem: {
     backgroundColor: '#fff',
     marginHorizontal: 15,
@@ -594,8 +741,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  cartEmoji: { fontSize: 42, marginRight: 15 },
-  cartInfo: { flex: 1 },
+  cartEmoji: {
+    fontSize: 42,
+    marginRight: 15,
+  },
+  cartInfo: {
+    flex: 1,
+  },
   quantityRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -610,9 +762,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quantityText: { color: '#512080', fontSize: 20, fontWeight: 'bold' },
-  quantityNumber: { fontSize: 16, fontWeight: 'bold', color: '#24133b' },
-  removeText: { color: '#d33', fontSize: 12, fontWeight: 'bold' },
+  quantityText: {
+    color: '#512080',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  quantityNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#24133b',
+  },
+  removeText: {
+    color: '#d33',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   totalBox: {
     backgroundColor: '#f0e8f6',
     margin: 16,
@@ -621,8 +785,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  totalLabel: { color: '#24133b', fontSize: 17, fontWeight: 'bold' },
-  totalPrice: { color: '#512080', fontSize: 20, fontWeight: '900' },
+  totalLabel: {
+    color: '#24133b',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  totalPrice: {
+    color: '#512080',
+    fontSize: 20,
+    fontWeight: '900',
+  },
   checkoutButton: {
     backgroundColor: '#ff9d35',
     marginHorizontal: 16,
@@ -630,7 +802,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  checkoutText: { color: '#fff', fontSize: 16, fontWeight: '900' },
+  checkoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '900',
+  },
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -639,8 +815,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
-  navItem: { alignItems: 'center', paddingHorizontal: 25 },
-  navIcon: { fontSize: 21 },
+  navItem: {
+    alignItems: 'center',
+    paddingHorizontal: 25,
+  },
+  navIcon: {
+    fontSize: 21,
+  },
   navText: {
     color: '#512080',
     fontSize: 12,
@@ -653,14 +834,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 22,
   },
-  authHeader: { alignItems: 'center', marginBottom: 30 },
+  authHeader: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
   authLogo: {
     color: '#512080',
     fontSize: 38,
     fontWeight: '900',
     letterSpacing: 3,
   },
-  authTagline: { color: '#8a659f', marginTop: 5 },
+  authTagline: {
+    color: '#8a659f',
+    marginTop: 5,
+  },
   authCard: {
     backgroundColor: '#fff',
     padding: 22,
@@ -701,9 +888,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 22,
   },
-  authButtonText: { color: '#fff', fontWeight: '900', fontSize: 16 },
-  switchAuth: { padding: 15, alignItems: 'center' },
-  switchAuthText: { color: '#512080', fontWeight: '700', textAlign: 'center' },
+  authButtonText: {
+    color: '#fff',
+    fontWeight: '900',
+    fontSize: 16,
+  },
+  switchAuth: {
+    padding: 15,
+    alignItems: 'center',
+  },
+  switchAuthText: {
+    color: '#512080',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   authFooter: {
     textAlign: 'center',
     color: '#999',
