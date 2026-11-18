@@ -1,3 +1,4 @@
+
 {
   "expo": {
     "name": "IMSIYA",
@@ -5,12 +6,19 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "owner": "imsiyas-team",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.imsiya.app"
     },
     "android": {
       "package": "com.imsiya.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4e37f17a-d1da-4019-9f64-37bf054261d9"
+      }
     }
   }
 }
+
