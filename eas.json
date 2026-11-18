@@ -1,3 +1,4 @@
+
 {
   "cli": {
     "version": ">= 16.0.0",
@@ -15,5 +16,8 @@
         "buildType": "app-bundle"
       }
     }
+  },
+  "submit": {
+    "production": {}
   }
 }
