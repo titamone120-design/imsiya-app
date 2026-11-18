@@ -3,6 +3,7 @@
   "expo": {
     "name": "IMSIYA",
     "slug": "imsiya-app",
+    "scheme": "imsiya",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -21,4 +22,3 @@
     }
   }
 }
-
