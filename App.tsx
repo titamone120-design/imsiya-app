@@ -13,6 +13,7 @@ import {
   Linking,
   Image,
 } from 'react-native';
+
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
@@ -23,9 +24,24 @@ type Product = {
   image_url: string | null;
   stock: number;
   category: string;
+  description?: string;
 };
 
-type CartItem = Product & { quantity: number };
+type CartItem = Product & {
+  quantity: number;
+};
+
+type Shop = {
+  id: string;
+  shop_name: string;
+  description: string | null;
+  active: boolean;
+};
+
+type Category = {
+  id: string;
+  name: string;
+};
 
 const categories = [
   'Dhammaan',
@@ -36,11 +52,16 @@ const categories = [
   'Macmacaan kale',
 ];
 
+const money = (amount: number) =>
+  `KSh ${Number(amount || 0).toLocaleString('en-KE')}`;
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
+
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -48,66 +69,42 @@ export default function App() {
   const [productError, setProductError] = useState('');
 
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [screen, setScreen] = useState<'home' | 'cart'>('home');
+
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop'>('home');
+
   const [category, setCategory] = useState('Dhammaan');
   const [search, setSearch] = useState('');
 
-  const handleAuthLink = async (url: string | null) => {
-    if (!url) return;
+  const [shopName, setShopName] = useState('');
+  const [shopDescription, setShopDescription] = useState('');
+  const [myShop, setMyShop] = useState<Shop | null>(null);
 
-    try {
-      const parsedUrl = new URL(url);
-      const code = parsedUrl.searchParams.get('code');
+  const [shopLoading, setShopLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
-      if (code) {
-        const { error } =
-          await supabase.auth.exchangeCodeForSession(code);
-        if (error) throw error;
-        return;
-      }
+  const [productName, setProductName] = useState('');
+  const [productDescription, setProductDescription] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [productStock, setProductStock] = useState('10');
+  const [productImage, setProductImage] = useState('');
+  const [productCategory, setProductCategory] = useState('Buskut');
+  const [addingProduct, setAddingProduct] = useState(false);
 
-      const hash = parsedUrl.hash.replace(/^#/, '');
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token');
+  const [categoryRows, setCategoryRows] = useState<Category[]>([]);
 
-      if (accessToken && refreshToken) {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-        if (error) throw error;
-      }
-    } catch (error: any) {
-      Alert.alert('IMSIYA', error.message || 'Xaqiijinta email-ka way fashilantay.');
+  const loadCategories = async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('id, name');
+
+    if (error) {
+      console.log('Category error:', error.message);
+      return;
     }
+
+    setCategoryRows((data || []) as Category[]);
   };
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-    });
-
-    Linking.getInitialURL().then(handleAuthLink);
-
-    const linkingSubscription = Linking.addEventListener(
-      'url',
-      ({ url }) => handleAuthLink(url)
-    );
-
-    return () => {
-      subscription.unsubscribe();
-      linkingSubscription.remove();
-    };
-  }, []);
-
-  // Soo qaad alaabta dhabta ah ee Supabase.
   const loadProducts = async () => {
     setProductsLoading(true);
     setProductError('');
@@ -115,45 +112,138 @@ export default function App() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, price, image_url, stock, categories(name)')
+        .select('id, name, price, image_url, stock, description, categories(name)')
         .eq('active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const formattedProducts: Product[] = (data || []).map((item: any) => {
-        const categoryData = Array.isArray(item.categories)
-          ? item.categories[0]
-          : item.categories;
+      const formatted: Product[] = (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price || 0),
+        image_url: item.image_url,
+        stock: Number(item.stock || 0),
+        description: item.description || '',
+        category: Array.isArray(item.categories)
+          ? item.categories[0]?.name || 'Macmacaan kale'
+          : item.categories?.name || 'Macmacaan kale',
+      }));
 
-        return {
-          id: String(item.id),
-          name: item.name || 'Alaab macaan',
-          price: Number(item.price) || 0,
-          image_url: item.image_url || null,
-          stock: Number(item.stock) || 0,
-          category: categoryData?.name || 'Macmacaan kale',
-        };
-      });
-
-      setProducts(formattedProducts);
-    } catch (error: any) {
-      setProductError(error.message || 'Alaabta lama soo qaadi karin.');
+      setProducts(formatted);
+    } catch (e: any) {
+      setProductError(e.message || 'Alaabta lama soo qaadi karin.');
     } finally {
       setProductsLoading(false);
     }
   };
 
+  const loadMyShop = async () => {
+    if (!session?.user?.id) {
+      setMyShop(null);
+      return;
+    }
+
+    setShopLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('shops')
+        .select('id, shop_name, description, active')
+        .eq('owner_id', session.user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      setMyShop(data as Shop | null);
+
+      if (data) {
+        setShopName(data.shop_name || '');
+        setShopDescription(data.description || '');
+      }
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Dukaanka lama soo qaadi karin.');
+    } finally {
+      setShopLoading(false);
+    }
+  };
+
+  const handleIncomingLink = async (url: string | null) => {
+    if (!url) return;
+
+    if (url.startsWith('imsiya://subscription-success')) {
+      Alert.alert(
+        'IMSIYA',
+        'Lacag-bixinta waa la dhammeeyey. Waxaan hubinaynaa xaaladda dukaanka.'
+      );
+      await loadMyShop();
+      return;
+    }
+
+    if (url.startsWith('imsiya://subscription-cancel')) {
+      Alert.alert(
+        'IMSIYA',
+        'Lacag-bixinta waa la joojiyey. Dukaankaagu weli ma furna.'
+      );
+      return;
+    }
+
+    try {
+      const parsed = new URL(url);
+      const code = parsed.searchParams.get('code');
+
+      if (code) {
+        const { error } =
+          await supabase.auth.exchangeCodeForSession(code);
+
+        if (error) throw error;
+      }
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Link-ga lama xaqiijin karin.');
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) setSession(data.session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+    });
+
+    Linking.getInitialURL().then(handleIncomingLink);
+
+    const linkSub = Linking.addEventListener('url', ({ url }) => {
+      handleIncomingLink(url);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      linkSub.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    loadProducts();
+    loadCategories();
+  }, []);
+
   useEffect(() => {
     if (session) {
-      loadProducts();
+      loadMyShop();
     } else {
-      setProducts([]);
+      setMyShop(null);
     }
-  }, [session]);
+  }, [session?.user?.id]);
 
-  const handleAuth = async () => {
-    if (!email.trim() || !password) {
+  const signInOrSignUp = async () => {
+    if (!email.trim() || !password.trim()) {
       Alert.alert('IMSIYA', 'Geli email-ka iyo password-ka.');
       return;
     }
@@ -171,6 +261,9 @@ export default function App() {
           email: email.trim(),
           password,
           options: {
+            data: {
+              full_name: fullName.trim(),
+            },
             emailRedirectTo: 'imsiya://',
           },
         });
@@ -180,10 +273,10 @@ export default function App() {
         if (!data.session) {
           Alert.alert(
             'IMSIYA',
-            'Account-ka waa la sameeyay. Fadlan email-kaaga ka xaqiiji.'
+            'Akoonka waa la sameeyey. Fadlan email-kaaga ka xaqiiji link-ga laguu soo diray.'
           );
         } else {
-          Alert.alert('IMSIYA', 'Account-kaaga waa diyaar!');
+          Alert.alert('IMSIYA', 'Akoonkaaga waa la sameeyey.');
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -193,36 +286,37 @@ export default function App() {
 
         if (error) throw error;
       }
-    } catch (error: any) {
-      Alert.alert('IMSIYA', error.message || 'Waxbaa khaldamay.');
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Gelitaanka wuu fashilmay.');
     } finally {
       setAuthLoading(false);
     }
   };
 
-  const handleLogout = async () => {
+  const signOut = async () => {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
       Alert.alert('IMSIYA', error.message);
-    } else {
-      setCart([]);
-      setScreen('home');
+      return;
     }
+
+    setCart([]);
+    setScreen('home');
   };
 
   const addToCart = (product: Product) => {
-    if (product.stock < 1) {
-      Alert.alert('IMSIYA', 'Alaabtan hadda ma taallo.');
+    if (product.stock <= 0) {
+      Alert.alert('IMSIYA', 'Alaabtani hadda ma taallo.');
       return;
     }
 
     setCart(current => {
-      const found = current.find(item => item.id === product.id);
+      const existing = current.find(item => item.id === product.id);
 
-      if (found) {
-        if (found.quantity >= product.stock) {
-          Alert.alert('IMSIYA', 'Tirada alaabta intaas way ka badan tahay stock-ga.');
+      if (existing) {
+        if (existing.quantity >= product.stock) {
+          Alert.alert('IMSIYA', 'Tirada alaabta intaas kama badnaan karto.');
           return current;
         }
 
@@ -235,9 +329,11 @@ export default function App() {
 
       return [...current, { ...product, quantity: 1 }];
     });
+
+    Alert.alert('IMSIYA', 'Alaabta waxaa lagu daray cart-ka.');
   };
 
-  const updateQuantity = (id: string, amount: number) => {
+  const changeQuantity = (id: string, amount: number) => {
     setCart(current =>
       current
         .map(item =>
@@ -249,348 +345,626 @@ export default function App() {
     );
   };
 
-  const removeItem = (id: string) => {
-    setCart(current => current.filter(item => item.id !== id));
+  const cartTotal = cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const createOrUpdateShop = async () => {
+    if (!session?.user?.id) {
+      Alert.alert('IMSIYA', 'Marka hore akoonka gal.');
+      return;
+    }
+
+    if (!shopName.trim()) {
+      Alert.alert('IMSIYA', 'Geli magaca dukaanka.');
+      return;
+    }
+
+    setShopLoading(true);
+
+    try {
+      // Seller approval is controlled by the administrator.
+      // The app must never approve its own seller profile.
+      const { error: sellerError } = await supabase
+        .from('seller_profiles')
+        .upsert(
+          {
+            id: session.user.id,
+            shop_name: shopName.trim(),
+            description: shopDescription.trim(),
+          },
+          {
+            onConflict: 'id',
+            ignoreDuplicates: true,
+          }
+        );
+
+      if (sellerError) throw sellerError;
+
+      if (myShop) {
+        const { data, error } = await supabase
+          .from('shops')
+          .update({
+            shop_name: shopName.trim(),
+            description: shopDescription.trim(),
+          })
+          .eq('id', myShop.id)
+          .eq('owner_id', session.user.id)
+          .select('id, shop_name, description, active')
+          .single();
+
+        if (error) throw error;
+        setMyShop(data as Shop);
+      } else {
+        const { data, error } = await supabase
+          .from('shops')
+          .insert({
+            owner_id: session.user.id,
+            shop_name: shopName.trim(),
+            description: shopDescription.trim(),
+            active: false,
+          })
+          .select('id, shop_name, description, active')
+          .single();
+
+        if (error) throw error;
+        setMyShop(data as Shop);
+      }
+
+      Alert.alert(
+        'IMSIYA',
+        'Codsiga dukaanka waa la kaydiyey. Si dukaanku u furmo, bixi $20 bishii, maamulka ayaana xaqiijinaya oggolaanshaha.'
+      );
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Dukaanka lama kaydin karin.');
+    } finally {
+      setShopLoading(false);
+    }
   };
 
-  const cartCount = cart.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+  const payShopSubscription = async () => {
+    if (!session?.user?.id) {
+      Alert.alert('IMSIYA', 'Marka hore akoonka gal.');
+      return;
+    }
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+    if (!myShop?.id) {
+      Alert.alert('IMSIYA', 'Marka hore samee dukaankaaga.');
+      return;
+    }
 
-  const filteredProducts = products.filter(item => {
-    const categoryMatch =
-      category === 'Dhammaan' || item.category === category;
+    setPaymentLoading(true);
 
-    const searchMatch = item.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: {
+            shop_id: myShop.id,
+            success_url: 'imsiya://subscription-success',
+            cancel_url: 'imsiya://subscription-cancel',
+          },
+        }
+      );
 
-    return categoryMatch && searchMatch;
+      if (error) throw error;
+
+      if (!data?.checkout_url) {
+        throw new Error('Stripe ma soo celin link-ga lacag-bixinta.');
+      }
+
+      await Linking.openURL(data.checkout_url);
+    } catch (e: any) {
+      Alert.alert(
+        'IMSIYA',
+        e.message || 'Lacag-bixinta lama bilaabi karin.'
+      );
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const addProduct = async () => {
+    if (!session?.user?.id || !myShop?.id) {
+      Alert.alert('IMSIYA', 'Marka hore samee dukaankaaga.');
+      return;
+    }
+
+    if (!myShop.active) {
+      Alert.alert(
+        'IMSIYA',
+        'Dukaankaagu weli ma shaqaynayo. Sug xaqiijinta lacagta iyo oggolaanshaha maamulka.'
+      );
+      return;
+    }
+
+    const price = Number(productPrice);
+    const stock = Number(productStock);
+
+    if (!productName.trim() || !productPrice.trim()) {
+      Alert.alert('IMSIYA', 'Geli magaca alaabta iyo qiimaheeda.');
+      return;
+    }
+
+    if (!Number.isFinite(price) || price <= 0) {
+      Alert.alert('IMSIYA', 'Qiimaha alaabtu sax ma aha.');
+      return;
+    }
+
+    if (!Number.isInteger(stock) || stock < 0) {
+      Alert.alert('IMSIYA', 'Tirada alaabtu sax ma aha.');
+      return;
+    }
+
+    const selectedCategory = categoryRows.find(
+      item => item.name.toLowerCase() === productCategory.toLowerCase()
+    );
+
+    if (!selectedCategory) {
+      Alert.alert(
+        'IMSIYA',
+        'Qaybta alaabta lama helin. Hubi categories-ka Supabase.'
+      );
+      return;
+    }
+
+    setAddingProduct(true);
+
+    try {
+      const { error } = await supabase.from('products').insert({
+        seller_id: session.user.id,
+        shop_id: myShop.id,
+        category_id: selectedCategory.id,
+        name: productName.trim(),
+        description: productDescription.trim(),
+        price,
+        image_url: productImage.trim() || null,
+        stock,
+        active: true,
+      });
+
+      if (error) throw error;
+
+      setProductName('');
+      setProductDescription('');
+      setProductPrice('');
+      setProductStock('10');
+      setProductImage('');
+
+      Alert.alert('IMSIYA', 'Alaabta waa lagu daray dukaanka.');
+      await loadProducts();
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Alaabta lama dari karin.');
+    } finally {
+      setAddingProduct(false);
+    }
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesCategory =
+      category === 'Dhammaan' || product.category === category;
+
+    const matchesSearch =
+      product.name.toLowerCase().includes(search.toLowerCase());
+
+    return matchesCategory && matchesSearch;
   });
 
-  if (!session) {
-    return (
-      <View style={styles.authContainer}>
-        <StatusBar backgroundColor="#512080" barStyle="light-content" />
-
-        <View style={styles.authHeader}>
-          <Text style={styles.authLogo}>IMSIYA</Text>
-          <Text style={styles.authTagline}>
-            A world full of sweetness ❤️
-          </Text>
+  const renderProduct = (product: Product) => (
+    <View key={product.id} style={styles.productCard}>
+      {product.image_url ? (
+        <Image
+          source={{ uri: product.image_url }}
+          style={styles.productImage}
+        />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Text style={styles.placeholderText}>🍬</Text>
         </View>
+      )}
 
-        <View style={styles.authCard}>
-          <Text style={styles.authTitle}>
-            {authMode === 'signup' ? 'Create Account' : 'Welcome Back'}
-          </Text>
+      <Text style={styles.productName}>{product.name}</Text>
+      <Text style={styles.productCategory}>{product.category}</Text>
+      <Text style={styles.productPrice}>{money(product.price)}</Text>
+      <Text style={styles.stockText}>
+        {product.stock > 0 ? `Kaydka: ${product.stock}` : 'Waa dhammaatay'}
+      </Text>
 
-          <Text style={styles.authSubtitle}>
-            {authMode === 'signup'
-              ? 'Ku soo biir IMSIYA.'
-              : 'Gal account-kaaga IMSIYA.'}
-          </Text>
+      <TouchableOpacity
+        style={[
+          styles.primaryButton,
+          product.stock <= 0 && styles.disabledButton,
+        ]}
+        disabled={product.stock <= 0}
+        onPress={() => addToCart(product)}
+      >
+        <Text style={styles.buttonText}>Ku dar cart-ka</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-          <Text style={styles.fieldLabel}>Email Address</Text>
-          <TextInput
-            style={styles.authInput}
-            placeholder="Enter your email"
-            placeholderTextColor="#999"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+  const renderHome = () => (
+    <>
+      <View style={styles.hero}>
+        <Text style={styles.heroTitle}>Ku soo dhowow IMSIYA 🍰</Text>
+        <Text style={styles.heroText}>
+          Ka iibso macmacaanka aad jeceshahay, ama fur dukaankaaga.
+        </Text>
+      </View>
 
-          <Text style={styles.fieldLabel}>Password</Text>
-          <TextInput
-            style={styles.authInput}
-            placeholder="At least 6 characters"
-            placeholderTextColor="#999"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Raadi buskut, xalwo, keeg..."
+        placeholderTextColor="#888"
+        value={search}
+        onChangeText={setSearch}
+      />
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryScroll}
+      >
+        {categories.map(item => (
           <TouchableOpacity
-            style={styles.authButton}
-            onPress={handleAuth}
-            disabled={authLoading}
+            key={item}
+            style={[
+              styles.categoryButton,
+              category === item && styles.categorySelected,
+            ]}
+            onPress={() => setCategory(item)}
           >
-            {authLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.authButtonText}>
-                {authMode === 'signup' ? 'Create Account' : 'Login'}
-              </Text>
-            )}
+            <Text
+              style={[
+                styles.categoryText,
+                category === item && styles.categorySelectedText,
+              ]}
+            >
+              {item}
+            </Text>
           </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Macmacaanka</Text>
+        <TouchableOpacity onPress={loadProducts}>
+          <Text style={styles.refreshText}>Cusboonaysii</Text>
+        </TouchableOpacity>
+      </View>
+
+      {productsLoading ? (
+        <ActivityIndicator size="large" color="#8B4513" />
+      ) : productError ? (
+        <Text style={styles.errorText}>{productError}</Text>
+      ) : filteredProducts.length === 0 ? (
+        <Text style={styles.emptyText}>Weli alaab lama helin.</Text>
+      ) : (
+        <View style={styles.productGrid}>
+          {filteredProducts.map(renderProduct)}
+        </View>
+      )}
+    </>
+  );
+
+  const renderCart = () => (
+    <View>
+      <Text style={styles.sectionTitle}>Cart-kaaga</Text>
+
+      {cart.length === 0 ? (
+        <Text style={styles.emptyText}>Cart-kaagu waa madhan yahay.</Text>
+      ) : (
+        <>
+          {cart.map(item => (
+            <View key={item.id} style={styles.cartItem}>
+              <View style={styles.cartInfo}>
+                <Text style={styles.productName}>{item.name}</Text>
+                <Text style={styles.productPrice}>
+                  {money(item.price * item.quantity)}
+                </Text>
+              </View>
+
+              <View style={styles.quantityControls}>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => changeQuantity(item.id, -1)}
+                >
+                  <Text style={styles.quantityButtonText}>−</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.quantityText}>{item.quantity}</Text>
+
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => {
+                    if (item.quantity >= item.stock) {
+                      Alert.alert('IMSIYA', 'Kaydka intaas kuma filna.');
+                      return;
+                    }
+                    changeQuantity(item.id, 1);
+                  }}
+                >
+                  <Text style={styles.quantityButtonText}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Wadarta</Text>
+            <Text style={styles.totalAmount}>{money(cartTotal)}</Text>
+          </View>
 
           <TouchableOpacity
-            style={styles.switchAuth}
+            style={styles.primaryButton}
             onPress={() =>
-              setAuthMode(authMode === 'signup' ? 'login' : 'signup')
+              Alert.alert(
+                'IMSIYA',
+                'Cart-kaagu waa diyaar. Nidaamka dalabka iyo lacag-bixinta macaamiisha weli waa in lagu xiraa database-ka iyo adeegga lacag-bixinta.'
+              )
             }
           >
-            <Text style={styles.switchAuthText}>
-              {authMode === 'signup'
-                ? 'Already have an account? Login'
-                : "Don't have an account? Sign Up"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.authFooter}>IMSIYA Sweets Marketplace</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="#512080" barStyle="light-content" />
-
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.logo}>IMSIYA</Text>
-          <Text style={styles.tagline}>A world full of sweetness ❤️</Text>
-        </View>
-
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.cartButton}
-            onPress={() => setScreen('cart')}
-          >
-            <Text style={styles.cartButtonText}>
-              🛒 Cart ({cartCount})
-            </Text>
+            <Text style={styles.buttonText}>Sii wad dalabka</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
+            style={styles.secondaryButton}
+            onPress={() => setCart([])}
           >
-            <Text style={styles.logoutText}>Logout</Text>
+            <Text style={styles.secondaryButtonText}>Nadiifi cart-ka</Text>
           </TouchableOpacity>
-        </View>
-      </View>
+        </>
+      )}
+    </View>
+  );
 
-      {screen === 'home' ? (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.welcomeBox}>
-            <Text style={styles.welcomeText}>
-              Welcome, {session.user.email}
-            </Text>
-          </View>
+  const renderShop = () => (
+    <View>
+      <Text style={styles.sectionTitle}>Dukaankayga</Text>
 
-          <View style={styles.searchBox}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="🔍 Raadi macmacaanka..."
-              placeholderTextColor="#888"
-              value={search}
-              onChangeText={setSearch}
-            />
-          </View>
+      {shopLoading ? (
+        <ActivityIndicator size="large" color="#8B4513" />
+      ) : (
+        <>
+          <Text style={styles.label}>Magaca dukaanka</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Tusaale: IMSIYA Sweets"
+            value={shopName}
+            onChangeText={setShopName}
+          />
 
-          <Text style={styles.heading}>Qaybaha Alaabta</Text>
+          <Text style={styles.label}>Sharaxaadda dukaanka</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            placeholder="Wax ka sheeg dukaankaaga..."
+            value={shopDescription}
+            onChangeText={setShopDescription}
+            multiline
+          />
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categories}
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={createOrUpdateShop}
+            disabled={shopLoading}
           >
-            {categories.map(item => (
+            <Text style={styles.buttonText}>
+              Kaydi xogta dukaanka
+            </Text>
+          </TouchableOpacity>
+
+          {myShop && (
+            <View style={styles.shopStatusCard}>
+              <Text style={styles.shopStatusTitle}>
+                {myShop.shop_name}
+              </Text>
+              <Text style={styles.shopStatusText}>
+                Xaaladda: {myShop.active ? 'Wuu furan yahay' : 'Weli ma furna'}
+              </Text>
+              <Text style={styles.shopStatusText}>
+                Lacagta dukaanka: $20 USD bishii
+              </Text>
+
+              {!myShop.active && (
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={payShopSubscription}
+                  disabled={paymentLoading}
+                >
+                  {paymentLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>
+                      Bixi $20 bishii — Stripe
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          <View style={styles.divider} />
+
+          <Text style={styles.sectionTitle}>Ku dar alaab cusub</Text>
+
+          <Text style={styles.label}>Magaca alaabta</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Magaca macmacaanka"
+            value={productName}
+            onChangeText={setProductName}
+          />
+
+          <Text style={styles.label}>Sharaxaadda</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Sharax alaabta"
+            value={productDescription}
+            onChangeText={setProductDescription}
+          />
+
+          <Text style={styles.label}>Qiimaha (KSh)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Tusaale: 500"
+            value={productPrice}
+            onChangeText={setProductPrice}
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Tirada kaydka</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="10"
+            value={productStock}
+            onChangeText={setProductStock}
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Sawirka alaabta (URL)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="https://..."
+            value={productImage}
+            onChangeText={setProductImage}
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.label}>Qaybta alaabta</Text>
+          <View style={styles.categoryChoices}>
+            {categories.filter(item => item !== 'Dhammaan').map(item => (
               <TouchableOpacity
                 key={item}
                 style={[
-                  styles.category,
-                  category === item && styles.selectedCategory,
+                  styles.categoryButton,
+                  productCategory === item && styles.categorySelected,
                 ]}
-                onPress={() => setCategory(item)}
+                onPress={() => setProductCategory(item)}
               >
                 <Text
                   style={[
                     styles.categoryText,
-                    category === item && styles.selectedCategoryText,
+                    productCategory === item && styles.categorySelectedText,
                   ]}
                 >
                   {item}
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
-
-          <View style={styles.productsTitleRow}>
-            <Text style={styles.heading}>Alaabta IMSIYA</Text>
-            <TouchableOpacity onPress={loadProducts}>
-              <Text style={styles.refreshText}>Refresh ↻</Text>
-            </TouchableOpacity>
           </View>
 
-          {productsLoading ? (
-            <ActivityIndicator
-              size="large"
-              color="#512080"
-              style={styles.loader}
-            />
-          ) : productError ? (
-            <View style={styles.messageBox}>
-              <Text style={styles.emptyText}>{productError}</Text>
-              <TouchableOpacity style={styles.addButton} onPress={loadProducts}>
-                <Text style={styles.addButtonText}>Mar kale isku day</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.products}>
-              {filteredProducts.map(item => (
-                <View style={styles.product} key={item.id}>
-                  {item.image_url ? (
-                    <Image
-                      source={{ uri: item.image_url }}
-                      style={styles.productImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Text style={styles.emoji}>🍬</Text>
-                  )}
-
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.price}>
-                    KSh {item.price.toLocaleString()}
-                  </Text>
-                  <Text style={styles.stockText}>
-                    {item.stock > 0 ? `Stock: ${item.stock}` : 'Waa dhammaaday'}
-                  </Text>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.addButton,
-                      item.stock < 1 && styles.disabledButton,
-                    ]}
-                    disabled={item.stock < 1}
-                    onPress={() => addToCart(item)}
-                  >
-                    <Text style={styles.addButtonText}>
-                      {item.stock > 0 ? '+ Cart ku dar' : 'Ma jiro'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {!productsLoading && !productError && filteredProducts.length === 0 && (
-            <Text style={styles.emptyText}>
-              Weli alaab laguma darin qaybtan.
-            </Text>
-          )}
-
-          <View style={styles.banner}>
-            <Text style={styles.bannerTitle}>
-              Ku iibso macmacaankaaga IMSIYA!
-            </Text>
-            <Text style={styles.bannerText}>
-              Fur dukaankaaga oo gaadh macaamiil badan.
-            </Text>
-          </View>
-        </ScrollView>
-      ) : (
-        <ScrollView contentContainerStyle={styles.cartPage}>
-          <View style={styles.cartTitleRow}>
-            <Text style={styles.heading}>My Shopping Cart</Text>
-            <TouchableOpacity onPress={() => setScreen('home')}>
-              <Text style={styles.continueText}>Continue Shopping</Text>
-            </TouchableOpacity>
-          </View>
-
-          {cart.length === 0 ? (
-            <View style={styles.emptyCart}>
-              <Text style={styles.emptyEmoji}>🛒</Text>
-              <Text style={styles.emptyTitle}>Cart-kaagu waa madhan yahay</Text>
-              <Text style={styles.emptyText}>Ku dar macmacaan aad jeceshahay!</Text>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => setScreen('home')}
-              >
-                <Text style={styles.addButtonText}>Shopping bilow</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              {cart.map(item => (
-                <View style={styles.cartItem} key={item.id}>
-                  {item.image_url ? (
-                    <Image
-                      source={{ uri: item.image_url }}
-                      style={styles.cartImage}
-                    />
-                  ) : (
-                    <Text style={styles.cartEmoji}>🍬</Text>
-                  )}
-
-                  <View style={styles.cartInfo}>
-                    <Text style={styles.productName}>{item.name}</Text>
-                    <Text style={styles.price}>
-                      KSh {(item.price * item.quantity).toLocaleString()}
-                    </Text>
-
-                    <View style={styles.quantityRow}>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => updateQuantity(item.id, -1)}
-                      >
-                        <Text style={styles.quantityText}>−</Text>
-                      </TouchableOpacity>
-
-                      <Text style={styles.quantityNumber}>{item.quantity}</Text>
-
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => updateQuantity(item.id, 1)}
-                      >
-                        <Text style={styles.quantityText}>+</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity onPress={() => removeItem(item.id)}>
-                        <Text style={styles.removeText}>Remove</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              ))}
-
-              <View style={styles.totalBox}>
-                <Text style={styles.totalLabel}>
-                  Total ({cartCount} items)
-                </Text>
-                <Text style={styles.totalPrice}>
-                  KSh {total.toLocaleString()}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.checkoutButton}
-                onPress={() =>
-                  Alert.alert(
-                    'IMSIYA',
-                    'Cart-kaagu waa diyaar. Nidaamka dalabka iyo lacag-bixinta weli waa in la isku xiraa.'
-                  )
-                }
-              >
-                <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </ScrollView>
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              addingProduct && styles.disabledButton,
+            ]}
+            onPress={addProduct}
+            disabled={addingProduct}
+          >
+            {addingProduct ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Ku dar alaabta</Text>
+            )}
+          </TouchableOpacity>
+        </>
       )}
+    </View>
+  );
+
+  if (!session) {
+    return (
+      <View style={styles.authContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFF8F0" />
+
+        <Text style={styles.logo}>IMSIYA 🍰</Text>
+        <Text style={styles.authSubtitle}>
+          Suuqa macmacaanka ee qof walba
+        </Text>
+
+        {authMode === 'signup' && (
+          <TextInput
+            style={styles.input}
+            placeholder="Magacaaga"
+            value={fullName}
+            onChangeText={setFullName}
+          />
+        )}
+
+        <TextInput
+          style={styles.input}
+          placeholder="Email-kaaga"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={signInOrSignUp}
+          disabled={authLoading}
+        >
+          {authLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>
+              {authMode === 'signup' ? 'Samee akoon' : 'Gal akoonka'}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() =>
+            setAuthMode(current =>
+              current === 'signup' ? 'login' : 'signup'
+            )
+          }
+          style={styles.authSwitch}
+        >
+          <Text style={styles.authSwitchText}>
+            {authMode === 'signup'
+              ? 'Akoon ma leedahay? Gal halkan'
+              : 'Akoon ma lihid? Isdiiwaangeli'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF8F0" />
+
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerLogo}>IMSIYA</Text>
+          <Text style={styles.headerSubtitle}>Suuqa macmacaanka</Text>
+        </View>
+
+        <TouchableOpacity onPress={signOut}>
+          <Text style={styles.logoutText}>Ka bax</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        {screen === 'home' && renderHome()}
+        {screen === 'cart' && renderCart()}
+        {screen === 'shop' && renderShop()}
+      </ScrollView>
 
       <View style={styles.bottomNav}>
         <TouchableOpacity
@@ -598,7 +972,7 @@ export default function App() {
           onPress={() => setScreen('home')}
         >
           <Text style={styles.navIcon}>🏠</Text>
-          <Text style={styles.navText}>Home</Text>
+          <Text style={styles.navText}>Hoyga</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -606,7 +980,17 @@ export default function App() {
           onPress={() => setScreen('cart')}
         >
           <Text style={styles.navIcon}>🛒</Text>
-          <Text style={styles.navText}>Cart ({cartCount})</Text>
+          <Text style={styles.navText}>
+            Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => setScreen('shop')}
+        >
+          <Text style={styles.navIcon}>🏪</Text>
+          <Text style={styles.navText}>Dukaankayga</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -616,403 +1000,335 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fffaf6',
+    backgroundColor: '#FFF8F0',
   },
-  header: {
-    backgroundColor: '#512080',
-    padding: 16,
-    paddingTop: 35,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerActions: {
-    alignItems: 'flex-end',
-    gap: 7,
+  authContainer: {
+    flex: 1,
+    backgroundColor: '#FFF8F0',
+    justifyContent: 'center',
+    padding: 24,
   },
   logo: {
-    color: '#fff',
-    fontSize: 27,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
-  tagline: {
-    color: '#f4dfff',
-    fontSize: 12,
-    marginTop: 3,
-  },
-  cartButton: {
-    backgroundColor: '#ff9d35',
-    paddingVertical: 9,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-  },
-  cartButtonText: {
-    color: '#fff',
+    fontSize: 34,
     fontWeight: 'bold',
-    fontSize: 12,
+    color: '#8B4513',
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  logoutButton: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+  authSubtitle: {
+    textAlign: 'center',
+    color: '#76533D',
+    marginBottom: 30,
+    fontSize: 15,
   },
-  logoutText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  welcomeBox: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  welcomeText: {
-    color: '#512080',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  searchBox: {
-    backgroundColor: '#fff',
-    margin: 16,
-    borderRadius: 12,
+  input: {
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#eee2f2',
+    borderColor: '#E6D5C5',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
+    color: '#30251F',
+    fontSize: 15,
   },
-  searchInput: {
-    padding: 13,
-    fontSize: 14,
-    color: '#24133b',
+  multilineInput: {
+    minHeight: 90,
+    textAlignVertical: 'top',
   },
-  heading: {
-    color: '#24133b',
-    fontSize: 19,
-    fontWeight: '800',
-    marginHorizontal: 16,
-    marginTop: 15,
+  primaryButton: {
+    backgroundColor: '#8B4513',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
     marginBottom: 12,
   },
-  categories: {
-    paddingHorizontal: 16,
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
-  category: {
-    backgroundColor: '#f0e8f6',
+  disabledButton: {
+    opacity: 0.5,
+  },
+  authSwitch: {
+    padding: 12,
+    alignItems: 'center',
+  },
+  authSwitchText: {
+    color: '#8B4513',
+    fontWeight: '600',
+  },
+  header: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEDFD2',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerLogo: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#8B4513',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#806B5C',
+  },
+  logoutText: {
+    color: '#A13D2D',
+    fontWeight: 'bold',
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 30,
+  },
+  hero: {
+    backgroundColor: '#F3DFC9',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 18,
+  },
+  heroTitle: {
+    fontSize: 22,
+    color: '#603719',
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  heroText: {
+    color: '#684A35',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  searchInput: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E6D5C5',
+    marginBottom: 14,
+    color: '#30251F',
+  },
+  categoryScroll: {
+    marginBottom: 18,
+  },
+  categoryButton: {
+    backgroundColor: '#F1E5DA',
+    paddingHorizontal: 15,
     paddingVertical: 10,
-    paddingHorizontal: 16,
     borderRadius: 20,
-    marginRight: 9,
+    marginRight: 8,
+    marginBottom: 8,
   },
-  selectedCategory: {
-    backgroundColor: '#512080',
+  categorySelected: {
+    backgroundColor: '#8B4513',
   },
   categoryText: {
-    color: '#512080',
-    fontWeight: '700',
+    color: '#69472F',
+    fontWeight: '600',
+    fontSize: 12,
   },
-  selectedCategoryText: {
-    color: '#fff',
+  categorySelectedText: {
+    color: '#FFFFFF',
   },
-  productsTitleRow: {
+  sectionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    color: '#603719',
+    fontWeight: 'bold',
+    fontSize: 21,
+    marginBottom: 14,
   },
   refreshText: {
-    color: '#512080',
+    color: '#8B4513',
     fontWeight: 'bold',
-    marginHorizontal: 16,
-    marginTop: 12,
   },
-  loader: {
-    margin: 35,
-  },
-  products: {
+  productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 10,
     justifyContent: 'space-between',
   },
-  product: {
-    backgroundColor: '#fff',
+  productCard: {
     width: '48%',
-    borderRadius: 15,
-    padding: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 10,
     marginBottom: 14,
-    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f0e8f6',
+    borderColor: '#F0E2D5',
   },
   productImage: {
     width: '100%',
     height: 115,
     borderRadius: 10,
-    marginVertical: 8,
+    backgroundColor: '#F4E8DE',
   },
-  emoji: {
-    fontSize: 48,
-    marginVertical: 8,
+  imagePlaceholder: {
+    height: 115,
+    borderRadius: 10,
+    backgroundColor: '#F4E8DE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 42,
   },
   productName: {
-    color: '#24133b',
-    fontSize: 14,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginTop: 5,
+    color: '#3E2C20',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginTop: 9,
   },
-  price: {
-    color: '#e98224',
-    fontSize: 16,
-    fontWeight: '900',
-    marginVertical: 8,
+  productCategory: {
+    color: '#927A68',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  productPrice: {
+    color: '#8B4513',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginTop: 6,
   },
   stockText: {
-    color: '#777',
+    color: '#806B5C',
     fontSize: 11,
-  },
-  addButton: {
-    backgroundColor: '#512080',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  disabledButton: {
-    backgroundColor: '#999',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  banner: {
-    backgroundColor: '#512080',
-    margin: 16,
-    padding: 20,
-    borderRadius: 15,
-  },
-  bannerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  bannerText: {
-    color: '#f4dfff',
-    marginTop: 8,
+    marginTop: 4,
   },
   emptyText: {
+    color: '#806B5C',
     textAlign: 'center',
-    color: '#777',
-    padding: 20,
+    padding: 25,
   },
-  messageBox: {
-    padding: 15,
-  },
-  cartPage: {
-    paddingBottom: 30,
-  },
-  cartTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  },
-  continueText: {
-    color: '#512080',
-    fontWeight: 'bold',
-    marginHorizontal: 16,
-  },
-  emptyCart: {
-    alignItems: 'center',
-    padding: 35,
-  },
-  emptyEmoji: {
-    fontSize: 65,
-    marginBottom: 15,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#24133b',
+  errorText: {
+    color: '#B3261E',
+    padding: 12,
   },
   cartItem: {
-    backgroundColor: '#fff',
-    marginHorizontal: 15,
-    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     padding: 14,
-    borderRadius: 14,
+    marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  cartImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-    marginRight: 15,
-  },
-  cartEmoji: {
-    fontSize: 42,
-    marginRight: 15,
+    justifyContent: 'space-between',
   },
   cartInfo: {
     flex: 1,
   },
-  quantityRow: {
+  quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    gap: 12,
+    marginLeft: 8,
   },
   quantityButton: {
-    backgroundColor: '#f0e8f6',
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: '#F1E5DA',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityButtonText: {
+    color: '#603719',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   quantityText: {
-    color: '#512080',
-    fontSize: 20,
+    color: '#30251F',
     fontWeight: 'bold',
+    paddingHorizontal: 12,
   },
-  quantityNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#24133b',
-  },
-  removeText: {
-    color: '#d33',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  totalBox: {
-    backgroundColor: '#f0e8f6',
-    margin: 16,
-    padding: 18,
-    borderRadius: 12,
+  totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingVertical: 18,
   },
   totalLabel: {
-    color: '#24133b',
     fontSize: 17,
     fontWeight: 'bold',
+    color: '#603719',
   },
-  totalPrice: {
-    color: '#512080',
-    fontSize: 20,
-    fontWeight: '900',
+  totalAmount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#8B4513',
   },
-  checkoutButton: {
-    backgroundColor: '#ff9d35',
-    marginHorizontal: 16,
-    padding: 16,
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: '#8B4513',
+    padding: 13,
     borderRadius: 12,
     alignItems: 'center',
   },
-  checkoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '900',
+  secondaryButtonText: {
+    color: '#8B4513',
+    fontWeight: 'bold',
+  },
+  label: {
+    color: '#603719',
+    fontWeight: 'bold',
+    marginBottom: 7,
+    marginTop: 8,
+  },
+  shopStatusCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 14,
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: '#E6D5C5',
+  },
+  shopStatusTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#603719',
+    marginBottom: 8,
+  },
+  shopStatusText: {
+    color: '#806B5C',
+    marginBottom: 6,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E6D5C5',
+    marginVertical: 24,
+  },
+  categoryChoices: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
   },
   bottomNav: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#fff',
-    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#EEDFD2',
+    paddingVertical: 10,
+    justifyContent: 'space-around',
   },
   navItem: {
     alignItems: 'center',
-    paddingHorizontal: 25,
+    minWidth: 75,
   },
   navIcon: {
     fontSize: 21,
   },
   navText: {
-    color: '#512080',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: '#69472F',
+    fontSize: 11,
+    fontWeight: '600',
     marginTop: 3,
   },
-  authContainer: {
-    flex: 1,
-    backgroundColor: '#fffaf6',
-    justifyContent: 'center',
-    padding: 22,
-  },
-  authHeader: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  authLogo: {
-    color: '#512080',
-    fontSize: 38,
-    fontWeight: '900',
-    letterSpacing: 3,
-  },
-  authTagline: {
-    color: '#8a659f',
-    marginTop: 5,
-  },
-  authCard: {
-    backgroundColor: '#fff',
-    padding: 22,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#eee2f2',
-  },
-  authTitle: {
-    fontSize: 25,
-    fontWeight: '900',
-    color: '#24133b',
-    textAlign: 'center',
-  },
-  authSubtitle: {
-    color: '#777',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 22,
-  },
-  fieldLabel: {
-    color: '#512080',
-    fontWeight: '700',
-    marginBottom: 7,
-    marginTop: 10,
-  },
-  authInput: {
-    backgroundColor: '#fffaf6',
-    borderWidth: 1,
-    borderColor: '#e8dced',
-    borderRadius: 11,
-    padding: 14,
-    color: '#24133b',
-  },
-  authButton: {
-    backgroundColor: '#512080',
-    padding: 15,
-    borderRadius: 11,
-    alignItems: 'center',
-    marginTop: 22,
-  },
-  authButtonText: {
-    color: '#fff',
-    fontWeight: '900',
-    fontSize: 16,
-  },
-  switchAuth: {
-    padding: 15,
-    alignItems: 'center',
-  },
-  switchAuthText: {
-    color: '#512080',
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  authFooter: {
-    textAlign: 'center',
-    color: '#999',
-    marginTop: 25,
-    fontSize: 12,
-  },
 });
+
