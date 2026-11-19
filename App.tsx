@@ -11,31 +11,29 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  Image,
 } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
 type Product = {
-  id: number;
+  id: string;
   name: string;
   price: number;
-  emoji: string;
+  image_url: string | null;
+  stock: number;
   category: string;
 };
 
 type CartItem = Product & { quantity: number };
 
 const categories = [
-  'All', 'Biscuits', 'Halwa', 'Cakes', 'Chocolates', 'Desserts',
-];
-
-const products: Product[] = [
-  { id: 1, name: 'Chocolate Cake', price: 15, emoji: '🎂', category: 'Cakes' },
-  { id: 2, name: 'Delicious Halwa', price: 10, emoji: '🍯', category: 'Halwa' },
-  { id: 3, name: 'Sweet Biscuits', price: 5, emoji: '🍪', category: 'Biscuits' },
-  { id: 4, name: 'Chocolate Treats', price: 8, emoji: '🍫', category: 'Chocolates' },
-  { id: 5, name: 'Sweet Cupcake', price: 6, emoji: '🧁', category: 'Cakes' },
-  { id: 6, name: 'Ice Cream', price: 7, emoji: '🍨', category: 'Desserts' },
+  'Dhammaan',
+  'Buskut',
+  'Xalwo',
+  'Keeg',
+  'Shukulaato',
+  'Macmacaan kale',
 ];
 
 export default function App() {
@@ -43,14 +41,17 @@ export default function App() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productError, setProductError] = useState('');
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [screen, setScreen] = useState<'home' | 'cart'>('home');
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useState('Dhammaan');
   const [search, setSearch] = useState('');
 
-  // Handle email confirmation links that open the IMSIYA app.
   const handleAuthLink = async (url: string | null) => {
     if (!url) return;
 
@@ -58,18 +59,14 @@ export default function App() {
       const parsedUrl = new URL(url);
       const code = parsedUrl.searchParams.get('code');
 
-      // Supabase PKCE confirmation link.
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { error } =
+          await supabase.auth.exchangeCodeForSession(code);
         if (error) throw error;
         return;
       }
 
-      // Supabase token-based confirmation link.
-      const hash = parsedUrl.hash.startsWith('#')
-        ? parsedUrl.hash.substring(1)
-        : parsedUrl.hash;
-
+      const hash = parsedUrl.hash.replace(/^#/, '');
       const params = new URLSearchParams(hash);
       const accessToken = params.get('access_token');
       const refreshToken = params.get('refresh_token');
@@ -79,14 +76,10 @@ export default function App() {
           access_token: accessToken,
           refresh_token: refreshToken,
         });
-
         if (error) throw error;
       }
     } catch (error: any) {
-      Alert.alert(
-        'IMSIYA',
-        error.message || 'Could not verify your email. Please try again.'
-      );
+      Alert.alert('IMSIYA', error.message || 'Xaqiijinta email-ka way fashilantay.');
     }
   };
 
@@ -101,15 +94,11 @@ export default function App() {
       setSession(newSession);
     });
 
-    // Handle a confirmation link when the app is already closed.
     Linking.getInitialURL().then(handleAuthLink);
 
-    // Handle a confirmation link when the app is already open.
     const linkingSubscription = Linking.addEventListener(
       'url',
-      ({ url }) => {
-        handleAuthLink(url);
-      }
+      ({ url }) => handleAuthLink(url)
     );
 
     return () => {
@@ -118,18 +107,63 @@ export default function App() {
     };
   }, []);
 
+  // Soo qaad alaabta dhabta ah ee Supabase.
+  const loadProducts = async () => {
+    setProductsLoading(true);
+    setProductError('');
+
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price, image_url, stock, categories(name)')
+        .eq('active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedProducts: Product[] = (data || []).map((item: any) => {
+        const categoryData = Array.isArray(item.categories)
+          ? item.categories[0]
+          : item.categories;
+
+        return {
+          id: String(item.id),
+          name: item.name || 'Alaab macaan',
+          price: Number(item.price) || 0,
+          image_url: item.image_url || null,
+          stock: Number(item.stock) || 0,
+          category: categoryData?.name || 'Macmacaan kale',
+        };
+      });
+
+      setProducts(formattedProducts);
+    } catch (error: any) {
+      setProductError(error.message || 'Alaabta lama soo qaadi karin.');
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session) {
+      loadProducts();
+    } else {
+      setProducts([]);
+    }
+  }, [session]);
+
   const handleAuth = async () => {
     if (!email.trim() || !password) {
-      Alert.alert('IMSIYA', 'Please enter your email and password.');
+      Alert.alert('IMSIYA', 'Geli email-ka iyo password-ka.');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('IMSIYA', 'Password must be at least 6 characters.');
+      Alert.alert('IMSIYA', 'Password-ku waa inuu ahaadaa ugu yaraan 6 xaraf.');
       return;
     }
 
-    setLoading(true);
+    setAuthLoading(true);
 
     try {
       if (authMode === 'signup') {
@@ -145,11 +179,11 @@ export default function App() {
 
         if (!data.session) {
           Alert.alert(
-            'Check your email',
-            'Your account has been created. Open the confirmation link in your email to verify your account. The IMSIYA app should open after confirmation.'
+            'IMSIYA',
+            'Account-ka waa la sameeyay. Fadlan email-kaaga ka xaqiiji.'
           );
         } else {
-          Alert.alert('IMSIYA', 'Your account has been created!');
+          Alert.alert('IMSIYA', 'Account-kaaga waa diyaar!');
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -160,9 +194,9 @@ export default function App() {
         if (error) throw error;
       }
     } catch (error: any) {
-      Alert.alert('IMSIYA', error.message || 'Something went wrong.');
+      Alert.alert('IMSIYA', error.message || 'Waxbaa khaldamay.');
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
@@ -178,10 +212,20 @@ export default function App() {
   };
 
   const addToCart = (product: Product) => {
+    if (product.stock < 1) {
+      Alert.alert('IMSIYA', 'Alaabtan hadda ma taallo.');
+      return;
+    }
+
     setCart(current => {
       const found = current.find(item => item.id === product.id);
 
       if (found) {
+        if (found.quantity >= product.stock) {
+          Alert.alert('IMSIYA', 'Tirada alaabta intaas way ka badan tahay stock-ga.');
+          return current;
+        }
+
         return current.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -191,11 +235,9 @@ export default function App() {
 
       return [...current, { ...product, quantity: 1 }];
     });
-
-    Alert.alert('IMSIYA', product.name + ' added to your cart!');
   };
 
-  const updateQuantity = (id: number, amount: number) => {
+  const updateQuantity = (id: string, amount: number) => {
     setCart(current =>
       current
         .map(item =>
@@ -207,11 +249,14 @@ export default function App() {
     );
   };
 
-  const removeItem = (id: number) => {
+  const removeItem = (id: string) => {
     setCart(current => current.filter(item => item.id !== id));
   };
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -220,10 +265,11 @@ export default function App() {
 
   const filteredProducts = products.filter(item => {
     const categoryMatch =
-      category === 'All' || item.category === category;
+      category === 'Dhammaan' || item.category === category;
 
-    const searchMatch =
-      item.name.toLowerCase().includes(search.toLowerCase());
+    const searchMatch = item.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
     return categoryMatch && searchMatch;
   });
@@ -247,8 +293,8 @@ export default function App() {
 
           <Text style={styles.authSubtitle}>
             {authMode === 'signup'
-              ? 'Join IMSIYA and discover delicious sweets.'
-              : 'Login to continue shopping on IMSIYA.'}
+              ? 'Ku soo biir IMSIYA.'
+              : 'Gal account-kaaga IMSIYA.'}
           </Text>
 
           <Text style={styles.fieldLabel}>Email Address</Text>
@@ -277,9 +323,9 @@ export default function App() {
           <TouchableOpacity
             style={styles.authButton}
             onPress={handleAuth}
-            disabled={loading}
+            disabled={authLoading}
           >
-            {loading ? (
+            {authLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={styles.authButtonText}>
@@ -302,9 +348,7 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.authFooter}>
-          IMSIYA Sweets Marketplace
-        </Text>
+        <Text style={styles.authFooter}>IMSIYA Sweets Marketplace</Text>
       </View>
     );
   }
@@ -349,14 +393,14 @@ export default function App() {
           <View style={styles.searchBox}>
             <TextInput
               style={styles.searchInput}
-              placeholder="🔍 Search sweets and cakes..."
+              placeholder="🔍 Raadi macmacaanka..."
               placeholderTextColor="#888"
               value={search}
               onChangeText={setSearch}
             />
           </View>
 
-          <Text style={styles.heading}>Explore Categories</Text>
+          <Text style={styles.heading}>Qaybaha Alaabta</Text>
 
           <ScrollView
             horizontal
@@ -384,39 +428,77 @@ export default function App() {
             ))}
           </ScrollView>
 
-          <Text style={styles.heading}>Popular Sweets</Text>
-
-          <View style={styles.products}>
-            {filteredProducts.map(item => (
-              <View style={styles.product} key={item.id}>
-                <Text style={styles.emoji}>{item.emoji}</Text>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.price}>
-                  ${item.price.toFixed(2)}
-                </Text>
-
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => addToCart(item)}
-                >
-                  <Text style={styles.addButtonText}>
-                    + Add to Cart
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+          <View style={styles.productsTitleRow}>
+            <Text style={styles.heading}>Alaabta IMSIYA</Text>
+            <TouchableOpacity onPress={loadProducts}>
+              <Text style={styles.refreshText}>Refresh ↻</Text>
+            </TouchableOpacity>
           </View>
 
-          {filteredProducts.length === 0 && (
-            <Text style={styles.emptyText}>No products found.</Text>
+          {productsLoading ? (
+            <ActivityIndicator
+              size="large"
+              color="#512080"
+              style={styles.loader}
+            />
+          ) : productError ? (
+            <View style={styles.messageBox}>
+              <Text style={styles.emptyText}>{productError}</Text>
+              <TouchableOpacity style={styles.addButton} onPress={loadProducts}>
+                <Text style={styles.addButtonText}>Mar kale isku day</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.products}>
+              {filteredProducts.map(item => (
+                <View style={styles.product} key={item.id}>
+                  {item.image_url ? (
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={styles.productImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={styles.emoji}>🍬</Text>
+                  )}
+
+                  <Text style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.price}>
+                    KSh {item.price.toLocaleString()}
+                  </Text>
+                  <Text style={styles.stockText}>
+                    {item.stock > 0 ? `Stock: ${item.stock}` : 'Waa dhammaaday'}
+                  </Text>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.addButton,
+                      item.stock < 1 && styles.disabledButton,
+                    ]}
+                    disabled={item.stock < 1}
+                    onPress={() => addToCart(item)}
+                  >
+                    <Text style={styles.addButtonText}>
+                      {item.stock > 0 ? '+ Cart ku dar' : 'Ma jiro'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {!productsLoading && !productError && filteredProducts.length === 0 && (
+            <Text style={styles.emptyText}>
+              Weli alaab laguma darin qaybtan.
+            </Text>
           )}
 
           <View style={styles.banner}>
             <Text style={styles.bannerTitle}>
-              Sell your sweets on IMSIYA!
+              Ku iibso macmacaankaaga IMSIYA!
             </Text>
             <Text style={styles.bannerText}>
-              Open your shop and reach more customers.
+              Fur dukaankaaga oo gaadh macaamiil badan.
             </Text>
           </View>
         </ScrollView>
@@ -425,42 +507,39 @@ export default function App() {
           <View style={styles.cartTitleRow}>
             <Text style={styles.heading}>My Shopping Cart</Text>
             <TouchableOpacity onPress={() => setScreen('home')}>
-              <Text style={styles.continueText}>
-                Continue Shopping
-              </Text>
+              <Text style={styles.continueText}>Continue Shopping</Text>
             </TouchableOpacity>
           </View>
 
           {cart.length === 0 ? (
             <View style={styles.emptyCart}>
               <Text style={styles.emptyEmoji}>🛒</Text>
-              <Text style={styles.emptyTitle}>
-                Your cart is empty
-              </Text>
-              <Text style={styles.emptyText}>
-                Add some delicious sweets!
-              </Text>
+              <Text style={styles.emptyTitle}>Cart-kaagu waa madhan yahay</Text>
+              <Text style={styles.emptyText}>Ku dar macmacaan aad jeceshahay!</Text>
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => setScreen('home')}
               >
-                <Text style={styles.addButtonText}>
-                  Start Shopping
-                </Text>
+                <Text style={styles.addButtonText}>Shopping bilow</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <>
               {cart.map(item => (
                 <View style={styles.cartItem} key={item.id}>
-                  <Text style={styles.cartEmoji}>{item.emoji}</Text>
+                  {item.image_url ? (
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={styles.cartImage}
+                    />
+                  ) : (
+                    <Text style={styles.cartEmoji}>🍬</Text>
+                  )}
 
                   <View style={styles.cartInfo}>
-                    <Text style={styles.productName}>
-                      {item.name}
-                    </Text>
+                    <Text style={styles.productName}>{item.name}</Text>
                     <Text style={styles.price}>
-                      ${(item.price * item.quantity).toFixed(2)}
+                      KSh {(item.price * item.quantity).toLocaleString()}
                     </Text>
 
                     <View style={styles.quantityRow}>
@@ -471,9 +550,7 @@ export default function App() {
                         <Text style={styles.quantityText}>−</Text>
                       </TouchableOpacity>
 
-                      <Text style={styles.quantityNumber}>
-                        {item.quantity}
-                      </Text>
+                      <Text style={styles.quantityNumber}>{item.quantity}</Text>
 
                       <TouchableOpacity
                         style={styles.quantityButton}
@@ -482,9 +559,7 @@ export default function App() {
                         <Text style={styles.quantityText}>+</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity
-                        onPress={() => removeItem(item.id)}
-                      >
+                      <TouchableOpacity onPress={() => removeItem(item.id)}>
                         <Text style={styles.removeText}>Remove</Text>
                       </TouchableOpacity>
                     </View>
@@ -497,7 +572,7 @@ export default function App() {
                   Total ({cartCount} items)
                 </Text>
                 <Text style={styles.totalPrice}>
-                  ${total.toFixed(2)}
+                  KSh {total.toLocaleString()}
                 </Text>
               </View>
 
@@ -506,13 +581,11 @@ export default function App() {
                 onPress={() =>
                   Alert.alert(
                     'IMSIYA',
-                    'Your cart is ready! Order processing and payment still need integration.'
+                    'Cart-kaagu waa diyaar. Nidaamka dalabka iyo lacag-bixinta weli waa in la isku xiraa.'
                   )
                 }
               >
-                <Text style={styles.checkoutText}>
-                  Proceed to Checkout
-                </Text>
+                <Text style={styles.checkoutText}>Proceed to Checkout</Text>
               </TouchableOpacity>
             </>
           )}
@@ -533,9 +606,7 @@ export default function App() {
           onPress={() => setScreen('cart')}
         >
           <Text style={styles.navIcon}>🛒</Text>
-          <Text style={styles.navText}>
-            Cart ({cartCount})
-          </Text>
+          <Text style={styles.navText}>Cart ({cartCount})</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -639,6 +710,20 @@ const styles = StyleSheet.create({
   selectedCategoryText: {
     color: '#fff',
   },
+  productsTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  refreshText: {
+    color: '#512080',
+    fontWeight: 'bold',
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  loader: {
+    margin: 35,
+  },
   products: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -654,6 +739,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#f0e8f6',
+  },
+  productImage: {
+    width: '100%',
+    height: 115,
+    borderRadius: 10,
+    marginVertical: 8,
   },
   emoji: {
     fontSize: 48,
@@ -672,6 +763,10 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     marginVertical: 8,
   },
+  stockText: {
+    color: '#777',
+    fontSize: 11,
+  },
   addButton: {
     backgroundColor: '#512080',
     paddingVertical: 10,
@@ -680,6 +775,9 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginTop: 8,
+  },
+  disabledButton: {
+    backgroundColor: '#999',
   },
   addButtonText: {
     color: '#fff',
@@ -704,6 +802,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#777',
     padding: 20,
+  },
+  messageBox: {
+    padding: 15,
   },
   cartPage: {
     paddingBottom: 30,
@@ -740,6 +841,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  cartImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 15,
   },
   cartEmoji: {
     fontSize: 42,
