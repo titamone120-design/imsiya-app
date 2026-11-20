@@ -268,7 +268,7 @@ export default function App() {
       return;
     }
 
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       Alert.alert('IMSIYA', 'Email-ka aad gelisay sax ma aha. Hubi email-ka.');
       return;
     }
