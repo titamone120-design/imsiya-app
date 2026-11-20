@@ -776,7 +776,7 @@ export default function App() {
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text style={styles.buttonText}>
-                      Bixi $20 bishii — Stripe
+                      Bixi $20 bishii — Visa / Mastercard
                     </Text>
                   )}
                 </TouchableOpacity>
