@@ -256,8 +256,20 @@ export default function App() {
   }, [session?.user?.id]);
 
   const signInOrSignUp = async () => {
-    if (!email.trim() || !password.trim()) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (authMode === 'signup' && !fullName.trim()) {
+      Alert.alert('IMSIYA', 'Fadlan geli magacaaga oo buuxa.');
+      return;
+    }
+
+    if (!cleanEmail || !password) {
       Alert.alert('IMSIYA', 'Geli email-ka iyo password-ka.');
+      return;
+    }
+
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail)) {
+      Alert.alert('IMSIYA', 'Email-ka aad gelisay sax ma aha. Hubi email-ka.');
       return;
     }
 
@@ -271,7 +283,7 @@ export default function App() {
     try {
       if (authMode === 'signup') {
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: cleanEmail,
           password,
           options: {
             data: {
@@ -283,24 +295,43 @@ export default function App() {
 
         if (error) throw error;
 
+        if (!data.user) {
+          throw new Error('Akoonka lama samayn. Fadlan mar kale isku day.');
+        }
+
         if (!data.session) {
           Alert.alert(
             'IMSIYA',
-            'Akoonka waa la sameeyey. Fadlan email-kaaga ka xaqiiji link-ga laguu soo diray.'
+            'Codsiga akoonka waa la aqbalay. Ka eeg email-kaaga link-ga xaqiijinta. Haddii uusan iman, hubi Spam/Junk.'
           );
         } else {
           Alert.alert('IMSIYA', 'Akoonkaaga waa la sameeyey.');
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: cleanEmail,
           password,
         });
 
         if (error) throw error;
       }
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Gelitaanka wuu fashilmay.');
+      const status = Number(e?.status || 0);
+      const errorCode = String(e?.code || '');
+      const message = String(e?.message || '');
+
+      if (
+        authMode === 'signup' &&
+        (status >= 500 || errorCode === 'unexpected_failure' ||
+          /smtp|email provider|sending email|mail server/i.test(message))
+      ) {
+        Alert.alert(
+          'IMSIYA — Email-ka xaqiijinta',
+          'Diiwaangelintu ma dhammaan sababtoo ah server-ka email-ka xaqiijinta ayaa cilad leh. Tani ma aha password-ka aad gelisay. Maamulka waa inuu hagaajiyaa SMTP-ga Supabase ka hor inta aadan mar kale isdiiwaangelin.'
+        );
+      } else {
+        Alert.alert('IMSIYA', message || 'Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.');
+      }
     } finally {
       setAuthLoading(false);
     }
