@@ -81,6 +81,7 @@ export default function App() {
 
   const [shopLoading, setShopLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const [productName, setProductName] = useState('');
   const [productDescription, setProductDescription] = useState('');
@@ -177,6 +178,18 @@ export default function App() {
         'Lacag-bixinta waa la dhammeeyey. Waxaan hubinaynaa xaaladda dukaanka.'
       );
       await loadMyShop();
+      return;
+    }
+
+    if (url.startsWith('imsiya://order-success')) {
+      Alert.alert('IMSIYA', 'Lacag-bixinta dalabka waa la dhammeeyey. Dalabkaaga waa la xaqiijinayaa.');
+      setCart([]);
+      await loadProducts();
+      return;
+    }
+
+    if (url.startsWith('imsiya://order-cancel')) {
+      Alert.alert('IMSIYA', 'Lacag-bixinta dalabka waa la joojiyey. Wax lacag ah lagama qaadin.');
       return;
     }
 
@@ -648,6 +661,44 @@ export default function App() {
     </>
   );
 
+  const checkoutCart = async () => {
+    if (!session?.user?.id) {
+      Alert.alert('IMSIYA', 'Marka hore akoonka gal.');
+      return;
+    }
+
+    if (cart.length === 0) {
+      Alert.alert('IMSIYA', 'Cart-kaagu waa madhan yahay.');
+      return;
+    }
+
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        'create-order-checkout-session',
+        {
+          body: {
+            items: cart.map(item => ({
+              product_id: item.id,
+              quantity: item.quantity,
+            })),
+          },
+        }
+      );
+
+      if (error) throw error;
+      if (!data?.checkout_url) {
+        throw new Error('Stripe ma soo celin link-ga lacag-bixinta.');
+      }
+
+      await Linking.openURL(data.checkout_url);
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Lacag-bixinta lama bilaabi karin.');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
   const renderCart = () => (
     <View>
       <Text style={styles.sectionTitle}>Cart-kaaga</Text>
@@ -697,15 +748,15 @@ export default function App() {
           </View>
 
           <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() =>
-              Alert.alert(
-                'IMSIYA',
-                'Cart-kaagu waa diyaar. Nidaamka dalabka iyo lacag-bixinta macaamiisha weli waa in lagu xiraa database-ka iyo adeegga lacag-bixinta.'
-              )
-            }
+            style={[styles.primaryButton, checkoutLoading && styles.disabledButton]}
+            onPress={checkoutCart}
+            disabled={checkoutLoading}
           >
-            <Text style={styles.buttonText}>Sii wad dalabka</Text>
+            {checkoutLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Ku bixi Visa / Mastercard</Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
