@@ -3,6 +3,12 @@ on:
   push:
     branches: [main]
     paths:
+      - "App.tsx"
+      - "app.json"
+      - "package.json"
+      - "package-lock.json"
+      - "supabase.ts"
+      - "assets/**"
       - "docs/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -14,7 +20,7 @@ concurrency:
   group: pages
   cancel-in-progress: true
 jobs:
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -22,12 +28,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Export IMSIYA marketplace for web
+        run: npx expo export --platform web --output-dir dist
+      - name: Include legal pages
+        run: |
+          cp docs/privacy.html dist/privacy.html
+          cp docs/terms.html dist/terms.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: dist
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@v4
