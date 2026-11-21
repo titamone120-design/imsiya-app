@@ -866,6 +866,7 @@ export default function App() {
       setProductPrice('');
       setProductStock('10');
       setProductImage('');
+      setProductImageMimeType('');
 
       Alert.alert('IMSIYA', editingProductId ? 'Alaabta waa la cusboonaysiiyey.' : 'Alaabta waa lagu daray dukaanka.');
       await Promise.all([loadProducts(), loadMySellerProducts()]);
@@ -1418,7 +1419,7 @@ export default function App() {
           ))}
 
           <Text style={styles.sectionTitle}>{editingProductId ? 'Tafatir alaabta' : 'Ku dar alaab cusub'}</Text>
-          {editingProductId && <TouchableOpacity onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>Jooji tafatirka</Text></TouchableOpacity>}
+          {editingProductId && <TouchableOpacity onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductImageMimeType(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>Jooji tafatirka</Text></TouchableOpacity>}
 
           <Text style={styles.label}>Magaca alaabta</Text>
           <TextInput
