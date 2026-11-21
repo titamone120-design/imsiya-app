@@ -116,6 +116,7 @@ export default function App() {
   const [productPrice, setProductPrice] = useState('');
   const [productStock, setProductStock] = useState('10');
   const [productImage, setProductImage] = useState('');
+  const [productImageMimeType, setProductImageMimeType] = useState('');
   const [productImageUploading, setProductImageUploading] = useState(false);
   const [productCategory, setProductCategory] = useState('Buskut');
   const [addingProduct, setAddingProduct] = useState(false);
@@ -326,6 +327,7 @@ export default function App() {
       });
       if (!result.canceled && result.assets?.[0]?.uri) {
         setProductImage(result.assets[0].uri);
+        setProductImageMimeType(result.assets[0].mimeType || 'image/jpeg');
       }
     } catch (e: any) {
       Alert.alert('IMSIYA', e.message || 'Sawirka lama dooran karin.');
@@ -339,6 +341,7 @@ export default function App() {
     setProductPrice(String(product.price));
     setProductStock(String(product.stock));
     setProductImage(product.image_url || '');
+    setProductImageMimeType('');
     setProductCategory(product.category);
   };
 
@@ -824,17 +827,17 @@ export default function App() {
 
     try {
       let savedImageUrl: string | null = productImage.trim() || null;
-      if (savedImageUrl && !/^https?:\\/\\//i.test(savedImageUrl)) {
+      if (savedImageUrl && !/^https?:\/\//i.test(savedImageUrl)) {
         setProductImageUploading(true);
         const imageResponse = await fetch(savedImageUrl);
         if (!imageResponse.ok) throw new Error('Sawirka telefoonka lama akhrin karin.');
-        const imageBlob = await imageResponse.blob();
-        const mimeType = String(imageBlob.type || 'image/jpeg').toLowerCase().split(';')[0];
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const mimeType = String(productImageMimeType || imageResponse.headers.get('content-type') || 'image/jpeg').toLowerCase().split(';')[0];
         const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : mimeType === 'image/jpeg' ? 'jpg' : '';
         if (!extension) throw new Error('Sawirka waa inuu noqdaa JPG, PNG ama WEBP.');
-        if (imageBlob.size <= 0 || imageBlob.size > 5 * 1024 * 1024) throw new Error('Sawirka waa inuu ka yaraadaa 5 MB.');
+        if (imageBuffer.byteLength <= 0 || imageBuffer.byteLength > 5 * 1024 * 1024) throw new Error('Sawirka waa inuu ka yaraadaa 5 MB.');
         const imagePath = session.user.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 9) + '.' + extension;
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(imagePath, imageBlob, {
+        const { error: uploadError } = await supabase.storage.from('product-images').upload(imagePath, imageBuffer, {
           contentType: mimeType,
           cacheControl: '3600',
           upsert: false,
@@ -1461,7 +1464,7 @@ export default function App() {
             style={styles.input}
             placeholder="Ama geli URL sawir (https://...)"
             value={productImage.startsWith('file://') || productImage.startsWith('content://') ? '' : productImage}
-            onChangeText={setProductImage}
+            onChangeText={value => { setProductImage(value); setProductImageMimeType(''); }}
             autoCapitalize="none"
           />
 
