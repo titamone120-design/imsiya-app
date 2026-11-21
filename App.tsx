@@ -182,9 +182,24 @@ export default function App() {
     }
 
     if (url.startsWith('imsiya://order-success')) {
-      Alert.alert('IMSIYA', 'Lacag-bixinta dalabka waa la dhammeeyey. Dalabkaaga waa la xaqiijinayaa.');
-      setCart([]);
-      await loadProducts();
+      try {
+        const parsed = new URL(url);
+        const paypalOrderId = parsed.searchParams.get('token');
+        if (!paypalOrderId) {
+          Alert.alert('IMSIYA', 'PayPal ma soo dirin lambarka dalabka. Fadlan nala soo xiriir ka hor intaadan mar kale bixin.');
+          return;
+        }
+        const { data, error } = await supabase.functions.invoke('capture-paypal-order', {
+          body: { paypal_order_id: paypalOrderId },
+        });
+        if (error) throw error;
+        if (!data?.success) throw new Error('PayPal lacag-bixinta lama xaqiijin.');
+        Alert.alert('IMSIYA', 'Lacag-bixinta PayPal waa la xaqiijiyey. Dalabkaagu waa la diyaarinayaa.');
+        setCart([]);
+        await loadProducts();
+      } catch (e: any) {
+        Alert.alert('IMSIYA', e.message || 'Lacag-bixinta PayPal lama xaqiijin karin. Ha ku celin bixinta ilaa xaaladda la hubiyo.');
+      }
       return;
     }
 
@@ -706,7 +721,7 @@ export default function App() {
     setCheckoutLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke(
-        'create-order-checkout-session',
+        'create-paypal-order',
         {
           body: {
             items: cart.map(item => ({
@@ -718,11 +733,18 @@ export default function App() {
       );
 
       if (error) throw error;
-      if (!data?.checkout_url) {
-        throw new Error('Stripe ma soo celin link-ga lacag-bixinta.');
+      if (!data?.checkout_url || !data?.usd_amount) {
+        throw new Error('PayPal ma soo celin link-ga lacag-bixinta.');
       }
 
-      await Linking.openURL(data.checkout_url);
+      Alert.alert(
+        'Xaqiiji lacagta',
+        'Wadarta alaabta: KES ' + data.kes_amount + '\nLacagta PayPal: USD ' + data.usd_amount,
+        [
+          { text: 'Sii wad PayPal', onPress: () => Linking.openURL(data.checkout_url) },
+          { text: 'Jooji', style: 'cancel' },
+        ]
+      );
     } catch (e: any) {
       Alert.alert('IMSIYA', e.message || 'Lacag-bixinta lama bilaabi karin.');
     } finally {
