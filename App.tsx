@@ -1020,7 +1020,7 @@ export default function App() {
 
       <TextInput
         style={styles.searchInput}
-        placeholder=tr("Raadi macmacaan...", "Search sweets...")
+        placeholder={tr("Raadi macmacaan...", "Search sweets...")}
         placeholderTextColor="#888"
         value={search}
         onChangeText={setSearch}
@@ -1627,7 +1627,7 @@ export default function App() {
           <Text style={styles.label}>{tr("Magaca alaabta", "Product Name")}</Text>
           <TextInput
             style={styles.input}
-            placeholder=tr("Magaca macmacaanka", "Sweet Name")
+            placeholder={tr("Magaca macmacaanka", "Sweet Name")}
             value={productName}
             onChangeText={setProductName}
           />
@@ -1635,7 +1635,7 @@ export default function App() {
           <Text style={styles.label}>{tr("Sharaxaadda", "Description")}</Text>
           <TextInput
             style={styles.input}
-            placeholder=tr("Sharax alaabta", "Describe the product")
+            placeholder={tr("Sharax alaabta", "Describe the product")}
             value={productDescription}
             onChangeText={setProductDescription}
           />
@@ -1727,7 +1727,7 @@ export default function App() {
         {authMode === 'signup' && (
           <TextInput
             style={styles.input}
-            placeholder=tr("Magacaaga", "Your Name")
+            placeholder={tr("Magacaaga", "Your Name")}
             value={fullName}
             onChangeText={setFullName}
           />
@@ -1735,7 +1735,7 @@ export default function App() {
 
         <TextInput
           style={styles.input}
-          placeholder=tr("Email-kaaga", "Your Email")
+          placeholder={tr("Email-kaaga", "Your Email")}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
