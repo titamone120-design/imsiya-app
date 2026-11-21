@@ -124,6 +124,8 @@ export default function App() {
     }
 
     setLocalDataReadyForUser(null);
+    setCart([]);
+    setFavoriteIds([]);
     AsyncStorage.multiGet([`imsiya:cart:${userId}`, `imsiya:favorites:${userId}`])
       .then(([cartEntry, favoritesEntry]) => {
         if (!active) return;
