@@ -56,6 +56,17 @@ const categories = [
 const money = (amount: number) =>
   `KSh ${Number(amount || 0).toLocaleString('en-KE')}`;
 
+const orderStatusLabel = (status: unknown, paymentStatus: unknown) => {
+  const payment = String(paymentStatus || '').toLowerCase();
+  const state = String(status || '').toLowerCase();
+  if (payment !== 'paid') return 'Lacag-bixinta lama xaqiijin';
+  if (state === 'processing' || state === 'pending') return 'Dalabka waa la helay — diyaarin';
+  if (state === 'shipped' || state === 'in_transit' || state === 'in transit') return 'Dalabka waa la soo diray';
+  if (state === 'delivered' || state === 'completed') return 'Dalabka waa la gaarsiiyey';
+  if (state === 'cancelled' || state === 'canceled') return 'Dalabka waa la joojiyey';
+  return state ? `Xaaladda dalabka: ${state}` : 'Xaalad lama hayo';
+};
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
 
@@ -362,7 +373,7 @@ export default function App() {
         if (!data?.success) throw new Error('PayPal lacag-bixinta lama xaqiijin.');
         Alert.alert('IMSIYA', 'Lacag-bixinta PayPal waa la xaqiijiyey. Dalabkaagu waa la diyaarinayaa.');
         setCart([]);
-        await loadProducts();
+        await Promise.all([loadProducts(), loadMyOrders()]);
       } catch (e: any) {
         Alert.alert('IMSIYA', e.message || 'Lacag-bixinta PayPal lama xaqiijin karin. Ha ku celin bixinta ilaa xaaladda la hubiyo.');
       }
@@ -985,7 +996,8 @@ export default function App() {
       {ordersLoading ? <ActivityIndicator size="large" color="#5B2A86" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab kuma jiro akoonkaaga.</Text> : myOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
-          <Text style={styles.shopStatusText}>Xaalad: {order.status || '—'} · Bixin: {order.payment_status || '—'}</Text>
+          <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
+          <Text style={styles.shopStatusText}>Bixinta: {String(order.payment_status || '—')}</Text>
           <Text style={styles.shopStatusText}>Habka: {order.payment_method || '—'}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
           <Text style={styles.shopStatusText}>Dalab: {String(order.id).slice(0, 12)}</Text>
