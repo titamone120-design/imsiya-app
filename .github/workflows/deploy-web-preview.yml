@@ -1,5 +1,4 @@
-name: Deploy IMSIYA Web Preview
-
+name: Validate IMSIYA web build
 on:
   push:
     branches:
@@ -13,22 +12,14 @@ on:
       - 'assets/**'
       - '.github/workflows/deploy-web-preview.yml'
   workflow_dispatch:
-
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
 concurrency:
-  group: imsiya-web-preview
+  group: imsiya-web-validation
   cancel-in-progress: true
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -37,18 +28,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install dependencies and sync lockfile if needed
+      - name: Install dependencies
         run: npm install
-      - name: Export IMSIYA for web
+      - name: Verify IMSIYA web export
         run: npx expo export --platform web --output-dir dist
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - name: Upload website
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-      - name: Publish preview
-        id: deployment
-        uses: actions/deploy-pages@v4
