@@ -175,7 +175,7 @@ export default function App() {
     if (url.startsWith('imsiya://subscription-success')) {
       Alert.alert(
         'IMSIYA',
-        'Lacag-bixinta waa la dhammeeyey. Waxaan hubinaynaa xaaladda dukaanka.'
+        'PayPal wuxuu soo celiyey oggolaanshaha. Xaqiijinta rasmiga ah waxaa samaynaya PayPal webhook; dukaanka wuxuu furmayaa marka lacagta $20 la xaqiijiyo.'
       );
       await loadMyShop();
       return;
@@ -497,23 +497,16 @@ export default function App() {
 
     try {
       const { data, error } = await supabase.functions.invoke(
-        'create-checkout-session',
-        {
-          body: {
-            shop_id: myShop.id,
-            success_url: 'imsiya://subscription-success',
-            cancel_url: 'imsiya://subscription-cancel',
-          },
-        }
+        'create-paypal-subscription',
+        { body: { shop_id: myShop.id } }
       );
 
       if (error) throw error;
-
-      if (!data?.checkout_url) {
-        throw new Error('Stripe ma soo celin link-ga lacag-bixinta.');
+      if (!data?.approval_url) {
+        throw new Error('PayPal ma soo celin link-ga subscription-ka.');
       }
 
-      await Linking.openURL(data.checkout_url);
+      await Linking.openURL(data.approval_url);
     } catch (e: any) {
       Alert.alert(
         'IMSIYA',
@@ -808,7 +801,7 @@ export default function App() {
             {checkoutLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Ku bixi Visa / Mastercard</Text>
+              <Text style={styles.buttonText}>Ku bixi PayPal</Text>
             )}
           </TouchableOpacity>
 
@@ -880,7 +873,7 @@ export default function App() {
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text style={styles.buttonText}>
-                      Bixi $20 bishii — Visa / Mastercard
+                      Bixi $20 bishii — PayPal
                     </Text>
                   )}
                 </TouchableOpacity>
