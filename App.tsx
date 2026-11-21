@@ -553,22 +553,21 @@ export default function App() {
       return;
     }
 
+    const existingItem = cart.find(item => item.id === product.id);
+    if (existingItem && existingItem.quantity >= product.stock) {
+      Alert.alert('IMSIYA', 'Tirada alaabta intaas kama badnaan karto.');
+      return;
+    }
+
     setCart(current => {
       const existing = current.find(item => item.id === product.id);
-
       if (existing) {
-        if (existing.quantity >= product.stock) {
-          Alert.alert('IMSIYA', 'Tirada alaabta intaas kama badnaan karto.');
-          return current;
-        }
-
         return current.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-
       return [...current, { ...product, quantity: 1 }];
     });
 
