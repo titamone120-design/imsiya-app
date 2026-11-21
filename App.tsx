@@ -774,7 +774,7 @@ export default function App() {
       </View>
 
       {productsLoading ? (
-        <ActivityIndicator size="large" color="#8B4513" />
+        <ActivityIndicator size="large" color="#5B2A86" />
       ) : productError ? (
         <Text style={styles.errorText}>{productError}</Text>
       ) : filteredProducts.length === 0 ? (
@@ -925,7 +925,7 @@ export default function App() {
           <Text style={styles.buttonText}>Cusboonaysii</Text>
         </TouchableOpacity>
       </View>
-      {adminLoading ? <ActivityIndicator size="large" color="#8B4513" /> : pendingSellers.length === 0 ? (
+      {adminLoading ? <ActivityIndicator size="large" color="#5B2A86" /> : pendingSellers.length === 0 ? (
         <Text style={styles.emptyText}>Ma jiraan codsiyo sugaya ansixin.</Text>
       ) : pendingSellers.map((seller) => (
         <View key={seller.id} style={styles.shopStatusCard}>
@@ -984,7 +984,7 @@ export default function App() {
       <Text style={styles.sectionTitle}>Dukaankayga</Text>
 
       {shopLoading ? (
-        <ActivityIndicator size="large" color="#8B4513" />
+        <ActivityIndicator size="large" color="#5B2A86" />
       ) : (
         <>
           <Text style={styles.label}>Magaca dukaanka</Text>
@@ -1136,7 +1136,7 @@ export default function App() {
   if (!session) {
     return (
       <View style={styles.authContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFF8F0" />
+        <StatusBar barStyle="dark-content" backgroundColor="#F8F5FC" />
 
         <Text style={styles.logo}>IMSIYA 🍰</Text>
         <Text style={styles.authSubtitle}>
@@ -1203,7 +1203,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF8F0" />
+      <StatusBar barStyle="dark-content" backgroundColor="#F8F5FC" />
 
       <View style={styles.header}>
         <View>
@@ -1267,35 +1267,35 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8F0',
+    backgroundColor: '#F8F5FC',
   },
   authContainer: {
     flex: 1,
-    backgroundColor: '#FFF8F0',
+    backgroundColor: '#F8F5FC',
     justifyContent: 'center',
     padding: 24,
   },
   logo: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#8B4513',
+    color: '#5B2A86',
     textAlign: 'center',
     marginBottom: 8,
   },
   authSubtitle: {
     textAlign: 'center',
-    color: '#76533D',
+    color: '#766184',
     marginBottom: 30,
     fontSize: 15,
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E6D5C5',
+    borderColor: '#E5D8F0',
     borderRadius: 12,
     padding: 14,
     marginBottom: 14,
-    color: '#30251F',
+    color: '#30243A',
     fontSize: 15,
   },
   multilineInput: {
@@ -1303,9 +1303,9 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primaryButton: {
-    backgroundColor: '#8B4513',
+    backgroundColor: '#F28C28',
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 12,
@@ -1323,7 +1323,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   authSwitchText: {
-    color: '#8B4513',
+    color: '#5B2A86',
     fontWeight: '600',
   },
   header: {
@@ -1331,7 +1331,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEDFD2',
+    borderBottomColor: '#E2D4EF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1339,14 +1339,14 @@ const styles = StyleSheet.create({
   headerLogo: {
     fontSize: 23,
     fontWeight: 'bold',
-    color: '#8B4513',
+    color: '#5B2A86',
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#806B5C',
+    color: '#796A86',
   },
   logoutText: {
-    color: '#A13D2D',
+    color: '#D97706',
     fontWeight: 'bold',
   },
   content: {
@@ -1357,19 +1357,22 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   hero: {
-    backgroundColor: '#F3DFC9',
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 18,
+    backgroundColor: '#5B2A86',
+    borderRadius: 22,
+    padding: 22,
+    marginBottom: 20,
+    borderLeftWidth: 5,
+    borderLeftColor: '#F28C28',
+    elevation: 3,
   },
   heroTitle: {
     fontSize: 22,
-    color: '#603719',
+    color: '#492064',
     fontWeight: 'bold',
     marginBottom: 8,
   },
   heroText: {
-    color: '#684A35',
+    color: '#F4EAFB',
     fontSize: 14,
     lineHeight: 21,
   },
@@ -1378,15 +1381,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E6D5C5',
+    borderColor: '#E5D8F0',
     marginBottom: 14,
-    color: '#30251F',
+    color: '#30243A',
   },
   categoryScroll: {
     marginBottom: 18,
   },
   categoryButton: {
-    backgroundColor: '#F1E5DA',
+    backgroundColor: '#F0E7F8',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
@@ -1394,10 +1397,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categorySelected: {
-    backgroundColor: '#8B4513',
+    backgroundColor: '#5B2A86',
   },
   categoryText: {
-    color: '#69472F',
+    color: '#68447F',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -1411,13 +1414,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    color: '#603719',
+    color: '#492064',
     fontWeight: 'bold',
     fontSize: 21,
     marginBottom: 14,
   },
   refreshText: {
-    color: '#8B4513',
+    color: '#5B2A86',
     fontWeight: 'bold',
   },
   productGrid: {
@@ -1428,22 +1431,23 @@ const styles = StyleSheet.create({
   productCard: {
     width: '48%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 18,
     padding: 10,
-    marginBottom: 14,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#F0E2D5',
+    borderColor: '#E8DDF1',
+    elevation: 2,
   },
   productImage: {
     width: '100%',
     height: 115,
     borderRadius: 10,
-    backgroundColor: '#F4E8DE',
+    backgroundColor: '#F2EAF8',
   },
   imagePlaceholder: {
     height: 115,
     borderRadius: 10,
-    backgroundColor: '#F4E8DE',
+    backgroundColor: '#F2EAF8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1451,29 +1455,29 @@ const styles = StyleSheet.create({
     fontSize: 42,
   },
   productName: {
-    color: '#3E2C20',
+    color: '#30243A',
     fontWeight: 'bold',
     fontSize: 15,
     marginTop: 9,
   },
   productCategory: {
-    color: '#927A68',
+    color: '#8B7A98',
     fontSize: 12,
     marginTop: 4,
   },
   productPrice: {
-    color: '#8B4513',
+    color: '#5B2A86',
     fontWeight: 'bold',
     fontSize: 15,
     marginTop: 6,
   },
   stockText: {
-    color: '#806B5C',
+    color: '#796A86',
     fontSize: 11,
     marginTop: 4,
   },
   emptyText: {
-    color: '#806B5C',
+    color: '#796A86',
     textAlign: 'center',
     padding: 25,
   },
@@ -1483,9 +1487,11 @@ const styles = StyleSheet.create({
   },
   cartItem: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
-    marginBottom: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8DDF1',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1499,7 +1505,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   quantityButton: {
-    backgroundColor: '#F1E5DA',
+    backgroundColor: '#F0E7F8',
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -1507,12 +1513,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButtonText: {
-    color: '#603719',
+    color: '#492064',
     fontSize: 20,
     fontWeight: 'bold',
   },
   quantityText: {
-    color: '#30251F',
+    color: '#30243A',
     fontWeight: 'bold',
     paddingHorizontal: 12,
   },
@@ -1524,26 +1530,26 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#603719',
+    color: '#492064',
   },
   totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#8B4513',
+    color: '#5B2A86',
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: '#8B4513',
+    borderColor: '#5B2A86',
     padding: 13,
     borderRadius: 12,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#8B4513',
+    color: '#5B2A86',
     fontWeight: 'bold',
   },
   label: {
-    color: '#603719',
+    color: '#492064',
     fontWeight: 'bold',
     marginBottom: 7,
     marginTop: 8,
@@ -1554,21 +1560,21 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginTop: 15,
     borderWidth: 1,
-    borderColor: '#E6D5C5',
+    borderColor: '#E5D8F0',
   },
   shopStatusTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#603719',
+    color: '#492064',
     marginBottom: 8,
   },
   shopStatusText: {
-    color: '#806B5C',
+    color: '#796A86',
     marginBottom: 6,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E6D5C5',
+    backgroundColor: '#E5D8F0',
     marginVertical: 24,
   },
   categoryChoices: {
@@ -1580,8 +1586,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#EEDFD2',
-    paddingVertical: 10,
+    borderTopColor: '#E2D4EF',
+    paddingVertical: 12,
+    elevation: 8,
     justifyContent: 'space-around',
   },
   navItem: {
@@ -1592,7 +1599,7 @@ const styles = StyleSheet.create({
     fontSize: 21,
   },
   navText: {
-    color: '#69472F',
+    color: '#68447F',
     fontSize: 11,
     fontWeight: '600',
     marginTop: 3,
