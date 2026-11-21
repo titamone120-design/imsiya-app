@@ -334,8 +334,8 @@ export default function App() {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('IMSIYA', 'Password-ku waa inuu ahaadaa ugu yaraan 6 xaraf.');
+    if (password.length < 8) {
+      Alert.alert('IMSIYA', 'Password-ku waa inuu ahaadaa ugu yaraan 8 xaraf si akoonkaagu u sii ammaan badnaado.');
       return;
     }
 
