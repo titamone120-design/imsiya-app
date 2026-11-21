@@ -865,7 +865,7 @@ export default function App() {
         showsHorizontalScrollIndicator={false}
         style={styles.categoryScroll}
       >
-        {categories.map(item => (
+        {['Dhammaan', ...(categoryRows.length ? categoryRows.map(item => item.name) : categories.slice(1))].map(item => (
           <TouchableOpacity
             key={item}
             style={[
@@ -888,7 +888,7 @@ export default function App() {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Macmacaanka</Text>
-        <TouchableOpacity onPress={loadProducts}>
+        <TouchableOpacity onPress={() => { loadProducts(); loadCategories(); }}>
           <Text style={styles.refreshText}>Cusboonaysii</Text>
         </TouchableOpacity>
       </View>
