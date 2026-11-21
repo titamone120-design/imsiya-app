@@ -128,7 +128,7 @@ export default function App() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [payoutRequests, setPayoutRequests] = useState<any[]>([]);
   const [payoutAmount, setPayoutAmount] = useState('');
-  const [payoutMethod, setPayoutMethod] = useState<'mpesa' | 'paypal'>('mpesa');
+  const [payoutMethod] = useState<'paypal'>('paypal');
   const [payoutAccount, setPayoutAccount] = useState('');
   const [payoutSubmitting, setPayoutSubmitting] = useState(false);
   const [adminPayoutRequests, setAdminPayoutRequests] = useState<any[]>([]);
@@ -406,7 +406,7 @@ export default function App() {
       return;
     }
     if (!payoutAccount.trim()) {
-      Alert.alert('IMSIYA Wallet', payoutMethod === 'mpesa' ? 'Geli lambarka M-Pesa.' : 'Geli email-ka PayPal.');
+      Alert.alert('IMSIYA Wallet', 'Geli email-ka PayPal.');
       return;
     }
     setPayoutSubmitting(true);
@@ -1185,16 +1185,20 @@ export default function App() {
       ))}
       <View style={styles.shopStatusCard}>
         <Text style={styles.shopStatusTitle}>Codso lacag-la-bixin</Text>
-        <Text style={styles.shopStatusText}>Waxaad dooran kartaa M-Pesa ama PayPal. Codsiga waxaa marka hore hubinaya maamulka; lacag si toos ah looma dirayo weli.</Text>
+        <Text style={styles.shopStatusText}>Hadda PayPal oo keliya ayaa la dooran karaa. Codsiga lacag-bixinta waxaa marka hore hubinaya maamulka; lacag si toos ah looma dirayo weli.</Text>
         <Text style={styles.label}>Lacagta (KSh)</Text>
         <TextInput style={styles.input} keyboardType="decimal-pad" placeholder="Tusaale: 1000" value={payoutAmount} onChangeText={setPayoutAmount} />
         <Text style={styles.label}>Habka lacagta laguugu dirayo</Text>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity style={[styles.secondaryButton, { flex: 1, backgroundColor: payoutMethod === 'mpesa' ? '#F7E8D8' : '#FFFFFF' }]} onPress={() => setPayoutMethod('mpesa')}><Text style={styles.secondaryButtonText}>M-Pesa</Text></TouchableOpacity>
-          <TouchableOpacity style={[styles.secondaryButton, { flex: 1, backgroundColor: payoutMethod === 'paypal' ? '#F7E8D8' : '#FFFFFF' }]} onPress={() => setPayoutMethod('paypal')}><Text style={styles.secondaryButtonText}>PayPal</Text></TouchableOpacity>
+        <View style={[styles.shopStatusCard, { marginTop: 0, marginBottom: 10 }]}>
+          <Text style={styles.shopStatusTitle}>PayPal</Text>
+          <Text style={styles.shopStatusText}>Ku qor email-ka PayPal ee aad rabto in lacagta laguugu diro.</Text>
         </View>
-        <Text style={styles.label}>{payoutMethod === 'mpesa' ? 'Lambarka M-Pesa' : 'Email-ka PayPal'}</Text>
-        <TextInput style={styles.input} autoCapitalize="none" keyboardType={payoutMethod === 'mpesa' ? 'phone-pad' : 'email-address'} placeholder={payoutMethod === 'mpesa' ? 'Tusaale: 07XXXXXXXX' : 'name@example.com'} value={payoutAccount} onChangeText={setPayoutAccount} />
+        <Text style={styles.label}>Email-ka PayPal</Text>
+        <TextInput style={styles.input} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" value={payoutAccount} onChangeText={setPayoutAccount} />
+        <View style={[styles.shopStatusCard, { borderColor: '#EBDDBE', marginTop: 4 }]}>
+          <Text style={styles.shopStatusTitle}>M-Pesa — Coming Soon</Text>
+          <Text style={styles.shopStatusText}>Adeegga M-Pesa hadda waa la hakiyey. Waxaa la hawlgelin doonaa marka IMSIYA hesho oo ay diyaariso M-Pesa API iyo shortcode.</Text>
+        </View>
         <TouchableOpacity style={[styles.primaryButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
           {payoutSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Gudbi codsiga lacag-bixinta</Text>}
         </TouchableOpacity>
