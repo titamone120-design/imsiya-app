@@ -126,6 +126,12 @@ export default function App() {
   const [sellerWallet, setSellerWallet] = useState<any | null>(null);
   const [sellerWalletTransactions, setSellerWalletTransactions] = useState<any[]>([]);
   const [walletLoading, setWalletLoading] = useState(false);
+  const [payoutRequests, setPayoutRequests] = useState<any[]>([]);
+  const [payoutAmount, setPayoutAmount] = useState('');
+  const [payoutMethod, setPayoutMethod] = useState<'mpesa' | 'paypal'>('mpesa');
+  const [payoutAccount, setPayoutAccount] = useState('');
+  const [payoutSubmitting, setPayoutSubmitting] = useState(false);
+  const [adminPayoutRequests, setAdminPayoutRequests] = useState<any[]>([]);
 
   const [categoryRows, setCategoryRows] = useState<Category[]>([]);
 
@@ -235,20 +241,23 @@ export default function App() {
     if (!isAdmin) return;
     setAdminLoading(true);
     try {
-      const [sellersResult, ordersResult, subscriptionsResult, walletResult] = await Promise.all([
+      const [sellersResult, ordersResult, subscriptionsResult, walletResult, payoutsResult] = await Promise.all([
         supabase.from('seller_profiles').select('id, shop_name, description, approved, created_at').eq('approved', false).order('created_at', { ascending: false }).limit(50),
         supabase.from('orders').select('id, customer_id, total_amount, currency, usd_total_amount, status, payment_status, payment_method, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('shop_subscriptions').select('id, shop_id, amount, currency, status, started_at, expires_at, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('wallet_transactions').select('id, seller_id, amount, transaction_type, description, order_id, created_at').order('created_at', { ascending: false }).limit(50),
+        supabase.from('payout_requests').select('id, seller_id, amount, status, payout_method, payout_account, created_at, processed_at, admin_note').order('created_at', { ascending: false }).limit(100),
       ]);
       if (sellersResult.error) throw sellersResult.error;
       if (ordersResult.error) throw ordersResult.error;
       if (subscriptionsResult.error) throw subscriptionsResult.error;
       if (walletResult.error) throw walletResult.error;
+      if (payoutsResult.error) throw payoutsResult.error;
       setPendingSellers(sellersResult.data || []);
       setAdminOrders(ordersResult.data || []);
       setAdminSubscriptions(subscriptionsResult.data || []);
       setAdminWallet(walletResult.data || []);
+      setAdminPayoutRequests(payoutsResult.data || []);
     } catch (e: any) {
       Alert.alert('IMSIYA Admin', e.message || 'Codsiyada lama soo qaadi karin.');
     } finally {
@@ -372,18 +381,63 @@ export default function App() {
     if (!session?.user?.id) return;
     setWalletLoading(true);
     try {
-      const [walletResult, transactionsResult] = await Promise.all([
+      const [walletResult, transactionsResult, payoutsResult] = await Promise.all([
         supabase.from('seller_wallets').select('id, seller_id, balance, updated_at').eq('seller_id', session.user.id).maybeSingle(),
         supabase.from('wallet_transactions').select('id, amount, transaction_type, description, order_id, created_at').eq('seller_id', session.user.id).order('created_at', { ascending: false }).limit(50),
+        supabase.from('payout_requests').select('id, amount, status, payout_method, created_at, processed_at, admin_note').eq('seller_id', session.user.id).order('created_at', { ascending: false }).limit(30),
       ]);
       if (walletResult.error) throw walletResult.error;
       if (transactionsResult.error) throw transactionsResult.error;
+      if (payoutsResult.error) throw payoutsResult.error;
       setSellerWallet(walletResult.data || { balance: 0 });
       setSellerWalletTransactions(transactionsResult.data || []);
+      setPayoutRequests(payoutsResult.data || []);
     } catch (e: any) {
       Alert.alert('IMSIYA Wallet', e.message || 'Wallet-ka lama soo qaadi karin.');
     } finally {
       setWalletLoading(false);
+    }
+  };
+
+  const requestSellerPayout = async () => {
+    const amount = Number(payoutAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      Alert.alert('IMSIYA Wallet', 'Geli lacag sax ah.');
+      return;
+    }
+    if (!payoutAccount.trim()) {
+      Alert.alert('IMSIYA Wallet', payoutMethod === 'mpesa' ? 'Geli lambarka M-Pesa.' : 'Geli email-ka PayPal.');
+      return;
+    }
+    setPayoutSubmitting(true);
+    try {
+      const { data, error } = await supabase.rpc('request_seller_payout', {
+        p_amount: amount,
+        p_method: payoutMethod,
+        p_account: payoutAccount.trim(),
+      });
+      if (error) throw error;
+      setPayoutAmount('');
+      await loadSellerWallet();
+      Alert.alert('IMSIYA Wallet', 'Codsiga lacag-bixinta waa la gudbiyey. Maamulka ayaa hubinaya oo gacanta ku bixinaya.');
+    } catch (e: any) {
+      Alert.alert('IMSIYA Wallet', e.message || 'Codsiga lacag-bixinta lama gudbin karin.');
+    } finally {
+      setPayoutSubmitting(false);
+    }
+  };
+
+  const updatePayoutRequestStatus = async (requestId: string, nextStatus: 'paid' | 'rejected') => {
+    if (!isAdmin) return;
+    try {
+      const { error } = await supabase.from('payout_requests')
+        .update({ status: nextStatus, processed_at: new Date().toISOString() })
+        .eq('id', requestId);
+      if (error) throw error;
+      await loadAdminData();
+      Alert.alert('IMSIYA Admin', nextStatus === 'paid' ? 'Codsiga waxaa loo calaamadeeyey in lacagta la diray.' : 'Codsiga waa la diiday.');
+    } catch (e: any) {
+      Alert.alert('IMSIYA Admin', e.message || 'Xaaladda codsiga lama beddeli karin.');
     }
   };
 
@@ -1129,9 +1183,29 @@ export default function App() {
         </View>
       ))}
       <View style={styles.shopStatusCard}>
-        <Text style={styles.shopStatusTitle}>Lacag-la-bixinta</Text>
-        <Text style={styles.shopStatusText}>Codsiga lacag-la-bixinta weli lama hawlgelin. Waxaan marka hore xaqiijinaynaa habka lacagta loogu diri doono iibiyaha si aan lacagtaada khatar u gelin.</Text>
+        <Text style={styles.shopStatusTitle}>Codso lacag-la-bixin</Text>
+        <Text style={styles.shopStatusText}>Waxaad dooran kartaa M-Pesa ama PayPal. Codsiga waxaa marka hore hubinaya maamulka; lacag si toos ah looma dirayo weli.</Text>
+        <Text style={styles.label}>Lacagta (KSh)</Text>
+        <TextInput style={styles.input} keyboardType="decimal-pad" placeholder="Tusaale: 1000" value={payoutAmount} onChangeText={setPayoutAmount} />
+        <Text style={styles.label}>Habka lacagta laguugu dirayo</Text>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity style={[styles.secondaryButton, { flex: 1, backgroundColor: payoutMethod === 'mpesa' ? '#F7E8D8' : '#FFFFFF' }]} onPress={() => setPayoutMethod('mpesa')}><Text style={styles.secondaryButtonText}>M-Pesa</Text></TouchableOpacity>
+          <TouchableOpacity style={[styles.secondaryButton, { flex: 1, backgroundColor: payoutMethod === 'paypal' ? '#F7E8D8' : '#FFFFFF' }]} onPress={() => setPayoutMethod('paypal')}><Text style={styles.secondaryButtonText}>PayPal</Text></TouchableOpacity>
+        </View>
+        <Text style={styles.label}>{payoutMethod === 'mpesa' ? 'Lambarka M-Pesa' : 'Email-ka PayPal'}</Text>
+        <TextInput style={styles.input} autoCapitalize="none" keyboardType={payoutMethod === 'mpesa' ? 'phone-pad' : 'email-address'} placeholder={payoutMethod === 'mpesa' ? 'Tusaale: 07XXXXXXXX' : 'name@example.com'} value={payoutAccount} onChangeText={setPayoutAccount} />
+        <TouchableOpacity style={[styles.primaryButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
+          {payoutSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Gudbi codsiga lacag-bixinta</Text>}
+        </TouchableOpacity>
       </View>
+      <Text style={styles.sectionTitle}>Codsiyadayda lacag-bixinta</Text>
+      {payoutRequests.length === 0 ? <Text style={styles.emptyText}>Weli codsi lacag-bixin ma jiro.</Text> : payoutRequests.map(req => (
+        <View key={req.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · {req.payout_method === 'mpesa' ? 'M-Pesa' : 'PayPal'}</Text>
+          <Text style={styles.shopStatusText}>Xaalad: {req.status === 'paid' ? 'La bixiyey' : req.status === 'rejected' ? 'La diiday' : req.status === 'processing' ? 'La shaqaynayo' : 'Sugaya maamulka'}</Text>
+          <Text style={styles.shopStatusText}>{req.created_at ? new Date(req.created_at).toLocaleString() : '—'}</Text>
+        </View>
+      ))}
     </View>
   );
 
@@ -1379,6 +1453,20 @@ export default function App() {
           <Text style={styles.shopStatusText}>Shop ID: {sub.shop_id}</Text>
           <Text style={styles.shopStatusText}>Bilow: {sub.started_at ? new Date(sub.started_at).toLocaleDateString() : '—'}</Text>
           <Text style={styles.shopStatusText}>Dhamaad: {sub.expires_at ? new Date(sub.expires_at).toLocaleDateString() : '—'}</Text>
+        </View>
+      ))}
+
+      <Text style={styles.sectionTitle}>Codsiyada lacag-bixinta iibiyeyaasha</Text>
+      {adminPayoutRequests.length === 0 ? <Text style={styles.emptyText}>Weli codsi lacag-bixin ma jiro.</Text> : adminPayoutRequests.map(req => (
+        <View key={req.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · {req.payout_method === 'mpesa' ? 'M-Pesa' : 'PayPal'}</Text>
+          <Text style={styles.shopStatusText}>Seller ID: {req.seller_id}</Text>
+          <Text style={styles.shopStatusText}>Akoonka lacagta: {req.payout_account || '—'}</Text>
+          <Text style={styles.shopStatusText}>Xaalad: {req.status}</Text>
+          {req.status === 'pending' || req.status === 'processing' ? <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'paid')}><Text style={styles.secondaryButtonText}>Calaamadee: la bixiyey</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'rejected')}><Text style={styles.secondaryButtonText}>Diid codsiga</Text></TouchableOpacity>
+          </View> : null}
         </View>
       ))}
 
