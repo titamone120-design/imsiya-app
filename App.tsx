@@ -71,7 +71,9 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin'>('home');
-  const isAdmin = ['admin', 'super_admin'].includes(String(session?.user?.app_metadata?.role || ''));
+  const [profileRole, setProfileRole] = useState('');
+  const [planSetupLoading, setPlanSetupLoading] = useState(false);
+  const isAdmin = ['admin', 'super_admin'].includes(profileRole);
   const [pendingSellers, setPendingSellers] = useState<any[]>([]);
   const [adminOrders, setAdminOrders] = useState<any[]>([]);
   const [adminSubscriptions, setAdminSubscriptions] = useState<any[]>([]);
@@ -308,13 +310,30 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (session) {
-      loadMyShop();
-      if (['admin', 'super_admin'].includes(String(session.user.app_metadata?.role || ''))) loadAdminData();
-    } else {
+    if (!session?.user?.id) {
       setMyShop(null);
+      setProfileRole('');
+      return;
     }
+    loadMyShop();
+    let active = true;
+    supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          console.log('Profile role lookup failed:', error.message);
+          setProfileRole('');
+          return;
+        }
+        setProfileRole(String(data?.role || ''));
+      });
+    return () => { active = false; };
   }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (isAdmin) loadAdminData();
+    else if (screen === 'admin') setScreen('home');
+  }, [isAdmin]);
 
   const signInOrSignUp = async () => {
     const cleanEmail = email.trim().toLowerCase();
@@ -525,6 +544,28 @@ export default function App() {
       Alert.alert('IMSIYA', e.message || 'Dukaanka lama kaydin karin.');
     } finally {
       setShopLoading(false);
+    }
+  };
+
+  const setupPayPalPlan = async () => {
+    if (profileRole !== 'super_admin') {
+      Alert.alert('IMSIYA Admin', 'Kaliya Super Admin ayaa diyaarin kara PayPal plan-ka.');
+      return;
+    }
+    setPlanSetupLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-paypal-subscription', {
+        body: { action: 'setup_plan_only' },
+      });
+      if (error) throw error;
+      if (!data?.success || data?.status !== 'ACTIVE') {
+        throw new Error(data?.error || 'PayPal LIVE plan-ka lama xaqiijin.');
+      }
+      Alert.alert('IMSIYA Admin', 'PayPal LIVE plan-ka $20 bishii waa la diyaariyey lana xaqiijiyey. Wax subscription ama lacag-bixin ah lama samayn.');
+    } catch (e: any) {
+      Alert.alert('IMSIYA Admin', e.message || 'PayPal plan setup wuu fashilmay.');
+    } finally {
+      setPlanSetupLoading(false);
     }
   };
 
@@ -868,6 +909,15 @@ export default function App() {
         <Text style={styles.heroTitle}>Maamulka IMSIYA</Text>
         <Text style={styles.heroText}>Super Admin Dashboard · {session?.user?.email}</Text>
       </View>
+      {profileRole === 'super_admin' && (
+        <View style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>PayPal LIVE — $20 bishii</Text>
+          <Text style={styles.shopStatusText}>Diyaari oo xaqiiji product-ka iyo billing plan-ka. Tani ma bilaabayso subscription, mana qaaddo lacag.</Text>
+          <TouchableOpacity style={[styles.primaryButton, planSetupLoading && styles.disabledButton]} onPress={setupPayPalPlan} disabled={planSetupLoading}>
+            {planSetupLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Diyaari PayPal LIVE Plan</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
       <View style={styles.shopStatusCard}>
         <Text style={styles.shopStatusTitle}>Codsiyada iibiyeyaasha</Text>
         <Text style={styles.shopStatusText}>Sugaya ansixinta: {pendingSellers.length}</Text>
