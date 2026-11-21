@@ -1230,8 +1230,7 @@ export default function App() {
         <Text style={styles.walletFieldLabel}>{tr("Email-ka PayPal", "PayPal email")}</Text>
         <TextInput style={[styles.input, styles.walletInput]} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" value={payoutAccount} onChangeText={setPayoutAccount} />
         <View style={styles.walletComingSoon}>
-          <Text style={styles.walletComingTitle}>M-Pesa  ·  Coming Soon</Text>
-          <Text style={styles.walletMuted}>Waxaan hawlgelin doonnaa marka API-ga iyo shortcode-ku diyaar noqdaan.</Text>
+          <Text style={styles.walletComingTitle}>Coming Soon</Text>
         </View>
         <TouchableOpacity style={[styles.walletSubmitButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
           {payoutSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.walletSubmitText}>{tr("Gudbi codsiga", "Submit request")}</Text>}
