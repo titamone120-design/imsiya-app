@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -69,6 +70,7 @@ export default function App() {
   const [productError, setProductError] = useState('');
 
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [localDataReadyForUser, setLocalDataReadyForUser] = useState<string | null>(null);
 
   const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'product'>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -104,6 +106,54 @@ export default function App() {
   const [addingProduct, setAddingProduct] = useState(false);
 
   const [categoryRows, setCategoryRows] = useState<Category[]>([]);
+
+  // Keep each signed-in customer's cart and favorites on this device.
+  // User-scoped keys prevent data from one account appearing in another account.
+  useEffect(() => {
+    let active = true;
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      setCart([]);
+      setFavoriteIds([]);
+      setLocalDataReadyForUser(null);
+      return () => { active = false; };
+    }
+
+    setLocalDataReadyForUser(null);
+    AsyncStorage.multiGet([`imsiya:cart:${userId}`, `imsiya:favorites:${userId}`])
+      .then(([cartEntry, favoritesEntry]) => {
+        if (!active) return;
+        try {
+          const savedCart = cartEntry?.[1] ? JSON.parse(cartEntry[1]) : [];
+          setCart(Array.isArray(savedCart) ? savedCart : []);
+        } catch {
+          setCart([]);
+        }
+        try {
+          const savedFavorites = favoritesEntry?.[1] ? JSON.parse(favoritesEntry[1]) : [];
+          setFavoriteIds(Array.isArray(savedFavorites) ? savedFavorites.filter((id: unknown) => typeof id === 'string') : []);
+        } catch {
+          setFavoriteIds([]);
+        }
+        setLocalDataReadyForUser(userId);
+      })
+      .catch(error => {
+        console.log('Local cart/favorites restore failed:', error?.message || error);
+        if (active) setLocalDataReadyForUser(userId);
+      });
+
+    return () => { active = false; };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId || localDataReadyForUser !== userId) return;
+    AsyncStorage.multiSet([
+      [`imsiya:cart:${userId}`, JSON.stringify(cart)],
+      [`imsiya:favorites:${userId}`, JSON.stringify(favoriteIds)],
+    ]).catch(error => console.log('Local cart/favorites save failed:', error?.message || error));
+  }, [cart, favoriteIds, session?.user?.id, localDataReadyForUser]);
 
   const loadCategories = async () => {
     const { data, error } = await supabase
