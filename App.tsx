@@ -70,7 +70,10 @@ export default function App() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [screen, setScreen] = useState<'home' | 'cart' | 'shop'>('home');
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin'>('home');
+  const isAdmin = ['admin', 'super_admin'].includes(String(session?.user?.app_metadata?.role || ''));
+  const [pendingSellers, setPendingSellers] = useState<any[]>([]);
+  const [adminLoading, setAdminLoading] = useState(false);
 
   const [category, setCategory] = useState('Dhammaan');
   const [search, setSearch] = useState('');
@@ -136,6 +139,38 @@ export default function App() {
       setProductError(e.message || 'Alaabta lama soo qaadi karin.');
     } finally {
       setProductsLoading(false);
+    }
+  };
+
+  const loadAdminData = async () => {
+    if (!isAdmin) return;
+    setAdminLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('seller_profiles')
+        .select('id, shop_name, description, approved, created_at')
+        .eq('approved', false)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setPendingSellers(data || []);
+    } catch (e: any) {
+      Alert.alert('IMSIYA Admin', e.message || 'Codsiyada lama soo qaadi karin.');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const approveSeller = async (sellerId: string) => {
+    try {
+      const { error } = await supabase
+        .from('seller_profiles')
+        .update({ approved: true })
+        .eq('id', sellerId);
+      if (error) throw error;
+      Alert.alert('IMSIYA Admin', 'Iibiyaha waa la ansixiyey. Dukaanku wuxuu furmayaa marka subscription-ka $20 la xaqiijiyo.');
+      await loadAdminData();
+    } catch (e: any) {
+      Alert.alert('IMSIYA Admin', e.message || 'Ansixinta way fashilantay.');
     }
   };
 
@@ -265,6 +300,7 @@ export default function App() {
   useEffect(() => {
     if (session) {
       loadMyShop();
+      if (['admin', 'super_admin'].includes(String(session.user.app_metadata?.role || ''))) loadAdminData();
     } else {
       setMyShop(null);
     }
@@ -816,6 +852,35 @@ export default function App() {
     </View>
   );
 
+  const renderAdmin = () => (
+    <View>
+      <View style={styles.hero}>
+        <Text style={styles.heroTitle}>Maamulka IMSIYA</Text>
+        <Text style={styles.heroText}>Super Admin Dashboard · {session?.user?.email}</Text>
+      </View>
+      <View style={styles.shopStatusCard}>
+        <Text style={styles.shopStatusTitle}>Codsiyada iibiyeyaasha</Text>
+        <Text style={styles.shopStatusText}>Sugaya ansixinta: {pendingSellers.length}</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={loadAdminData}>
+          <Text style={styles.buttonText}>Cusboonaysii</Text>
+        </TouchableOpacity>
+      </View>
+      {adminLoading ? <ActivityIndicator size="large" color="#8B4513" /> : pendingSellers.length === 0 ? (
+        <Text style={styles.emptyText}>Ma jiraan codsiyo sugaya ansixin.</Text>
+      ) : pendingSellers.map((seller) => (
+        <View key={seller.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{seller.shop_name}</Text>
+          <Text style={styles.shopStatusText}>{seller.description || 'Sharaxaad ma jirto'}</Text>
+          <Text style={styles.shopStatusText}>Seller ID: {seller.id}</Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={() => approveSeller(seller.id)}>
+            <Text style={styles.buttonText}>Ansixi iibiyahan</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+      <Text style={styles.emptyText}>Xusuusin: ansixinta iibiyaha ma dhaqaajiso dukaanka ilaa lacagta subscription-ka $20 la xaqiijiyo.</Text>
+    </View>
+  );
+
   const renderShop = () => (
     <View>
       <Text style={styles.sectionTitle}>Dukaankayga</Text>
@@ -1061,6 +1126,7 @@ export default function App() {
         {screen === 'home' && renderHome()}
         {screen === 'cart' && renderCart()}
         {screen === 'shop' && renderShop()}
+        {screen === 'admin' && isAdmin && renderAdmin()}
       </ScrollView>
 
       <View style={styles.bottomNav}>
@@ -1089,6 +1155,12 @@ export default function App() {
           <Text style={styles.navIcon}>🏪</Text>
           <Text style={styles.navText}>Dukaankayga</Text>
         </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity style={styles.navItem} onPress={() => { setScreen('admin'); loadAdminData(); }}>
+            <Text style={styles.navIcon}>🛡️</Text>
+            <Text style={styles.navText}>Admin</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
