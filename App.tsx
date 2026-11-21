@@ -70,7 +70,8 @@ export default function App() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders'>('home');
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'product'>('home');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -711,6 +712,9 @@ export default function App() {
       <TouchableOpacity style={styles.favoriteToggle} onPress={() => toggleFavorite(product.id)}><Text style={styles.favoriteToggleText}>{favoriteIds.includes(product.id) ? '♥' : '♡'}</Text></TouchableOpacity>
       <Text style={styles.productName}>{product.name}</Text>
       <Text style={styles.productCategory}>{product.category}</Text>
+      <TouchableOpacity onPress={() => { setSelectedProduct(product); setScreen('product'); }} style={styles.secondaryButton}>
+        <Text style={styles.secondaryButtonText}>Faahfaahin</Text>
+      </TouchableOpacity>
       <Text style={styles.productPrice}>{money(product.price)}</Text>
       <Text style={styles.stockText}>
         {product.stock > 0 ? `Kaydka: ${product.stock}` : 'Waa dhammaatay'}
@@ -909,6 +913,24 @@ export default function App() {
         <Text style={styles.sectionTitle}>Alaabta aan jeclahay</Text>
         <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
         {favoriteProducts.length === 0 ? <Text style={styles.emptyText}>Weli ma aadan dooran alaab aad jeceshahay.</Text> : <View style={styles.productGrid}>{favoriteProducts.map(renderProduct)}</View>}
+      </View>
+    );
+  };
+
+  const renderProductDetails = () => {
+    if (!selectedProduct) return <View><Text style={styles.emptyText}>Alaabta lama helin.</Text><TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>← Ku noqo Hoyga</Text></TouchableOpacity></View>;
+    return (
+      <View>
+        <TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>← Ku noqo alaabta</Text></TouchableOpacity>
+        {selectedProduct.image_url ? <Image source={{ uri: selectedProduct.image_url }} style={{ width: '100%', height: 240, borderRadius: 18, marginVertical: 14 }} resizeMode="cover" /> : <View style={[styles.imagePlaceholder, { height: 220, marginVertical: 14 }]}><Text style={styles.placeholderText}>🍬</Text></View>}
+        <Text style={styles.sectionTitle}>{selectedProduct.name}</Text>
+        <Text style={styles.productCategory}>{selectedProduct.category}</Text>
+        <Text style={[styles.productPrice, { fontSize: 22, marginVertical: 10 }]}>{money(selectedProduct.price)}</Text>
+        <Text style={styles.shopStatusText}>{selectedProduct.description?.trim() || 'Sharaxaad dheeraad ah weli lama gelin.'}</Text>
+        <Text style={styles.stockText}>{selectedProduct.stock > 0 ? `Kaydka: ${selectedProduct.stock}` : 'Waa dhammaatay'}</Text>
+        <TouchableOpacity style={[styles.primaryButton, selectedProduct.stock <= 0 && styles.disabledButton]} disabled={selectedProduct.stock <= 0} onPress={() => addToCart(selectedProduct)}>
+          <Text style={styles.buttonText}>Ku dar cart-ka</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -1309,6 +1331,7 @@ export default function App() {
         {screen === 'profile' && renderProfile()}
         {screen === 'favorites' && renderFavorites()}
         {screen === 'orders' && renderOrderHistory()}
+        {screen === 'product' && renderProductDetails()}
       </ScrollView>
 
       <View style={styles.bottomNav}>
