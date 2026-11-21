@@ -14,6 +14,12 @@
     "android": {
       "package": "com.imsiya.app"
     },
+    "web": {
+      "bundler": "metro"
+    },
+    "experiments": {
+      "baseUrl": "/imsiya-app"
+    },
     "extra": {
       "eas": {
         "projectId": "4e37f17a-d1da-4019-9f64-37bf054261d9"
