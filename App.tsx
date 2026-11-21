@@ -1238,6 +1238,9 @@ export default function App() {
               <Text style={styles.shopStatusText}>
                 Lacagta dukaanka: $20 USD bishii
               </Text>
+              <TouchableOpacity style={styles.secondaryButton} onPress={loadMyShop} disabled={shopLoading}>
+                <Text style={styles.secondaryButtonText}>Hubi xaaladda dukaanka</Text>
+              </TouchableOpacity>
 
               {!myShop.active && (
                 <TouchableOpacity
