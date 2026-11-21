@@ -1534,10 +1534,6 @@ export default function App() {
   const renderShop = () => (
     <View>
       <Text style={styles.sectionTitle}>{tr("Dukaankayga", "My Shop")}</Text>
-      <TouchableOpacity style={styles.secondaryButton} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}>
-        <Text style={styles.secondaryButtonText}>💰 Fur Wallet-kayga</Text>
-      </TouchableOpacity>
-
       {shopLoading ? (
         <ActivityIndicator size="large" color="#4A286B" />
       ) : (
