@@ -104,6 +104,9 @@ export default function App() {
   const [productImage, setProductImage] = useState('');
   const [productCategory, setProductCategory] = useState('Buskut');
   const [addingProduct, setAddingProduct] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
+  const [sellerProductsLoading, setSellerProductsLoading] = useState(false);
 
   const [categoryRows, setCategoryRows] = useState<Category[]>([]);
 
@@ -240,7 +243,60 @@ export default function App() {
     }
   };
 
-  const loadMyShop = async () => {
+  const loadMySellerProducts = async () => {
+    if (!session?.user?.id) { setSellerProducts([]); return; }
+    setSellerProductsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price, image_url, stock, description, categories(name)')
+        .eq('seller_id', session.user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setSellerProducts((data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price || 0),
+        image_url: item.image_url,
+        stock: Number(item.stock || 0),
+        description: item.description || '',
+        category: Array.isArray(item.categories) ? item.categories[0]?.name || 'Macmacaan kale' : item.categories?.name || 'Macmacaan kale',
+      })));
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Alaabta dukaanka lama soo qaadi karin.');
+    } finally {
+      setSellerProductsLoading(false);
+    }
+  };
+
+  const beginEditProduct = (product: Product) => {
+    setEditingProductId(product.id);
+    setProductName(product.name);
+    setProductDescription(product.description || '');
+    setProductPrice(String(product.price));
+    setProductStock(String(product.stock));
+    setProductImage(product.image_url || '');
+    setProductCategory(product.category);
+  };
+
+  const deleteSellerProduct = (productId: string) => {
+    Alert.alert('Tirtir alaabta', 'Ma hubtaa inaad tirtirayso alaabtan?', [
+      { text: 'Maya', style: 'cancel' },
+      { text: 'Haa, tirtir', style: 'destructive', onPress: async () => {
+        try {
+          const { error } = await supabase.from('products').delete().eq('id', productId).eq('seller_id', session?.user?.id || '');
+          if (error) throw error;
+          setSellerProducts(current => current.filter(item => item.id !== productId));
+          await loadProducts();
+          Alert.alert('IMSIYA', 'Alaabta waa la tirtiray.');
+        } catch (e: any) {
+          Alert.alert('IMSIYA', e.message || 'Alaabta lama tirtiri karin.');
+        }
+      } },
+    ]);
+  };
+
+  const loadMyShop = async () =>
     if (!session?.user?.id) {
       setMyShop(null);
       return;
@@ -258,6 +314,7 @@ export default function App() {
       if (error) throw error;
 
       setMyShop(data as Shop | null);
+      await loadMySellerProducts();
 
       if (data) {
         setShopName(data.shop_name || '');
@@ -704,7 +761,7 @@ export default function App() {
     setAddingProduct(true);
 
     try {
-      const { error } = await supabase.from('products').insert({
+      const productPayload = {
         seller_id: session.user.id,
         shop_id: myShop.id,
         category_id: selectedCategory.id,
@@ -714,18 +771,21 @@ export default function App() {
         image_url: productImage.trim() || null,
         stock,
         active: true,
-      });
+      };
+      const result = editingProductId
+        ? await supabase.from('products').update(productPayload).eq('id', editingProductId).eq('seller_id', session.user.id)
+        : await supabase.from('products').insert(productPayload);
+      if (result.error) throw result.error;
 
-      if (error) throw error;
-
+      setEditingProductId(null);
       setProductName('');
       setProductDescription('');
       setProductPrice('');
       setProductStock('10');
       setProductImage('');
 
-      Alert.alert('IMSIYA', 'Alaabta waa lagu daray dukaanka.');
-      await loadProducts();
+      Alert.alert('IMSIYA', editingProductId ? 'Alaabta waa la cusboonaysiiyey.' : 'Alaabta waa lagu daray dukaanka.');
+      await Promise.all([loadProducts(), loadMySellerProducts()]);
     } catch (e: any) {
       Alert.alert('IMSIYA', e.message || 'Alaabta lama dari karin.');
     } finally {
@@ -1198,7 +1258,21 @@ export default function App() {
 
           <View style={styles.divider} />
 
-          <Text style={styles.sectionTitle}>Ku dar alaab cusub</Text>
+          <Text style={styles.sectionTitle}>Alaabtayda</Text>
+          <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerProducts}><Text style={styles.secondaryButtonText}>Cusboonaysii alaabta</Text></TouchableOpacity>
+          {sellerProductsLoading ? <ActivityIndicator color="#5B2A86" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>Weli alaab kuma jirto dukaankaaga.</Text> : sellerProducts.map(item => (
+            <View key={item.id} style={styles.shopStatusCard}>
+              <Text style={styles.shopStatusTitle}>{item.name}</Text>
+              <Text style={styles.shopStatusText}>{money(item.price)} · Kaydka: {item.stock}</Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => beginEditProduct(item)}><Text style={styles.secondaryButtonText}>Tafatir</Text></TouchableOpacity>
+                <TouchableOpacity style={[styles.secondaryButton, { flex: 1, borderColor: '#B3261E' }]} onPress={() => deleteSellerProduct(item.id)}><Text style={[styles.secondaryButtonText, { color: '#B3261E' }]}>Tirtir</Text></TouchableOpacity>
+              </View>
+            </View>
+          ))}
+
+          <Text style={styles.sectionTitle}>{editingProductId ? 'Tafatir alaabta' : 'Ku dar alaab cusub'}</Text>
+          {editingProductId && <TouchableOpacity onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>Jooji tafatirka</Text></TouchableOpacity>}
 
           <Text style={styles.label}>Magaca alaabta</Text>
           <TextInput
@@ -1277,7 +1351,7 @@ export default function App() {
             {addingProduct ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Ku dar alaabta</Text>
+              <Text style={styles.buttonText}>{editingProductId ? 'Kaydi isbeddelka' : 'Ku dar alaabta'}</Text>
             )}
           </TouchableOpacity>
         </>
