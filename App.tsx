@@ -152,7 +152,7 @@ export default function App() {
     AsyncStorage.multiSet([
       [`imsiya:cart:${userId}`, JSON.stringify(cart)],
       [`imsiya:favorites:${userId}`, JSON.stringify(favoriteIds)],
-    ]).catch(error => console.log('Local cart/favorites save failed:', error?.message || error));
+    ] as [string, string][]).catch(error => console.log('Local cart/favorites save failed:', error?.message || error));
   }, [cart, favoriteIds, session?.user?.id, localDataReadyForUser]);
 
   const loadCategories = async () => {
@@ -479,7 +479,6 @@ export default function App() {
       return;
     }
 
-    setCart([]);
     setScreen('home');
   };
 
