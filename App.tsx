@@ -933,15 +933,15 @@ export default function App() {
   const renderHome = () => (
     <>
       <View style={styles.hero}>
-        <Text style={styles.heroTitle}>Ku soo dhowow IMSIYA 🍰</Text>
+        <Text style={styles.heroTitle}>Ku soo dhowow IMSIYA</Text>
         <Text style={styles.heroText}>
-          Ka iibso macmacaanka aad jeceshahay, ama fur dukaankaaga.
+          Macmacaanka aad jeceshahay — hal meel.
         </Text>
       </View>
 
       <TextInput
         style={styles.searchInput}
-        placeholder="Raadi buskut, xalwo, keeg..."
+        placeholder="Raadi macmacaan..."
         placeholderTextColor="#888"
         value={search}
         onChangeText={setSearch}
@@ -974,14 +974,14 @@ export default function App() {
       </ScrollView>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Macmacaanka</Text>
+        <Text style={styles.sectionTitle}>Alaabaha Caanka ah</Text>
         <TouchableOpacity onPress={() => { loadProducts(); loadCategories(); }}>
           <Text style={styles.refreshText}>Cusboonaysii</Text>
         </TouchableOpacity>
       </View>
 
       {productsLoading ? (
-        <ActivityIndicator size="large" color="#5B2A86" />
+        <ActivityIndicator size="large" color="#B5121B" />
       ) : productError ? (
         <Text style={styles.errorText}>{productError}</Text>
       ) : filteredProducts.length === 0 ? (
@@ -1085,7 +1085,7 @@ export default function App() {
       <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerOrders} disabled={sellerOrdersLoading}>
         <Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text>
       </TouchableOpacity>
-      {sellerOrdersLoading ? <ActivityIndicator size="large" color="#5B2A86" /> : sellerOrders.length === 0 ? (
+      {sellerOrdersLoading ? <ActivityIndicator size="large" color="#B5121B" /> : sellerOrders.length === 0 ? (
         <Text style={styles.emptyText}>Weli dalab alaabta dukaankaaga ah ma jiro.</Text>
       ) : sellerOrders.map((item: any) => {
         const order = item.orders;
@@ -1110,7 +1110,7 @@ export default function App() {
       <Text style={styles.sectionTitle}>Dalabyadayda</Text>
       <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={loadMyOrders}><Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text></TouchableOpacity>
-      {ordersLoading ? <ActivityIndicator size="large" color="#5B2A86" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab kuma jiro akoonkaaga.</Text> : myOrders.map(order => (
+      {ordersLoading ? <ActivityIndicator size="large" color="#B5121B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab kuma jiro akoonkaaga.</Text> : myOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
@@ -1272,7 +1272,7 @@ export default function App() {
           <Text style={styles.buttonText}>Cusboonaysii</Text>
         </TouchableOpacity>
       </View>
-      {adminLoading ? <ActivityIndicator size="large" color="#5B2A86" /> : pendingSellers.length === 0 ? (
+      {adminLoading ? <ActivityIndicator size="large" color="#B5121B" /> : pendingSellers.length === 0 ? (
         <Text style={styles.emptyText}>Ma jiraan codsiyo sugaya ansixin.</Text>
       ) : pendingSellers.map((seller) => (
         <View key={seller.id} style={styles.shopStatusCard}>
@@ -1339,7 +1339,7 @@ export default function App() {
       <Text style={styles.sectionTitle}>Dukaankayga</Text>
 
       {shopLoading ? (
-        <ActivityIndicator size="large" color="#5B2A86" />
+        <ActivityIndicator size="large" color="#B5121B" />
       ) : (
         <>
           <Text style={styles.label}>Magaca dukaanka</Text>
@@ -1410,7 +1410,7 @@ export default function App() {
           </TouchableOpacity>
           <Text style={styles.sectionTitle}>Alaabtayda</Text>
           <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerProducts}><Text style={styles.secondaryButtonText}>Cusboonaysii alaabta</Text></TouchableOpacity>
-          {sellerProductsLoading ? <ActivityIndicator color="#5B2A86" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>Weli alaab kuma jirto dukaankaaga.</Text> : sellerProducts.map(item => (
+          {sellerProductsLoading ? <ActivityIndicator color="#B5121B" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>Weli alaab kuma jirto dukaankaaga.</Text> : sellerProducts.map(item => (
             <View key={item.id} style={styles.shopStatusCard}>
               <Text style={styles.shopStatusTitle}>{item.name}</Text>
               <Text style={styles.shopStatusText}>{money(item.price)} · Kaydka: {item.stock}</Text>
@@ -1517,7 +1517,7 @@ export default function App() {
   if (!session) {
     return (
       <View style={styles.authContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#F8F5FC" />
+        <StatusBar barStyle="dark-content" backgroundColor="#FFF8EC" />
 
         <Text style={styles.logo}>IMSIYA 🍰</Text>
         <Text style={styles.authSubtitle}>
@@ -1584,7 +1584,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F5FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF8EC" />
 
       <View style={styles.header}>
         <View>
@@ -1657,35 +1657,35 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F5FC',
+    backgroundColor: '#FFF8EC',
   },
   authContainer: {
     flex: 1,
-    backgroundColor: '#F8F5FC',
+    backgroundColor: '#FFF8EC',
     justifyContent: 'center',
     padding: 24,
   },
   logo: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#5B2A86',
+    color: '#B5121B',
     textAlign: 'center',
     marginBottom: 8,
   },
   authSubtitle: {
     textAlign: 'center',
-    color: '#766184',
+    color: '#80695A',
     marginBottom: 30,
     fontSize: 15,
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5D8F0',
+    borderColor: '#EBDDBE',
     borderRadius: 12,
     padding: 14,
     marginBottom: 14,
-    color: '#30243A',
+    color: '#39221B',
     fontSize: 15,
   },
   multilineInput: {
@@ -1693,7 +1693,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primaryButton: {
-    backgroundColor: '#F28C28',
+    backgroundColor: '#E5A928',
     padding: 15,
     borderRadius: 14,
     alignItems: 'center',
@@ -1713,7 +1713,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   authSwitchText: {
-    color: '#5B2A86',
+    color: '#B5121B',
     fontWeight: '600',
   },
   header: {
@@ -1721,7 +1721,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2D4EF',
+    borderBottomColor: '#EBD5A8',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1729,11 +1729,11 @@ const styles = StyleSheet.create({
   headerLogo: {
     fontSize: 23,
     fontWeight: 'bold',
-    color: '#5B2A86',
+    color: '#B5121B',
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#796A86',
+    color: '#80695A',
   },
   logoutText: {
     color: '#D97706',
@@ -1747,12 +1747,12 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   hero: {
-    backgroundColor: '#5B2A86',
+    backgroundColor: '#B5121B',
     borderRadius: 22,
     padding: 22,
     marginBottom: 20,
     borderLeftWidth: 5,
-    borderLeftColor: '#F28C28',
+    borderLeftColor: '#E5A928',
     elevation: 3,
   },
   heroTitle: {
@@ -1771,15 +1771,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E5D8F0',
+    borderColor: '#EBDDBE',
     marginBottom: 14,
-    color: '#30243A',
+    color: '#39221B',
   },
   categoryScroll: {
     marginBottom: 18,
   },
   categoryButton: {
-    backgroundColor: '#F0E7F8',
+    backgroundColor: '#FCECCB',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
@@ -1787,10 +1787,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categorySelected: {
-    backgroundColor: '#5B2A86',
+    backgroundColor: '#B5121B',
   },
   categoryText: {
-    color: '#68447F',
+    color: '#7A2924',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -1804,13 +1804,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    color: '#492064',
+    color: '#8E1018',
     fontWeight: 'bold',
     fontSize: 21,
     marginBottom: 14,
   },
   refreshText: {
-    color: '#5B2A86',
+    color: '#B5121B',
     fontWeight: 'bold',
   },
   productGrid: {
@@ -1820,8 +1820,8 @@ const styles = StyleSheet.create({
   },
   favoriteToggle: { alignSelf: 'flex-end', paddingHorizontal: 5, paddingVertical: 1 },
   favoriteToggleText: { color: '#D97706', fontSize: 22, fontWeight: 'bold' },
-  profileAction: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E8DDF1', borderRadius: 15, padding: 16, marginBottom: 10 },
-  profileActionText: { color: '#5B2A86', fontWeight: 'bold', fontSize: 15 },
+  profileAction: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0DFC0', borderRadius: 15, padding: 16, marginBottom: 10 },
+  profileActionText: { color: '#B5121B', fontWeight: 'bold', fontSize: 15 },
   productCard: {
     width: '48%',
     backgroundColor: '#FFFFFF',
@@ -1829,7 +1829,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E8DDF1',
+    borderColor: '#F0DFC0',
     elevation: 2,
   },
   productImage: {
@@ -1849,29 +1849,29 @@ const styles = StyleSheet.create({
     fontSize: 42,
   },
   productName: {
-    color: '#30243A',
+    color: '#39221B',
     fontWeight: 'bold',
     fontSize: 15,
     marginTop: 9,
   },
   productCategory: {
-    color: '#8B7A98',
+    color: '#9A806B',
     fontSize: 12,
     marginTop: 4,
   },
   productPrice: {
-    color: '#5B2A86',
+    color: '#B5121B',
     fontWeight: 'bold',
     fontSize: 15,
     marginTop: 6,
   },
   stockText: {
-    color: '#796A86',
+    color: '#80695A',
     fontSize: 11,
     marginTop: 4,
   },
   emptyText: {
-    color: '#796A86',
+    color: '#80695A',
     textAlign: 'center',
     padding: 25,
   },
@@ -1885,7 +1885,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E8DDF1',
+    borderColor: '#F0DFC0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1899,7 +1899,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   quantityButton: {
-    backgroundColor: '#F0E7F8',
+    backgroundColor: '#FCECCB',
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -1907,12 +1907,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButtonText: {
-    color: '#492064',
+    color: '#8E1018',
     fontSize: 20,
     fontWeight: 'bold',
   },
   quantityText: {
-    color: '#30243A',
+    color: '#39221B',
     fontWeight: 'bold',
     paddingHorizontal: 12,
   },
@@ -1924,26 +1924,26 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#492064',
+    color: '#8E1018',
   },
   totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#5B2A86',
+    color: '#B5121B',
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: '#5B2A86',
+    borderColor: '#B5121B',
     padding: 13,
     borderRadius: 12,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#5B2A86',
+    color: '#B5121B',
     fontWeight: 'bold',
   },
   label: {
-    color: '#492064',
+    color: '#8E1018',
     fontWeight: 'bold',
     marginBottom: 7,
     marginTop: 8,
@@ -1954,21 +1954,21 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginTop: 15,
     borderWidth: 1,
-    borderColor: '#E5D8F0',
+    borderColor: '#EBDDBE',
   },
   shopStatusTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#492064',
+    color: '#8E1018',
     marginBottom: 8,
   },
   shopStatusText: {
-    color: '#796A86',
+    color: '#80695A',
     marginBottom: 6,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5D8F0',
+    backgroundColor: '#EBDDBE',
     marginVertical: 24,
   },
   categoryChoices: {
@@ -1980,7 +1980,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E2D4EF',
+    borderTopColor: '#EBD5A8',
     paddingVertical: 12,
     elevation: 8,
     justifyContent: 'space-around',
@@ -1993,7 +1993,7 @@ const styles = StyleSheet.create({
     fontSize: 21,
   },
   navText: {
-    color: '#68447F',
+    color: '#7A2924',
     fontSize: 11,
     fontWeight: '600',
     marginTop: 3,
