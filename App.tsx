@@ -1538,182 +1538,140 @@ export default function App() {
   );
 
   const renderShop = () => (
-    <View>
-      <Text style={styles.sectionTitle}>{tr("Dukaankayga", "My Shop")}</Text>
+    <View style={styles.myShopScreen}>
+      <View style={styles.myShopHeader}>
+        <View style={styles.myShopHeaderIcon}><Text style={styles.myShopHeaderEmoji}>🏪</Text></View>
+        <View style={styles.myShopHeaderCopy}>
+          <Text style={styles.myShopEyebrow}>IMSIYA SELLER</Text>
+          <Text style={styles.myShopTitle}>{tr("Dukaankayga", "My Shop")}</Text>
+          <Text style={styles.myShopSubtitle}>{tr("Maamul dukaankaaga iyo alaabta aad iibiso.", "Manage your shop and the products you sell.")}</Text>
+        </View>
+      </View>
       {shopLoading ? (
-        <ActivityIndicator size="large" color="#4A286B" />
+        <View style={styles.myShopLoading}><ActivityIndicator size="large" color="#4A286B" /><Text style={styles.myShopHint}>{tr("Dukaanka waa la soo rarayaa...", "Loading your shop...")}</Text></View>
       ) : (
         <>
-          <Text style={styles.label}>{tr("Magaca dukaanka", "Shop Name")}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Tusaale: IMSIYA Sweets"
-            value={shopName}
-            onChangeText={setShopName}
-          />
-
-          <Text style={styles.label}>{tr("Sharaxaadda dukaanka", "Shop Description")}</Text>
-          <TextInput
-            style={[styles.input, styles.multilineInput]}
-            placeholder="Wax ka sheeg dukaankaaga..."
-            value={shopDescription}
-            onChangeText={setShopDescription}
-            multiline
-          />
-
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={createOrUpdateShop}
-            disabled={shopLoading}
-          >
-            <Text style={styles.buttonText}>
-              Kaydi xogta dukaanka
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.myShopPanel}>
+            <View style={styles.myShopSectionHeading}>
+              <Text style={styles.myShopSectionIcon}>✦</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.myShopSectionTitle}>{tr("Xogta dukaanka", "Shop Details")}</Text>
+                <Text style={styles.myShopHint}>{tr("Macluumaadka ay macaamiishu arki doonaan.", "Information customers will see.")}</Text>
+              </View>
+            </View>
+            <Text style={styles.label}>{tr("Magaca dukaanka", "Shop Name")}</Text>
+            <TextInput style={styles.input} placeholder="Tusaale: IMSIYA Sweets" value={shopName} onChangeText={setShopName} />
+            <Text style={styles.label}>{tr("Sharaxaadda dukaanka", "Shop Description")}</Text>
+            <TextInput style={[styles.input, styles.multilineInput]} placeholder={tr("Wax ka sheeg dukaankaaga...", "Tell customers about your shop...")} value={shopDescription} onChangeText={setShopDescription} multiline />
+            <TouchableOpacity style={styles.primaryButton} onPress={createOrUpdateShop} disabled={shopLoading}>
+              <Text style={styles.buttonText}>{tr("Kaydi xogta dukaanka", "Save Shop Details")}</Text>
+            </TouchableOpacity>
+          </View>
 
           {myShop && (
-            <View style={styles.shopStatusCard}>
-              <Text style={styles.shopStatusTitle}>
-                {myShop.shop_name}
-              </Text>
-              <Text style={styles.shopStatusText}>
-                Xaaladda: {myShop.active ? tr("Wuu furan yahay", "Open") : tr("Weli ma furna", "Not active yet")}
-              </Text>
-              <Text style={styles.shopStatusText}>
-                Lacagta dukaanka: $20 USD bishii
-              </Text>
-              <TouchableOpacity style={styles.secondaryButton} onPress={loadMyShop} disabled={shopLoading}>
-                <Text style={styles.secondaryButtonText}>{tr("Hubi xaaladda dukaanka", "Check Shop Status")}</Text>
+            <View style={styles.myShopStatusPanel}>
+              <View style={styles.myShopStatusTop}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.myShopEyebrow}>{tr("XAALADDA DUKAANKA", "SHOP STATUS")}</Text>
+                  <Text style={styles.myShopStatusName}>{myShop.shop_name}</Text>
+                </View>
+                <View style={[styles.myShopStatusPill, myShop.active ? styles.myShopStatusOpen : styles.myShopStatusPending]}>
+                  <Text style={[styles.myShopStatusPillText, myShop.active ? styles.myShopStatusOpenText : styles.myShopStatusPendingText]}>{myShop.active ? tr("● Furan", "● Open") : tr("● Sugaya", "● Pending")}</Text>
+                </View>
+              </View>
+              <Text style={styles.myShopHint}>{tr("Qiimaha adeegga dukaanka", "Shop subscription")}</Text>
+              <Text style={styles.myShopSubscription}>$20 <Text style={styles.myShopSubscriptionPeriod}>{tr("USD / bishii", "USD / month")}</Text></Text>
+              <TouchableOpacity style={styles.myShopOutlineButton} onPress={loadMyShop} disabled={shopLoading}>
+                <Text style={styles.myShopOutlineButtonText}>{tr("↻  Hubi xaaladda dukaanka", "↻  Check Shop Status")}</Text>
               </TouchableOpacity>
-
               {!myShop.active && (
-                <TouchableOpacity
-                  style={styles.primaryButton}
-                  onPress={payShopSubscription}
-                  disabled={paymentLoading}
-                >
-                  {paymentLoading ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={styles.buttonText}>
-                      Bixi $20 bishii — PayPal
-                    </Text>
-                  )}
+                <TouchableOpacity style={styles.primaryButton} onPress={payShopSubscription} disabled={paymentLoading}>
+                  {paymentLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{tr("Bixi $20 bishii — PayPal", "Pay $20 monthly — PayPal")}</Text>}
                 </TouchableOpacity>
               )}
             </View>
           )}
 
-          <View style={styles.divider} />
+          <View style={styles.myShopSectionBar}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.myShopSectionTitle}>{tr("Dalabyada dukaankayga", "Shop Orders")}</Text>
+              <Text style={styles.myShopHint}>{tr("La soco iibka iyo dalabyada macaamiisha.", "Track customer purchases and sales orders.")}</Text>
+            </View>
+            <Text style={styles.myShopSectionIcon}>📦</Text>
+          </View>
+          <TouchableOpacity style={styles.myShopActionButton} onPress={() => { setScreen('seller-orders'); loadMySellerOrders(); }}>
+            <Text style={styles.myShopActionIcon}>🧾</Text>
+            <Text style={styles.myShopActionText}>{tr("Eeg dalabyada iibka", "View Sales Orders")}</Text>
+            <Text style={styles.myShopActionArrow}>›</Text>
+          </TouchableOpacity>
 
-          <Text style={styles.sectionTitle}>{tr("Dalabyada dukaankayga", "My Shop Orders")}</Text>
-          <TouchableOpacity style={styles.secondaryButton} onPress={() => { setScreen('seller-orders'); loadMySellerOrders(); }}>
-            <Text style={styles.secondaryButtonText}>{tr("Eeg dalabyada iibka", "View Sales Orders")}</Text>
+          <View style={styles.myShopSectionBar}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.myShopSectionTitle}>{tr("Alaabtayda", "My Products")}</Text>
+              <Text style={styles.myShopHint}>{tr("Maamul macmacaanka aad iibinayso.", "Manage the sweets you are selling.")}</Text>
+            </View>
+            <Text style={styles.myShopSectionIcon}>🍰</Text>
+          </View>
+          <TouchableOpacity style={styles.myShopOutlineButton} onPress={loadMySellerProducts} disabled={sellerProductsLoading}>
+            {sellerProductsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.myShopOutlineButtonText}>↻  {tr("Cusboonaysii alaabta", "Refresh Products")}</Text>}
           </TouchableOpacity>
-          <Text style={styles.sectionTitle}>{tr("Alaabtayda", "My Products")}</Text>
-          <TouchableOpacity style={styles.refreshWideButton} onPress={loadMySellerProducts} disabled={sellerProductsLoading}>
-            {sellerProductsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
-            <Text style={styles.refreshButtonText}>{tr("Cusboonaysii alaabta", "Refresh Products")}</Text>
-          </TouchableOpacity>
-          {sellerProductsLoading ? <ActivityIndicator color="#4A286B" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>{tr("Weli alaab kuma jirto dukaankaaga.", "Your shop has no products yet.")}</Text> : sellerProducts.map(item => (
-            <View key={item.id} style={styles.shopStatusCard}>
-              <Text style={styles.shopStatusTitle}>{item.name}</Text>
-              <Text style={styles.shopStatusText}>{money(item.price)} · Kaydka: {item.stock}</Text>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => beginEditProduct(item)}><Text style={styles.secondaryButtonText}>Tafatir</Text></TouchableOpacity>
-                <TouchableOpacity style={[styles.secondaryButton, { flex: 1, borderColor: '#B3261E' }]} onPress={() => deleteSellerProduct(item.id)}><Text style={[styles.secondaryButtonText, { color: '#B3261E' }]}>{tr("Tirtir", "Delete")}</Text></TouchableOpacity>
+          {sellerProductsLoading ? <ActivityIndicator color="#4A286B" /> : sellerProducts.length === 0 ? (
+            <View style={styles.myShopEmpty}>
+              <Text style={styles.myShopEmptyIcon}>🧁</Text>
+              <Text style={styles.myShopEmptyTitle}>{tr("Weli alaab kuma jirto", "No products yet")}</Text>
+              <Text style={styles.myShopHint}>{tr("Ku dar alaabtaada koowaad si macaamiishu u arkaan.", "Add your first product so customers can discover it.")}</Text>
+            </View>
+          ) : sellerProducts.map(item => (
+            <View key={item.id} style={styles.myShopProductCard}>
+              {item.image_url ? <Image source={{ uri: item.image_url }} style={styles.myShopProductImage} resizeMode="cover" /> : <View style={styles.myShopProductPlaceholder}><Text style={{ fontSize: 27 }}>🍰</Text></View>}
+              <View style={styles.myShopProductInfo}>
+                <Text style={styles.myShopProductName}>{item.name}</Text>
+                <Text style={styles.myShopProductPrice}>{money(item.price)}</Text>
+                <Text style={styles.myShopHint}>{tr("Kaydka", "Stock")}: {item.stock}</Text>
+                <View style={styles.myShopProductActions}>
+                  <TouchableOpacity style={styles.myShopEditButton} onPress={() => beginEditProduct(item)}><Text style={styles.myShopEditText}>{tr("Tafatir", "Edit")}</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.myShopDeleteButton} onPress={() => deleteSellerProduct(item.id)}><Text style={styles.myShopDeleteText}>{tr("Tirtir", "Delete")}</Text></TouchableOpacity>
+                </View>
               </View>
             </View>
           ))}
 
-          <Text style={styles.sectionTitle}>{editingProductId ? tr("Tafatir alaabta", "Edit Product") : tr("Ku dar alaab cusub", "Add New Product")}</Text>
-          {editingProductId && <TouchableOpacity onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductImageMimeType(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>{tr("Jooji tafatirka", "Cancel Editing")}</Text></TouchableOpacity>}
-
-          <Text style={styles.label}>{tr("Magaca alaabta", "Product Name")}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder={tr("Magaca macmacaanka", "Sweet Name")}
-            value={productName}
-            onChangeText={setProductName}
-          />
-
-          <Text style={styles.label}>{tr("Sharaxaadda", "Description")}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder={tr("Sharax alaabta", "Describe the product")}
-            value={productDescription}
-            onChangeText={setProductDescription}
-          />
-
-          <Text style={styles.label}>{tr("Qiimaha (KSh)", "Price (KSh)")}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Tusaale: 500"
-            value={productPrice}
-            onChangeText={setProductPrice}
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.label}>{tr("Tirada kaydka", "Stock Quantity")}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="10"
-            value={productStock}
-            onChangeText={setProductStock}
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.label}>{tr("Sawirka alaabta", "Product Image")}</Text>
-          <TouchableOpacity style={styles.secondaryButton} onPress={pickProductImage} disabled={productImageUploading}>
-            <Text style={styles.secondaryButtonText}>{tr("Ka dooro sawir telefoonka", "Choose a photo from your phone")}</Text>
-          </TouchableOpacity>
-          {productImage ? <Image source={{ uri: productImage }} style={{ width: '100%', height: 180, borderRadius: 14, marginVertical: 10 }} resizeMode="cover" /> : null}
-          <Text style={styles.shopStatusText}>Sawirka JPG, PNG ama WEBP; ugu badnaan 5 MB.</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ama geli URL sawir (https://...)"
-            value={productImage.startsWith('file://') || productImage.startsWith('content://') ? '' : productImage}
-            onChangeText={value => { setProductImage(value); setProductImageMimeType(''); }}
-            autoCapitalize="none"
-          />
-
-          <Text style={styles.label}>{tr("Qaybta alaabta", "Product Category")}</Text>
-          <View style={styles.categoryChoices}>
-            {categoryRows.map(item => item.name).map(item => (
-              <TouchableOpacity
-                key={item}
-                style={[
-                  styles.categoryButton,
-                  productCategory === item && styles.categorySelected,
-                ]}
-                onPress={() => setProductCategory(item)}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    productCategory === item && styles.categorySelectedText,
-                  ]}
-                >
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.myShopPanel}>
+            <View style={styles.myShopSectionHeading}>
+              <Text style={styles.myShopSectionIcon}>{editingProductId ? "✎" : "＋"}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.myShopSectionTitle}>{editingProductId ? tr("Tafatir alaabta", "Edit Product") : tr("Ku dar alaab cusub", "Add a New Product")}</Text>
+                <Text style={styles.myShopHint}>{tr("Geli faahfaahinta alaabtaada.", "Enter the details of your product.")}</Text>
+              </View>
+            </View>
+            {editingProductId && <TouchableOpacity style={styles.myShopCancelEdit} onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductImageMimeType(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>{tr("Jooji tafatirka", "Cancel Editing")}</Text></TouchableOpacity>}
+            <Text style={styles.label}>{tr("Magaca alaabta", "Product Name")}</Text>
+            <TextInput style={styles.input} placeholder={tr("Magaca macmacaanka", "Sweet Name")} value={productName} onChangeText={setProductName} />
+            <Text style={styles.label}>{tr("Sharaxaadda", "Description")}</Text>
+            <TextInput style={styles.input} placeholder={tr("Sharax alaabta", "Describe the product")} value={productDescription} onChangeText={setProductDescription} />
+            <Text style={styles.label}>{tr("Qiimaha (KSh)", "Price (KSh)")}</Text>
+            <TextInput style={styles.input} placeholder="Tusaale: 500" value={productPrice} onChangeText={setProductPrice} keyboardType="numeric" />
+            <Text style={styles.label}>{tr("Tirada kaydka", "Stock Quantity")}</Text>
+            <TextInput style={styles.input} placeholder="10" value={productStock} onChangeText={setProductStock} keyboardType="numeric" />
+            <Text style={styles.label}>{tr("Sawirka alaabta", "Product Image")}</Text>
+            <TouchableOpacity style={styles.myShopOutlineButton} onPress={pickProductImage} disabled={productImageUploading}>
+              <Text style={styles.myShopOutlineButtonText}>{tr("＋  Ka dooro sawir telefoonka", "＋  Choose a Photo")}</Text>
+            </TouchableOpacity>
+            {productImage ? <Image source={{ uri: productImage }} style={styles.myShopImagePreview} resizeMode="cover" /> : null}
+            <Text style={styles.myShopHint}>{tr("Sawirka JPG, PNG ama WEBP; ugu badnaan 5 MB.", "JPG, PNG or WEBP image; up to 5 MB.")}</Text>
+            <TextInput style={styles.input} placeholder={tr("Ama geli URL sawir (https://...)", "Or enter an image URL (https://...)")} value={productImage.startsWith('file://') || productImage.startsWith('content://') ? '' : productImage} onChangeText={value => { setProductImage(value); setProductImageMimeType(''); }} autoCapitalize="none" />
+            <Text style={styles.label}>{tr("Qaybta alaabta", "Product Category")}</Text>
+            <View style={styles.categoryChoices}>
+              {categoryRows.map(item => item.name).map(item => (
+                <TouchableOpacity key={item} style={[styles.categoryButton, productCategory === item && styles.categorySelected]} onPress={() => setProductCategory(item)}>
+                  <Text style={[styles.categoryText, productCategory === item && styles.categorySelectedText]}>{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity style={[styles.primaryButton, addingProduct && styles.disabledButton]} onPress={addProduct} disabled={addingProduct}>
+              {addingProduct || productImageUploading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{editingProductId ? tr("Kaydi isbeddelka", "Save Changes") : tr("Ku dar alaabta", "Add Product")}</Text>}
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            style={[
-              styles.primaryButton,
-              addingProduct && styles.disabledButton,
-            ]}
-            onPress={addProduct}
-            disabled={addingProduct}
-          >
-            {addingProduct || productImageUploading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>{editingProductId ? tr("Kaydi isbeddelka", "Save Changes") : tr("Ku dar alaabta", "Add Product")}</Text>
-            )}
-          </TouchableOpacity>
         </>
       )}
     </View>
@@ -2262,6 +2220,54 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
+  myShopScreen: { paddingBottom: 24 },
+  myShopHeader: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#4A286B', borderRadius: 22, padding: 18, marginBottom: 18, borderLeftWidth: 5, borderLeftColor: '#F3A33B', elevation: 3 },
+  myShopHeaderIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginRight: 13 },
+  myShopHeaderEmoji: { fontSize: 28 },
+  myShopHeaderCopy: { flex: 1 },
+  myShopEyebrow: { color: '#F3A33B', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 4 },
+  myShopTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '900', marginBottom: 4 },
+  myShopSubtitle: { color: '#F4EAFB', fontSize: 13, lineHeight: 19 },
+  myShopPanel: { backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#E7DDF0', padding: 16, marginBottom: 18, elevation: 1 },
+  myShopSectionHeading: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  myShopSectionIcon: { fontSize: 23, marginRight: 11, color: '#F09A2A' },
+  myShopSectionTitle: { color: '#38204F', fontSize: 18, fontWeight: '900', marginBottom: 3 },
+  myShopHint: { color: '#81738B', fontSize: 12, lineHeight: 18 },
+  myShopLoading: { alignItems: 'center', padding: 28 },
+  myShopStatusPanel: { backgroundColor: '#38204F', borderRadius: 21, padding: 18, marginBottom: 22, elevation: 3 },
+  myShopStatusTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
+  myShopStatusName: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 2 },
+  myShopStatusPill: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, marginLeft: 8 },
+  myShopStatusOpen: { backgroundColor: '#DDF7E8' },
+  myShopStatusPending: { backgroundColor: '#FFF0D9' },
+  myShopStatusPillText: { fontSize: 11, fontWeight: '900' },
+  myShopStatusOpenText: { color: '#167343' },
+  myShopStatusPendingText: { color: '#9A5A13' },
+  myShopSubscription: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', marginTop: 4, marginBottom: 8 },
+  myShopSubscriptionPeriod: { color: '#E9DDF3', fontSize: 13, fontWeight: '600' },
+  myShopOutlineButton: { backgroundColor: '#F5F0F9', borderWidth: 1, borderColor: '#DED2E8', borderRadius: 14, paddingVertical: 13, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 8, minHeight: 48 },
+  myShopOutlineButtonText: { color: '#4A286B', fontSize: 14, fontWeight: '800' },
+  myShopSectionBar: { flexDirection: 'row', alignItems: 'center', marginTop: 9, marginBottom: 11, paddingHorizontal: 2 },
+  myShopActionButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E7DDF0', padding: 15, marginBottom: 20 },
+  myShopActionIcon: { fontSize: 22, marginRight: 12 },
+  myShopActionText: { color: '#4A286B', fontSize: 15, fontWeight: '800', flex: 1 },
+  myShopActionArrow: { color: '#F09A2A', fontSize: 27, fontWeight: '700' },
+  myShopEmpty: { alignItems: 'center', backgroundColor: '#F7F2FA', borderWidth: 1, borderColor: '#E7DDF0', borderRadius: 18, padding: 23, marginBottom: 18 },
+  myShopEmptyIcon: { fontSize: 34, marginBottom: 8 },
+  myShopEmptyTitle: { color: '#38204F', fontSize: 16, fontWeight: '900', marginBottom: 5 },
+  myShopProductCard: { flexDirection: 'row', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7DDF0', borderRadius: 17, padding: 11, marginBottom: 11, elevation: 1 },
+  myShopProductImage: { width: 104, height: 112, borderRadius: 12, backgroundColor: '#F2EAF8', marginRight: 12 },
+  myShopProductPlaceholder: { width: 104, height: 112, borderRadius: 12, backgroundColor: '#F2EAF8', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  myShopProductInfo: { flex: 1, justifyContent: 'center' },
+  myShopProductName: { color: '#2E203B', fontSize: 15, fontWeight: '900', marginBottom: 4 },
+  myShopProductPrice: { color: '#4A286B', fontSize: 16, fontWeight: '900', marginBottom: 3 },
+  myShopProductActions: { flexDirection: 'row', gap: 8, marginTop: 9 },
+  myShopEditButton: { flex: 1, backgroundColor: '#F3E8FA', borderRadius: 10, paddingVertical: 9, alignItems: 'center' },
+  myShopEditText: { color: '#4A286B', fontSize: 12, fontWeight: '900' },
+  myShopDeleteButton: { flex: 1, backgroundColor: '#FFF1F0', borderRadius: 10, paddingVertical: 9, alignItems: 'center' },
+  myShopDeleteText: { color: '#B3261E', fontSize: 12, fontWeight: '900' },
+  myShopCancelEdit: { alignSelf: 'flex-start', backgroundColor: '#F5F0F9', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 5 },
+  myShopImagePreview: { width: '100%', height: 185, borderRadius: 14, marginVertical: 10, backgroundColor: '#F2EAF8' },
   walletScreen: { paddingBottom: 28 },
   walletTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
   walletEyebrow: { color: '#F09A2A', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
