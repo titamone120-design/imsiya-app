@@ -70,8 +70,10 @@ export default function App() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites'>('home');
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders'>('home');
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [profileRole, setProfileRole] = useState('');
   const [planSetupLoading, setPlanSetupLoading] = useState(false);
   const isAdmin = ['admin', 'super_admin'].includes(profileRole);
@@ -837,6 +839,42 @@ export default function App() {
   };
 
 
+  const loadMyOrders = async () => {
+    if (!session?.user?.id) return;
+    setOrdersLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, total_amount, currency, status, payment_status, payment_method, created_at')
+        .eq('customer_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      setMyOrders(data || []);
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Dalabyada lama soo qaadi karin.');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const renderOrderHistory = () => (
+    <View>
+      <Text style={styles.sectionTitle}>Dalabyadayda</Text>
+      <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={loadMyOrders}><Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text></TouchableOpacity>
+      {ordersLoading ? <ActivityIndicator size="large" color="#5B2A86" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab kuma jiro akoonkaaga.</Text> : myOrders.map(order => (
+        <View key={order.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
+          <Text style={styles.shopStatusText}>Xaalad: {order.status || '—'} · Bixin: {order.payment_status || '—'}</Text>
+          <Text style={styles.shopStatusText}>Habka: {order.payment_method || '—'}</Text>
+          <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
+          <Text style={styles.shopStatusText}>Dalab: {String(order.id).slice(0, 12)}</Text>
+        </View>
+      ))}
+    </View>
+  );
+
   const renderProfile = () => (
     <View>
       <View style={styles.hero}>
@@ -854,6 +892,7 @@ export default function App() {
       <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}>
         <Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  Dalabyadayda</Text></TouchableOpacity>
       <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}>
         <Text style={styles.profileActionText}>🛒  Cart-kayga ({cart.length})</Text>
       </TouchableOpacity>
@@ -1269,6 +1308,7 @@ export default function App() {
         {screen === 'admin' && isAdmin && renderAdmin()}
         {screen === 'profile' && renderProfile()}
         {screen === 'favorites' && renderFavorites()}
+        {screen === 'orders' && renderOrderHistory()}
       </ScrollView>
 
       <View style={styles.bottomNav}>
@@ -1415,7 +1455,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 22,
-    color: '#492064',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     marginBottom: 8,
   },
