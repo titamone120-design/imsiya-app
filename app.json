@@ -1,4 +1,3 @@
-
 {
   "expo": {
     "name": "IMSIYA",
@@ -19,6 +18,14 @@
       "eas": {
         "projectId": "4e37f17a-d1da-4019-9f64-37bf054261d9"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "IMSIYA waxay u baahan tahay gelitaanka sawirrada si aad u doorato sawirka alaabta."
+        }
+      ]
+    ]
   }
 }
