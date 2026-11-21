@@ -170,7 +170,13 @@ export default function App() {
       return;
     }
 
-    setCategoryRows((data || []) as Category[]);
+    const loadedCategories = (data || []) as Category[];
+    setCategoryRows(loadedCategories);
+    setProductCategory(current =>
+      loadedCategories.some(item => item.name.toLowerCase() === current.toLowerCase())
+        ? current
+        : loadedCategories[0]?.name || ''
+    );
   };
 
   const loadProducts = async () => {
