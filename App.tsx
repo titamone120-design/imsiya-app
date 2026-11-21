@@ -1053,10 +1053,14 @@ export default function App() {
       </ScrollView>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{tr("Alaabaha Caanka ah", "Popular Products")}</Text>
-        <TouchableOpacity style={styles.refreshButton} onPress={() => { loadProducts(); loadCategories(); }} disabled={productsLoading}>
-          {productsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
-          <Text style={styles.refreshButtonText}>{tr("Cusboonaysii", "Refresh")}</Text>
+        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{tr("Alaabaha Caanka ah", "Popular Products")}</Text>
+        <TouchableOpacity
+          style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F3E8FA', borderWidth: 1, borderColor: '#E3D4EF' }}
+          onPress={() => { loadProducts(); loadCategories(); }}
+          disabled={productsLoading}
+          accessibilityLabel={tr("Cusboonaysii", "Refresh")}
+        >
+          {productsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={[styles.refreshIcon, { fontSize: 23 }]}>↻</Text>}
         </TouchableOpacity>
       </View>
 
