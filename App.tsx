@@ -264,6 +264,25 @@ export default function App() {
     }
   };
 
+  const updateOrderTrackingStatus = async (orderId: string, nextStatus: 'processing' | 'shipped' | 'delivered') => {
+    if (!isAdmin) {
+      Alert.alert('IMSIYA Admin', 'Kaliya maamulka ayaa beddeli kara xaaladda dalabka.');
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: nextStatus })
+        .eq('id', orderId)
+        .eq('payment_status', 'paid');
+      if (error) throw error;
+      await loadAdminData();
+      Alert.alert('IMSIYA Admin', 'Xaaladda dalabka waa la cusboonaysiiyey.');
+    } catch (e: any) {
+      Alert.alert('IMSIYA Admin', e.message || 'Xaaladda dalabka lama beddeli karin.');
+    }
+  };
+
   const loadMySellerProducts = async () => {
     if (!session?.user?.id) { setSellerProducts([]); return; }
     setSellerProductsLoading(true);
@@ -1228,10 +1247,17 @@ export default function App() {
       {adminOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab ma jiro.</Text> : adminOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
-          <Text style={styles.shopStatusText}>Xaalad: {order.status} · Bixin: {order.payment_status}</Text>
+          <Text style={styles.shopStatusText}>Xaalad: {orderStatusLabel(order.status, order.payment_status)} · Bixin: {order.payment_status}</Text>
           <Text style={styles.shopStatusText}>Habka: {order.payment_method || 'Lama cayimin'}</Text>
           <Text style={styles.shopStatusText}>Order ID: {order.id}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
+          {order.payment_status === 'paid' && order.status !== 'delivered' && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+              {order.status !== 'processing' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'processing')}><Text style={styles.secondaryButtonText}>Diyaari</Text></TouchableOpacity>}
+              {order.status !== 'shipped' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'shipped')}><Text style={styles.secondaryButtonText}>Dir</Text></TouchableOpacity>}
+              <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'delivered')}><Text style={styles.secondaryButtonText}>Gaarsii</Text></TouchableOpacity>
+            </View>
+          )}
         </View>
       ))}
 
