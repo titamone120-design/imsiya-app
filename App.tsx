@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -115,6 +116,7 @@ export default function App() {
   const [productPrice, setProductPrice] = useState('');
   const [productStock, setProductStock] = useState('10');
   const [productImage, setProductImage] = useState('');
+  const [productImageUploading, setProductImageUploading] = useState(false);
   const [productCategory, setProductCategory] = useState('Buskut');
   const [addingProduct, setAddingProduct] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -306,6 +308,27 @@ export default function App() {
       Alert.alert('IMSIYA', e.message || 'Alaabta dukaanka lama soo qaadi karin.');
     } finally {
       setSellerProductsLoading(false);
+    }
+  };
+
+  const pickProductImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('IMSIYA', 'Fadlan oggolow in IMSIYA ay ka doorato sawirrada telefoonkaaga.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        setProductImage(result.assets[0].uri);
+      }
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Sawirka lama dooran karin.');
     }
   };
 
@@ -800,6 +823,25 @@ export default function App() {
     setAddingProduct(true);
 
     try {
+      let savedImageUrl: string | null = productImage.trim() || null;
+      if (savedImageUrl && !/^https?:\\/\\//i.test(savedImageUrl)) {
+        setProductImageUploading(true);
+        const imageResponse = await fetch(savedImageUrl);
+        if (!imageResponse.ok) throw new Error('Sawirka telefoonka lama akhrin karin.');
+        const imageBlob = await imageResponse.blob();
+        const mimeType = String(imageBlob.type || 'image/jpeg').toLowerCase().split(';')[0];
+        const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : mimeType === 'image/jpeg' ? 'jpg' : '';
+        if (!extension) throw new Error('Sawirka waa inuu noqdaa JPG, PNG ama WEBP.');
+        if (imageBlob.size <= 0 || imageBlob.size > 5 * 1024 * 1024) throw new Error('Sawirka waa inuu ka yaraadaa 5 MB.');
+        const imagePath = session.user.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 9) + '.' + extension;
+        const { error: uploadError } = await supabase.storage.from('product-images').upload(imagePath, imageBlob, {
+          contentType: mimeType,
+          cacheControl: '3600',
+          upsert: false,
+        });
+        if (uploadError) throw uploadError;
+        savedImageUrl = supabase.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl;
+      }
       const productPayload = {
         seller_id: session.user.id,
         shop_id: myShop.id,
@@ -807,7 +849,7 @@ export default function App() {
         name: productName.trim(),
         description: productDescription.trim(),
         price,
-        image_url: productImage.trim() || null,
+        image_url: savedImageUrl,
         stock,
       };
       const result = editingProductId
@@ -828,6 +870,7 @@ export default function App() {
       Alert.alert('IMSIYA', e.message || 'Alaabta lama dari karin.');
     } finally {
       setAddingProduct(false);
+      setProductImageUploading(false);
     }
   };
 
@@ -1407,11 +1450,16 @@ export default function App() {
             keyboardType="numeric"
           />
 
-          <Text style={styles.label}>Sawirka alaabta (URL)</Text>
+          <Text style={styles.label}>Sawirka alaabta</Text>
+          <TouchableOpacity style={styles.secondaryButton} onPress={pickProductImage} disabled={productImageUploading}>
+            <Text style={styles.secondaryButtonText}>Ka dooro sawir telefoonka</Text>
+          </TouchableOpacity>
+          {productImage ? <Image source={{ uri: productImage }} style={{ width: '100%', height: 180, borderRadius: 14, marginVertical: 10 }} resizeMode="cover" /> : null}
+          <Text style={styles.shopStatusText}>Sawirka JPG, PNG ama WEBP; ugu badnaan 5 MB.</Text>
           <TextInput
             style={styles.input}
-            placeholder="https://..."
-            value={productImage}
+            placeholder="Ama geli URL sawir (https://...)"
+            value={productImage.startsWith('file://') || productImage.startsWith('content://') ? '' : productImage}
             onChangeText={setProductImage}
             autoCapitalize="none"
           />
@@ -1447,7 +1495,7 @@ export default function App() {
             onPress={addProduct}
             disabled={addingProduct}
           >
-            {addingProduct ? (
+            {addingProduct || productImageUploading ? (
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={styles.buttonText}>{editingProductId ? 'Kaydi isbeddelka' : 'Ku dar alaabta'}</Text>
