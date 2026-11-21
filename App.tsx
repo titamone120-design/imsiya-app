@@ -430,9 +430,10 @@ export default function App() {
   const updatePayoutRequestStatus = async (requestId: string, nextStatus: 'paid' | 'rejected') => {
     if (!isAdmin) return;
     try {
-      const { error } = await supabase.from('payout_requests')
-        .update({ status: nextStatus, processed_at: new Date().toISOString() })
-        .eq('id', requestId);
+      const { error } = await supabase.rpc('admin_process_payout', {
+        p_request_id: requestId,
+        p_action: nextStatus,
+      });
       if (error) throw error;
       await loadAdminData();
       Alert.alert('IMSIYA Admin', nextStatus === 'paid' ? 'Codsiga waxaa loo calaamadeeyey in lacagta la diray.' : 'Codsiga waa la diiday.');
