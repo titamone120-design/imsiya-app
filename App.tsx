@@ -1054,8 +1054,9 @@ export default function App() {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{tr("Alaabaha Caanka ah", "Popular Products")}</Text>
-        <TouchableOpacity onPress={() => { loadProducts(); loadCategories(); }}>
-          <Text style={styles.refreshText}>{tr("Cusboonaysii", "Refresh")}</Text>
+        <TouchableOpacity style={styles.refreshButton} onPress={() => { loadProducts(); loadCategories(); }} disabled={productsLoading}>
+          {productsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
+          <Text style={styles.refreshButtonText}>{tr("Cusboonaysii", "Refresh")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1182,7 +1183,8 @@ export default function App() {
           </>
         )}
         <TouchableOpacity style={styles.walletRefreshButton} onPress={loadSellerWallet} disabled={walletLoading}>
-          <Text style={styles.walletRefreshText}>↻  Cusboonaysii wallet-ka</Text>
+          {walletLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.walletRefreshIcon}>↻</Text>}
+          <Text style={styles.walletRefreshText}>{tr("Cusboonaysii wallet-ka", "Refresh wallet")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1262,8 +1264,9 @@ export default function App() {
     <View>
       <Text style={styles.sectionTitle}>{tr("Dalabyada dukaankayga", "My Shop Orders")}</Text>
       <TouchableOpacity onPress={() => setScreen('shop')}><Text style={styles.refreshText}>{tr("← Ku noqo dukaanka", "← Back to Shop")}</Text></TouchableOpacity>
-      <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerOrders} disabled={sellerOrdersLoading}>
-        <Text style={styles.secondaryButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
+      <TouchableOpacity style={styles.refreshWideButton} onPress={loadMySellerOrders} disabled={sellerOrdersLoading}>
+        {sellerOrdersLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
+        <Text style={styles.refreshButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
       </TouchableOpacity>
       {sellerOrdersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : sellerOrders.length === 0 ? (
         <Text style={styles.emptyText}>Weli dalab alaabta dukaankaaga ah ma jiro.</Text>
@@ -1289,7 +1292,10 @@ export default function App() {
     <View>
       <Text style={styles.sectionTitle}>{tr("Dalabyadayda", "My Orders")}</Text>
       <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
-      <TouchableOpacity style={styles.secondaryButton} onPress={loadMyOrders}><Text style={styles.secondaryButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.refreshWideButton} onPress={loadMyOrders} disabled={ordersLoading}>
+        {ordersLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
+        <Text style={styles.refreshButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
+      </TouchableOpacity>
       {ordersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>{tr("Weli dalab kuma jiro akoonkaaga.", "You have no orders yet.")}</Text> : myOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
@@ -1605,7 +1611,10 @@ export default function App() {
             <Text style={styles.secondaryButtonText}>{tr("Eeg dalabyada iibka", "View Sales Orders")}</Text>
           </TouchableOpacity>
           <Text style={styles.sectionTitle}>{tr("Alaabtayda", "My Products")}</Text>
-          <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerProducts}><Text style={styles.secondaryButtonText}>{tr("Cusboonaysii alaabta", "Refresh Products")}</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.refreshWideButton} onPress={loadMySellerProducts} disabled={sellerProductsLoading}>
+            {sellerProductsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
+            <Text style={styles.refreshButtonText}>{tr("Cusboonaysii alaabta", "Refresh Products")}</Text>
+          </TouchableOpacity>
           {sellerProductsLoading ? <ActivityIndicator color="#4A286B" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>{tr("Weli alaab kuma jirto dukaankaaga.", "Your shop has no products yet.")}</Text> : sellerProducts.map(item => (
             <View key={item.id} style={styles.shopStatusCard}>
               <Text style={styles.shopStatusTitle}>{item.name}</Text>
@@ -2010,6 +2019,43 @@ const styles = StyleSheet.create({
     color: '#4A286B',
     fontWeight: 'bold',
   },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3E8FA',
+    borderWidth: 1,
+    borderColor: '#E3D4EF',
+    borderRadius: 18,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    gap: 6,
+    minHeight: 38,
+  },
+  refreshWideButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F7F2FA',
+    borderWidth: 1,
+    borderColor: '#E3D4EF',
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    marginBottom: 14,
+    gap: 8,
+  },
+  refreshIcon: {
+    color: '#4A286B',
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 21,
+  },
+  refreshButtonText: {
+    color: '#4A286B',
+    fontWeight: '800',
+    fontSize: 12,
+  },
   productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -2208,7 +2254,8 @@ const styles = StyleSheet.create({
   walletBalance: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', marginTop: 13, marginBottom: 6 },
   walletHeroNote: { color: '#F5EDF9', fontSize: 13, marginBottom: 5 },
   walletUpdated: { color: '#CDBDDA', fontSize: 10, marginTop: 7 },
-  walletRefreshButton: { alignSelf: 'flex-start', backgroundColor: '#FFFFFF', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 18, marginTop: 17 },
+  walletRefreshButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7DDF0', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 18, marginTop: 17, elevation: 1 },
+  walletRefreshIcon: { color: '#F09A2A', fontSize: 19, fontWeight: '900' },
   walletRefreshText: { color: '#4A286B', fontWeight: '800', fontSize: 12 },
   walletSection: { marginBottom: 22 },
   walletSectionHeading: { marginBottom: 12 },
