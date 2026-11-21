@@ -1314,31 +1314,44 @@ export default function App() {
 
   const renderProfile = () => (
     <View>
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{tr("Akoonkayga", "My Account")}</Text>
-        <Text style={styles.heroText}>{session?.user?.user_metadata?.full_name || fullName || 'Macmiilka IMSIYA'}</Text>
-      </View>
-      <View style={styles.shopStatusCard}>
-        <Text style={styles.shopStatusTitle}>Xogta akoonka</Text>
-        <Text style={styles.shopStatusText}>Email: {session?.user?.email || '—'}</Text>
-        <Text style={styles.shopStatusText}>Nooca akoonka: {profileRole || 'Macmiil'}</Text>
-      </View>
-      <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}>
-        <Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}>
-        <Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}>
-        <Text style={styles.profileActionText}>💰  Wallet-kayga iibka</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  Dalabyadayda</Text></TouchableOpacity>
-      <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}>
-        <Text style={styles.profileActionText}>🛒  Cart-kayga ({cart.length})</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}>
-        <Text style={styles.buttonText}>Ka bax akoonka</Text>
-      </TouchableOpacity>
+      {!session ? (
+        <>
+          <View style={styles.hero}>
+            <Text style={styles.heroTitle}>{tr("Ku soo dhowow IMSIYA", "Welcome to IMSIYA")}</Text>
+            <Text style={styles.heroText}>{tr("Samee akoon ama gal akoonkaaga si aad u maamusho profile-kaaga, dalabyadaada iyo dukaankaaga.", "Create an account or sign in to manage your profile, orders and shop.")}</Text>
+          </View>
+          <View style={styles.shopStatusCard}>
+            <Text style={styles.shopStatusTitle}>{authMode === 'signup' ? tr("Samee akoon cusub", "Create your account") : tr("Gal akoonkaaga", "Sign in to your account")}</Text>
+            {authMode === 'signup' && <TextInput style={styles.input} placeholder={tr("Magacaaga oo buuxa", "Your full name")} value={fullName} onChangeText={setFullName} />}
+            <TextInput style={styles.input} placeholder={tr("Email-kaaga", "Your email")} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+            <TextInput style={styles.input} placeholder="Password (ugu yaraan 8 xaraf)" value={password} onChangeText={setPassword} secureTextEntry />
+            <TouchableOpacity style={[styles.primaryButton, authLoading && styles.disabledButton]} onPress={signInOrSignUp} disabled={authLoading}>
+              {authLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{authMode === 'signup' ? tr("Samee akoon", "Create Account") : tr("Gal akoonka", "Sign In")}</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.authSwitch} onPress={() => setAuthMode(current => current === 'signup' ? 'login' : 'signup')}>
+              <Text style={styles.authSwitchText}>{authMode === 'signup' ? tr("Akoon ma leedahay? Gal halkan", "Already have an account? Sign in") : tr("Akoon ma lihid? Isdiiwaangeli", "Don't have an account? Sign up")}</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.hero}>
+            <Text style={styles.heroTitle}>{tr("Akoonkayga", "My Account")}</Text>
+            <Text style={styles.heroText}>{session.user.user_metadata?.full_name || fullName || 'Macmiilka IMSIYA'}</Text>
+          </View>
+          <View style={styles.shopStatusCard}>
+            <Text style={styles.shopStatusTitle}>Xogta akoonka</Text>
+            <Text style={styles.shopStatusText}>Email: {session.user.email || '—'}</Text>
+            <Text style={styles.shopStatusText}>Nooca akoonka: {profileRole || 'Macmiil'}</Text>
+          </View>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  Wallet-kayga iibka</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  Dalabyadayda</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}><Text style={styles.profileActionText}>🛒  Cart-kayga ({cart.length})</Text></TouchableOpacity>
+          <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>Ka bax akoonka</Text></TouchableOpacity>
+        </>
+      )}
     </View>
   );
 
@@ -1680,8 +1693,7 @@ export default function App() {
     </View>
   );
 
-  if (!session) {
-    return (
+  return (
       <View style={styles.authContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FCFAFE" />
 
