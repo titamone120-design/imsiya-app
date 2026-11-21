@@ -43,6 +43,8 @@ jobs:
         run: npx expo export --platform web --output-dir dist
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
