@@ -1011,13 +1011,6 @@ export default function App() {
 
   const renderHome = () => (
     <>
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{tr("Ku soo dhowow IMSIYA", "Welcome to IMSIYA")}</Text>
-        <Text style={styles.heroText}>
-          Macmacaanka aad jeceshahay — hal meel.
-        </Text>
-      </View>
-
       <TextInput
         style={styles.searchInput}
         placeholder={tr("Raadi macmacaan...", "Search sweets...")}
@@ -1025,6 +1018,13 @@ export default function App() {
         value={search}
         onChangeText={setSearch}
       />
+
+      <View style={styles.hero}>
+        <Text style={styles.heroTitle}>{tr("Ku soo dhowow IMSIYA", "Welcome to IMSIYA")}</Text>
+        <Text style={styles.heroText}>
+          Macmacaanka aad jeceshahay — hal meel.
+        </Text>
+      </View>
 
       <ScrollView
         horizontal
@@ -1749,12 +1749,12 @@ export default function App() {
       <StatusBar barStyle="dark-content" backgroundColor="#FCFAFE" />
 
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={styles.headerLogo}>IMSIYA</Text>
           <Text style={styles.headerSubtitle}>{tr("Suuqa macmacaanka", "Sweets Marketplace")}</Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><TouchableOpacity onPress={() => setLanguage(current => current === 'en' ? 'so' : 'en')} style={{ backgroundColor: '#F3E8FA', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14 }}><Text style={{ color: '#4A286B', fontWeight: '800', fontSize: 11 }}>{language === 'en' ? 'EN | SO' : 'SO | EN'}</Text></TouchableOpacity><TouchableOpacity onPress={signOut}>
+        <View style={{ position: 'absolute', right: 14, top: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}><TouchableOpacity onPress={() => setLanguage(current => current === 'en' ? 'so' : 'en')} style={{ backgroundColor: '#F3E8FA', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14 }}><Text style={{ color: '#4A286B', fontWeight: '800', fontSize: 11 }}>{language === 'en' ? 'EN | SO' : 'SO | EN'}</Text></TouchableOpacity><TouchableOpacity onPress={signOut}>
           <Text style={styles.logoutText}>{tr('Ka bax', 'Sign Out')}</Text>
           </TouchableOpacity></View>
       </View>
