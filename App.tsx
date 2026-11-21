@@ -1897,8 +1897,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerLogo: {
-    fontSize: 23,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontWeight: '900',
+    letterSpacing: 1.4,
     color: '#4A286B',
   },
   headerSubtitle: {
