@@ -273,12 +273,15 @@ export default function App() {
       return;
     }
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('orders')
         .update({ status: nextStatus })
         .eq('id', orderId)
-        .eq('payment_status', 'paid');
+        .eq('payment_status', 'paid')
+        .select('id')
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Dalabka lama helin ama lama oggola in xaaladdiisa la beddelo.');
       await loadAdminData();
       Alert.alert('IMSIYA Admin', 'Xaaladda dalabka waa la cusboonaysiiyey.');
     } catch (e: any) {
