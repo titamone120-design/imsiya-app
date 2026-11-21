@@ -84,7 +84,7 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [localDataReadyForUser, setLocalDataReadyForUser] = useState<string | null>(null);
 
-  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'seller-orders' | 'product'>('home');
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'seller-orders' | 'wallet' | 'product'>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [myOrders, setMyOrders] = useState<any[]>([]);
@@ -123,6 +123,9 @@ export default function App() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
   const [sellerProductsLoading, setSellerProductsLoading] = useState(false);
+  const [sellerWallet, setSellerWallet] = useState<any | null>(null);
+  const [sellerWalletTransactions, setSellerWalletTransactions] = useState<any[]>([]);
+  const [walletLoading, setWalletLoading] = useState(false);
 
   const [categoryRows, setCategoryRows] = useState<Category[]>([]);
 
@@ -363,6 +366,25 @@ export default function App() {
         }
       } },
     ]);
+  };
+
+  const loadSellerWallet = async () => {
+    if (!session?.user?.id) return;
+    setWalletLoading(true);
+    try {
+      const [walletResult, transactionsResult] = await Promise.all([
+        supabase.from('seller_wallets').select('id, seller_id, balance, updated_at').eq('seller_id', session.user.id).maybeSingle(),
+        supabase.from('wallet_transactions').select('id, amount, transaction_type, description, order_id, created_at').eq('seller_id', session.user.id).order('created_at', { ascending: false }).limit(50),
+      ]);
+      if (walletResult.error) throw walletResult.error;
+      if (transactionsResult.error) throw transactionsResult.error;
+      setSellerWallet(walletResult.data || { balance: 0 });
+      setSellerWalletTransactions(transactionsResult.data || []);
+    } catch (e: any) {
+      Alert.alert('IMSIYA Wallet', e.message || 'Wallet-ka lama soo qaadi karin.');
+    } finally {
+      setWalletLoading(false);
+    }
   };
 
   const loadMyShop = async () => {
@@ -1078,6 +1100,41 @@ export default function App() {
     }
   };
 
+  const renderSellerWallet = () => (
+    <View>
+      <Text style={styles.sectionTitle}>Wallet-kayga</Text>
+      <TouchableOpacity onPress={() => setScreen('shop')}><Text style={styles.refreshText}>← Ku noqo dukaanka</Text></TouchableOpacity>
+      <View style={styles.shopStatusCard}>
+        <Text style={styles.shopStatusTitle}>Hadhaaga iibkaaga</Text>
+        {walletLoading ? <ActivityIndicator size="large" color="#B5121B" /> : (
+          <>
+            <Text style={[styles.productPrice, { fontSize: 28 }]}>{money(Number(sellerWallet?.balance || 0))}</Text>
+            <Text style={styles.shopStatusText}>Iibka la xaqiijiyey ayaa lagu daraa wallet-kaaga. IMSIYA kama jarto 5% komishan.</Text>
+            <Text style={styles.shopStatusText}>Cusboonaysiintii ugu dambaysay: {sellerWallet?.updated_at ? new Date(sellerWallet.updated_at).toLocaleString() : '—'}</Text>
+          </>
+        )}
+        <TouchableOpacity style={styles.secondaryButton} onPress={loadSellerWallet} disabled={walletLoading}>
+          <Text style={styles.secondaryButtonText}>Cusboonaysii wallet-ka</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.sectionTitle}>Taariikhda dhaqdhaqaaqa</Text>
+      {walletLoading ? <ActivityIndicator color="#B5121B" /> : sellerWalletTransactions.length === 0 ? (
+        <Text style={styles.emptyText}>Weli wax dhaqdhaqaaq wallet ah ma jiro.</Text>
+      ) : sellerWalletTransactions.map(tx => (
+        <View key={tx.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{money(Number(tx.amount || 0))} · {tx.transaction_type}</Text>
+          <Text style={styles.shopStatusText}>{tx.description || 'Faahfaahin ma jirto'}</Text>
+          {tx.order_id ? <Text style={styles.shopStatusText}>Dalab: {String(tx.order_id).slice(0, 12)}</Text> : null}
+          <Text style={styles.shopStatusText}>{tx.created_at ? new Date(tx.created_at).toLocaleString() : '—'}</Text>
+        </View>
+      ))}
+      <View style={styles.shopStatusCard}>
+        <Text style={styles.shopStatusTitle}>Lacag-la-bixinta</Text>
+        <Text style={styles.shopStatusText}>Codsiga lacag-la-bixinta weli lama hawlgelin. Waxaan marka hore xaqiijinaynaa habka lacagta loogu diri doono iibiyaha si aan lacagtaada khatar u gelin.</Text>
+      </View>
+    </View>
+  );
+
   const renderSellerOrders = () => (
     <View>
       <Text style={styles.sectionTitle}>Dalabyada dukaankayga</Text>
@@ -1139,6 +1196,9 @@ export default function App() {
       </TouchableOpacity>
       <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}>
         <Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}>
+        <Text style={styles.profileActionText}>💰  Wallet-kayga iibka</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  Dalabyadayda</Text></TouchableOpacity>
       <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}>
@@ -1337,6 +1397,9 @@ export default function App() {
   const renderShop = () => (
     <View>
       <Text style={styles.sectionTitle}>Dukaankayga</Text>
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}>
+        <Text style={styles.secondaryButtonText}>💰 Fur Wallet-kayga</Text>
+      </TouchableOpacity>
 
       {shopLoading ? (
         <ActivityIndicator size="large" color="#B5121B" />
@@ -1610,6 +1673,7 @@ export default function App() {
         {screen === 'favorites' && renderFavorites()}
         {screen === 'orders' && renderOrderHistory()}
         {screen === 'seller-orders' && renderSellerOrders()}
+        {screen === 'wallet' && renderSellerWallet()}
         {screen === 'product' && renderProductDetails()}
       </ScrollView>
 
