@@ -298,7 +298,7 @@ export default function App() {
     ]);
   };
 
-  const loadMyShop = async () =>
+  const loadMyShop = async () => {
     if (!session?.user?.id) {
       setMyShop(null);
       return;
