@@ -73,6 +73,9 @@ export default function App() {
   const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin'>('home');
   const isAdmin = ['admin', 'super_admin'].includes(String(session?.user?.app_metadata?.role || ''));
   const [pendingSellers, setPendingSellers] = useState<any[]>([]);
+  const [adminOrders, setAdminOrders] = useState<any[]>([]);
+  const [adminSubscriptions, setAdminSubscriptions] = useState<any[]>([]);
+  const [adminWallet, setAdminWallet] = useState<any[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
 
   const [category, setCategory] = useState('Dhammaan');
@@ -146,13 +149,20 @@ export default function App() {
     if (!isAdmin) return;
     setAdminLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('seller_profiles')
-        .select('id, shop_name, description, approved, created_at')
-        .eq('approved', false)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      setPendingSellers(data || []);
+      const [sellersResult, ordersResult, subscriptionsResult, walletResult] = await Promise.all([
+        supabase.from('seller_profiles').select('id, shop_name, description, approved, created_at').eq('approved', false).order('created_at', { ascending: false }).limit(50),
+        supabase.from('orders').select('id, customer_id, total_amount, currency, usd_total_amount, status, payment_status, payment_method, created_at').order('created_at', { ascending: false }).limit(50),
+        supabase.from('shop_subscriptions').select('id, shop_id, amount, currency, status, started_at, expires_at, created_at').order('created_at', { ascending: false }).limit(50),
+        supabase.from('wallet_transactions').select('id, seller_id, amount, transaction_type, description, order_id, created_at').order('created_at', { ascending: false }).limit(50),
+      ]);
+      if (sellersResult.error) throw sellersResult.error;
+      if (ordersResult.error) throw ordersResult.error;
+      if (subscriptionsResult.error) throw subscriptionsResult.error;
+      if (walletResult.error) throw walletResult.error;
+      setPendingSellers(sellersResult.data || []);
+      setAdminOrders(ordersResult.data || []);
+      setAdminSubscriptions(subscriptionsResult.data || []);
+      setAdminWallet(walletResult.data || []);
     } catch (e: any) {
       Alert.alert('IMSIYA Admin', e.message || 'Codsiyada lama soo qaadi karin.');
     } finally {
@@ -878,6 +888,44 @@ export default function App() {
         </View>
       ))}
       <Text style={styles.emptyText}>Xusuusin: ansixinta iibiyaha ma dhaqaajiso dukaanka ilaa lacagta subscription-ka $20 la xaqiijiyo.</Text>
+
+      <View style={styles.shopStatusCard}>
+        <Text style={styles.shopStatusTitle}>Guudmar maamulka</Text>
+        <Text style={styles.shopStatusText}>Dalabyada: {adminOrders.length} kii ugu dambeeyey</Text>
+        <Text style={styles.shopStatusText}>Subscriptions: {adminSubscriptions.length} kii ugu dambeeyey</Text>
+        <Text style={styles.shopStatusText}>Wallet transactions: {adminWallet.length} kii ugu dambeeyey</Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>Dalabyada macaamiisha</Text>
+      {adminOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab ma jiro.</Text> : adminOrders.map(order => (
+        <View key={order.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{money(Number(order.total_amount || 0))} {order.currency || 'KES'}</Text>
+          <Text style={styles.shopStatusText}>Xaalad: {order.status} · Bixin: {order.payment_status}</Text>
+          <Text style={styles.shopStatusText}>Habka: {order.payment_method || 'Lama cayimin'}</Text>
+          <Text style={styles.shopStatusText}>Order ID: {order.id}</Text>
+          <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
+        </View>
+      ))}
+
+      <Text style={styles.sectionTitle}>Lacagaha dukaamada ($20 bishii)</Text>
+      {adminSubscriptions.length === 0 ? <Text style={styles.emptyText}>Weli subscription lama diiwaangelin.</Text> : adminSubscriptions.map(sub => (
+        <View key={sub.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{sub.currency || 'USD'} {Number(sub.amount || 0).toFixed(2)} · {sub.status}</Text>
+          <Text style={styles.shopStatusText}>Shop ID: {sub.shop_id}</Text>
+          <Text style={styles.shopStatusText}>Bilow: {sub.started_at ? new Date(sub.started_at).toLocaleDateString() : '—'}</Text>
+          <Text style={styles.shopStatusText}>Dhamaad: {sub.expires_at ? new Date(sub.expires_at).toLocaleDateString() : '—'}</Text>
+        </View>
+      ))}
+
+      <Text style={styles.sectionTitle}>Dhaqdhaqaaqa wallet-ka iibiyeyaasha</Text>
+      {adminWallet.length === 0 ? <Text style={styles.emptyText}>Weli dhaqdhaqaaq wallet ma jiro.</Text> : adminWallet.map(tx => (
+        <View key={tx.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{money(Number(tx.amount || 0))} · {tx.transaction_type}</Text>
+          <Text style={styles.shopStatusText}>{tx.description || 'Faahfaahin ma jirto'}</Text>
+          <Text style={styles.shopStatusText}>Seller ID: {tx.seller_id}</Text>
+          <Text style={styles.shopStatusText}>Order ID: {tx.order_id || '—'}</Text>
+        </View>
+      ))}
     </View>
   );
 
