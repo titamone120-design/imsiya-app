@@ -1320,7 +1320,7 @@ export default function App() {
 
           <Text style={styles.label}>Qaybta alaabta</Text>
           <View style={styles.categoryChoices}>
-            {categories.filter(item => item !== 'Dhammaan').map(item => (
+            {categoryRows.map(item => item.name).map(item => (
               <TouchableOpacity
                 key={item}
                 style={[
