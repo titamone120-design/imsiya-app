@@ -70,7 +70,8 @@ export default function App() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin'>('home');
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites'>('home');
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [profileRole, setProfileRole] = useState('');
   const [planSetupLoading, setPlanSetupLoading] = useState(false);
   const isAdmin = ['admin', 'super_admin'].includes(profileRole);
@@ -690,6 +691,8 @@ export default function App() {
     return matchesCategory && matchesSearch;
   });
 
+  const toggleFavorite = (productId: string) => setFavoriteIds(current => current.includes(productId) ? current.filter(id => id !== productId) : [...current, productId]);
+
   const renderProduct = (product: Product) => (
     <View key={product.id} style={styles.productCard}>
       {product.image_url ? (
@@ -703,6 +706,7 @@ export default function App() {
         </View>
       )}
 
+      <TouchableOpacity style={styles.favoriteToggle} onPress={() => toggleFavorite(product.id)}><Text style={styles.favoriteToggleText}>{favoriteIds.includes(product.id) ? '♥' : '♡'}</Text></TouchableOpacity>
       <Text style={styles.productName}>{product.name}</Text>
       <Text style={styles.productCategory}>{product.category}</Text>
       <Text style={styles.productPrice}>{money(product.price)}</Text>
@@ -830,6 +834,44 @@ export default function App() {
     } finally {
       setCheckoutLoading(false);
     }
+  };
+
+
+  const renderProfile = () => (
+    <View>
+      <View style={styles.hero}>
+        <Text style={styles.heroTitle}>Akoonkayga</Text>
+        <Text style={styles.heroText}>{session?.user?.user_metadata?.full_name || fullName || 'Macmiilka IMSIYA'}</Text>
+      </View>
+      <View style={styles.shopStatusCard}>
+        <Text style={styles.shopStatusTitle}>Xogta akoonka</Text>
+        <Text style={styles.shopStatusText}>Email: {session?.user?.email || '—'}</Text>
+        <Text style={styles.shopStatusText}>Nooca akoonka: {profileRole || 'Macmiil'}</Text>
+      </View>
+      <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}>
+        <Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}>
+        <Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}>
+        <Text style={styles.profileActionText}>🛒  Cart-kayga ({cart.length})</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}>
+        <Text style={styles.buttonText}>Ka bax akoonka</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderFavorites = () => {
+    const favoriteProducts = products.filter(product => favoriteIds.includes(product.id));
+    return (
+      <View>
+        <Text style={styles.sectionTitle}>Alaabta aan jeclahay</Text>
+        <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
+        {favoriteProducts.length === 0 ? <Text style={styles.emptyText}>Weli ma aadan dooran alaab aad jeceshahay.</Text> : <View style={styles.productGrid}>{favoriteProducts.map(renderProduct)}</View>}
+      </View>
+    );
   };
 
   const renderCart = () => (
@@ -1225,6 +1267,8 @@ export default function App() {
         {screen === 'cart' && renderCart()}
         {screen === 'shop' && renderShop()}
         {screen === 'admin' && isAdmin && renderAdmin()}
+        {screen === 'profile' && renderProfile()}
+        {screen === 'favorites' && renderFavorites()}
       </ScrollView>
 
       <View style={styles.bottomNav}>
@@ -1252,6 +1296,10 @@ export default function App() {
         >
           <Text style={styles.navIcon}>🏪</Text>
           <Text style={styles.navText}>Dukaankayga</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => setScreen('profile')}>
+          <Text style={styles.navIcon}>👤</Text>
+          <Text style={styles.navText}>Profile</Text>
         </TouchableOpacity>
         {isAdmin && (
           <TouchableOpacity style={styles.navItem} onPress={() => { setScreen('admin'); loadAdminData(); }}>
@@ -1428,6 +1476,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
+  favoriteToggle: { alignSelf: 'flex-end', paddingHorizontal: 5, paddingVertical: 1 },
+  favoriteToggleText: { color: '#D97706', fontSize: 22, fontWeight: 'bold' },
+  profileAction: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E8DDF1', borderRadius: 15, padding: 16, marginBottom: 10 },
+  profileActionText: { color: '#5B2A86', fontWeight: 'bold', fontSize: 15 },
   productCard: {
     width: '48%',
     backgroundColor: '#FFFFFF',
