@@ -83,11 +83,13 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [localDataReadyForUser, setLocalDataReadyForUser] = useState<string | null>(null);
 
-  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'product'>('home');
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'seller-orders' | 'product'>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [sellerOrders, setSellerOrders] = useState<any[]>([]);
+  const [sellerOrdersLoading, setSellerOrdersLoading] = useState(false);
   const [profileRole, setProfileRole] = useState('');
   const [planSetupLoading, setPlanSetupLoading] = useState(false);
   const isAdmin = ['admin', 'super_admin'].includes(profileRole);
@@ -988,6 +990,52 @@ export default function App() {
     }
   };
 
+  const loadMySellerOrders = async () => {
+    if (!session?.user?.id) return;
+    setSellerOrdersLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('id, order_id, product_id, quantity, unit_price, products(name), orders(id, total_amount, currency, status, payment_status, payment_method, created_at)')
+        .eq('seller_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      setSellerOrders((data || []).filter((item: any) => item.orders));
+    } catch (e: any) {
+      Alert.alert('IMSIYA', e.message || 'Dalabyada iibiyaha lama soo qaadi karin.');
+    } finally {
+      setSellerOrdersLoading(false);
+    }
+  };
+
+  const renderSellerOrders = () => (
+    <View>
+      <Text style={styles.sectionTitle}>Dalabyada dukaankayga</Text>
+      <TouchableOpacity onPress={() => setScreen('shop')}><Text style={styles.refreshText}>← Ku noqo dukaanka</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerOrders} disabled={sellerOrdersLoading}>
+        <Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text>
+      </TouchableOpacity>
+      {sellerOrdersLoading ? <ActivityIndicator size="large" color="#5B2A86" /> : sellerOrders.length === 0 ? (
+        <Text style={styles.emptyText}>Weli dalab alaabta dukaankaaga ah ma jiro.</Text>
+      ) : sellerOrders.map((item: any) => {
+        const order = item.orders;
+        const product = Array.isArray(item.products) ? item.products[0] : item.products;
+        return (
+          <View key={item.id} style={styles.shopStatusCard}>
+            <Text style={styles.shopStatusTitle}>{product?.name || 'Alaabta IMSIYA'}</Text>
+            <Text style={styles.shopStatusText}>Tirada: {item.quantity} · Qiimaha: {money(Number(item.unit_price || 0) * Number(item.quantity || 0))}</Text>
+            <Text style={styles.shopStatusText}>Wadarta dalabka: {order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
+            <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
+            <Text style={styles.shopStatusText}>Bixinta: {String(order.payment_status || '—')} · Habka: {order.payment_method || '—'}</Text>
+            <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
+            <Text style={styles.shopStatusText}>Dalab: {String(order.id).slice(0, 12)}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+
   const renderOrderHistory = () => (
     <View>
       <Text style={styles.sectionTitle}>Dalabyadayda</Text>
@@ -1279,6 +1327,10 @@ export default function App() {
 
           <View style={styles.divider} />
 
+          <Text style={styles.sectionTitle}>Dalabyada dukaankayga</Text>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => { setScreen('seller-orders'); loadMySellerOrders(); }}>
+            <Text style={styles.secondaryButtonText}>Eeg dalabyada iibka</Text>
+          </TouchableOpacity>
           <Text style={styles.sectionTitle}>Alaabtayda</Text>
           <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerProducts}><Text style={styles.secondaryButtonText}>Cusboonaysii alaabta</Text></TouchableOpacity>
           {sellerProductsLoading ? <ActivityIndicator color="#5B2A86" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>Weli alaab kuma jirto dukaankaaga.</Text> : sellerProducts.map(item => (
@@ -1475,6 +1527,7 @@ export default function App() {
         {screen === 'profile' && renderProfile()}
         {screen === 'favorites' && renderFavorites()}
         {screen === 'orders' && renderOrderHistory()}
+        {screen === 'seller-orders' && renderSellerOrders()}
         {screen === 'product' && renderProductDetails()}
       </ScrollView>
 
