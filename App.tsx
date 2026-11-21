@@ -1058,7 +1058,7 @@ export default function App() {
       </View>
 
       {productsLoading ? (
-        <ActivityIndicator size="large" color="#B5121B" />
+        <ActivityIndicator size="large" color="#4A286B" />
       ) : productError ? (
         <Text style={styles.errorText}>{productError}</Text>
       ) : filteredProducts.length === 0 ? (
@@ -1156,61 +1156,103 @@ export default function App() {
   };
 
   const renderSellerWallet = () => (
-    <View>
-      <Text style={styles.sectionTitle}>Wallet-kayga</Text>
-      <TouchableOpacity onPress={() => setScreen('shop')}><Text style={styles.refreshText}>← Ku noqo dukaanka</Text></TouchableOpacity>
-      <View style={styles.shopStatusCard}>
-        <Text style={styles.shopStatusTitle}>Hadhaaga iibkaaga</Text>
-        {walletLoading ? <ActivityIndicator size="large" color="#B5121B" /> : (
+    <View style={styles.walletScreen}>
+      <View style={styles.walletTopRow}>
+        <View>
+          <Text style={styles.walletEyebrow}>IMSIYA SELLER</Text>
+          <Text style={styles.sectionTitle}>Wallet-kayga</Text>
+        </View>
+        <TouchableOpacity style={styles.walletBackButton} onPress={() => setScreen('shop')}>
+          <Text style={styles.walletBackText}>← Dukaankayga</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.walletHero}>
+        <View style={styles.walletHeroTop}>
+          <Text style={styles.walletHeroLabel}>HADHAAGA IIBKAAGA</Text>
+          <Text style={styles.walletCoin}>✦</Text>
+        </View>
+        {walletLoading ? <ActivityIndicator size="large" color="#FFFFFF" /> : (
           <>
-            <Text style={[styles.productPrice, { fontSize: 28 }]}>{money(Number(sellerWallet?.balance || 0))}</Text>
-            <Text style={styles.shopStatusText}>Iibka la xaqiijiyey ayaa lagu daraa wallet-kaaga. IMSIYA kama jarto 5% komishan.</Text>
-            <Text style={styles.shopStatusText}>Cusboonaysiintii ugu dambaysay: {sellerWallet?.updated_at ? new Date(sellerWallet.updated_at).toLocaleString() : '—'}</Text>
+            <Text style={styles.walletBalance}>{money(Number(sellerWallet?.balance || 0))}</Text>
+            <Text style={styles.walletHeroNote}>100% lacagta iibka la xaqiijiyey adigaa leh.</Text>
+            <Text style={styles.walletUpdated}>La cusboonaysiiyey: {sellerWallet?.updated_at ? new Date(sellerWallet.updated_at).toLocaleString() : '—'}</Text>
           </>
         )}
-        <TouchableOpacity style={styles.secondaryButton} onPress={loadSellerWallet} disabled={walletLoading}>
-          <Text style={styles.secondaryButtonText}>Cusboonaysii wallet-ka</Text>
+        <TouchableOpacity style={styles.walletRefreshButton} onPress={loadSellerWallet} disabled={walletLoading}>
+          <Text style={styles.walletRefreshText}>↻  Cusboonaysii wallet-ka</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.sectionTitle}>Taariikhda dhaqdhaqaaqa</Text>
-      {walletLoading ? <ActivityIndicator color="#B5121B" /> : sellerWalletTransactions.length === 0 ? (
-        <Text style={styles.emptyText}>Weli wax dhaqdhaqaaq wallet ah ma jiro.</Text>
-      ) : sellerWalletTransactions.map(tx => (
-        <View key={tx.id} style={styles.shopStatusCard}>
-          <Text style={styles.shopStatusTitle}>{money(Number(tx.amount || 0))} · {tx.transaction_type}</Text>
-          <Text style={styles.shopStatusText}>{tx.description || 'Faahfaahin ma jirto'}</Text>
-          {tx.order_id ? <Text style={styles.shopStatusText}>Dalab: {String(tx.order_id).slice(0, 12)}</Text> : null}
-          <Text style={styles.shopStatusText}>{tx.created_at ? new Date(tx.created_at).toLocaleString() : '—'}</Text>
+
+      <View style={styles.walletSection}>
+        <View style={styles.walletSectionHeading}>
+          <Text style={styles.walletSectionTitle}>Dhaqdhaqaaqa</Text>
+          <Text style={styles.walletSectionCaption}>Taariikhda lacagta</Text>
         </View>
-      ))}
-      <View style={styles.shopStatusCard}>
-        <Text style={styles.shopStatusTitle}>Codso lacag-la-bixin</Text>
-        <Text style={styles.shopStatusText}>Hadda PayPal oo keliya ayaa la dooran karaa. Codsiga lacag-bixinta waxaa marka hore hubinaya maamulka; lacag si toos ah looma dirayo weli.</Text>
-        <Text style={styles.label}>Lacagta (KSh)</Text>
-        <TextInput style={styles.input} keyboardType="decimal-pad" placeholder="Tusaale: 1000" value={payoutAmount} onChangeText={setPayoutAmount} />
-        <Text style={styles.label}>Habka lacagta laguugu dirayo</Text>
-        <View style={[styles.shopStatusCard, { marginTop: 0, marginBottom: 10 }]}>
-          <Text style={styles.shopStatusTitle}>PayPal</Text>
-          <Text style={styles.shopStatusText}>Ku qor email-ka PayPal ee aad rabto in lacagta laguugu diro.</Text>
+        {walletLoading ? <ActivityIndicator color="#4A286B" /> : sellerWalletTransactions.length === 0 ? (
+          <View style={styles.walletEmptyCard}>
+            <Text style={styles.walletEmptyIcon}>↗</Text>
+            <Text style={styles.walletEmptyTitle}>Weli dhaqdhaqaaq ma jiro</Text>
+            <Text style={styles.walletMuted}>Marka iib la xaqiijiyo, halkan ayaad ka arki doontaa.</Text>
+          </View>
+        ) : sellerWalletTransactions.map(tx => (
+          <View key={tx.id} style={styles.walletTransaction}>
+            <View style={styles.walletTransactionIcon}><Text style={styles.walletTransactionIconText}>↗</Text></View>
+            <View style={styles.walletTransactionInfo}>
+              <Text style={styles.walletTransactionTitle}>{tx.transaction_type || 'Iib'}</Text>
+              <Text style={styles.walletMuted}>{tx.description || 'Lacagta iibka'}</Text>
+              {tx.order_id ? <Text style={styles.walletMuted}>Dalab: {String(tx.order_id).slice(0, 12)}</Text> : null}
+              <Text style={styles.walletDate}>{tx.created_at ? new Date(tx.created_at).toLocaleString() : '—'}</Text>
+            </View>
+            <Text style={styles.walletTransactionAmount}>{money(Number(tx.amount || 0))}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.walletPayoutCard}>
+        <Text style={styles.walletSectionTitle}>Codso lacag-bixin</Text>
+        <Text style={styles.walletMuted}>Codsigaaga maamulka ayaa hubinaya. Lacagta si toos ah looma dirayo weli.</Text>
+        <Text style={styles.walletFieldLabel}>Lacagta (KSh)</Text>
+        <TextInput style={[styles.input, styles.walletInput]} keyboardType="decimal-pad" placeholder="Tusaale: 1,000" value={payoutAmount} onChangeText={setPayoutAmount} />
+        <Text style={styles.walletFieldLabel}>Habka lacag-bixinta</Text>
+        <View style={styles.walletMethodSelected}>
+          <View style={styles.walletMethodIcon}><Text style={styles.walletMethodIconText}>P</Text></View>
+          <View style={styles.walletMethodInfo}>
+            <Text style={styles.walletMethodTitle}>PayPal</Text>
+            <Text style={styles.walletMuted}>Lacagta waxaa laguugu diraa email-kaaga PayPal.</Text>
+          </View>
+          <Text style={styles.walletMethodCheck}>✓</Text>
         </View>
-        <Text style={styles.label}>Email-ka PayPal</Text>
-        <TextInput style={styles.input} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" value={payoutAccount} onChangeText={setPayoutAccount} />
-        <View style={[styles.shopStatusCard, { borderColor: '#EBDDBE', marginTop: 4 }]}>
-          <Text style={styles.shopStatusTitle}>M-Pesa — Coming Soon</Text>
-          <Text style={styles.shopStatusText}>Adeegga M-Pesa hadda waa la hakiyey. Waxaa la hawlgelin doonaa marka IMSIYA hesho oo ay diyaariso M-Pesa API iyo shortcode.</Text>
+        <Text style={styles.walletFieldLabel}>Email-ka PayPal</Text>
+        <TextInput style={[styles.input, styles.walletInput]} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" value={payoutAccount} onChangeText={setPayoutAccount} />
+        <View style={styles.walletComingSoon}>
+          <Text style={styles.walletComingTitle}>M-Pesa  ·  Coming Soon</Text>
+          <Text style={styles.walletMuted}>Waxaan hawlgelin doonnaa marka API-ga iyo shortcode-ku diyaar noqdaan.</Text>
         </View>
-        <TouchableOpacity style={[styles.primaryButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
-          {payoutSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Gudbi codsiga lacag-bixinta</Text>}
+        <TouchableOpacity style={[styles.walletSubmitButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
+          {payoutSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.walletSubmitText}>Gudbi codsiga</Text>}
         </TouchableOpacity>
       </View>
-      <Text style={styles.sectionTitle}>Codsiyadayda lacag-bixinta</Text>
-      {payoutRequests.length === 0 ? <Text style={styles.emptyText}>Weli codsi lacag-bixin ma jiro.</Text> : payoutRequests.map(req => (
-        <View key={req.id} style={styles.shopStatusCard}>
-          <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · {req.payout_method === 'mpesa' ? 'M-Pesa' : 'PayPal'}</Text>
-          <Text style={styles.shopStatusText}>Xaalad: {req.status === 'paid' ? 'La bixiyey' : req.status === 'rejected' ? 'La diiday' : req.status === 'processing' ? 'La shaqaynayo' : 'Sugaya maamulka'}</Text>
-          <Text style={styles.shopStatusText}>{req.created_at ? new Date(req.created_at).toLocaleString() : '—'}</Text>
-        </View>
-      ))}
+
+      <View style={styles.walletSection}>
+        <Text style={styles.walletSectionTitle}>Codsiyadayda</Text>
+        {payoutRequests.length === 0 ? (
+          <View style={styles.walletEmptyCard}>
+            <Text style={styles.walletEmptyIcon}>◷</Text>
+            <Text style={styles.walletEmptyTitle}>Codsi lacag-bixin ma jiro</Text>
+            <Text style={styles.walletMuted}>Codsiyada aad gudbiso halkan ayay ka muuqan doonaan.</Text>
+          </View>
+        ) : payoutRequests.map(req => (
+          <View key={req.id} style={styles.walletTransaction}>
+            <View style={styles.walletTransactionInfo}>
+              <Text style={styles.walletTransactionTitle}>{money(Number(req.amount || 0))} · {req.payout_method === 'mpesa' ? 'M-Pesa' : 'PayPal'}</Text>
+              <Text style={styles.walletMuted}>Xaalad: {req.status === 'paid' ? 'La bixiyey' : req.status === 'rejected' ? 'La diiday' : req.status === 'processing' ? 'La shaqaynayo' : 'Sugaya maamulka'}</Text>
+              <Text style={styles.walletDate}>{req.created_at ? new Date(req.created_at).toLocaleString() : '—'}</Text>
+            </View>
+            <Text style={styles.walletStatusDot}>●</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 
@@ -1221,7 +1263,7 @@ export default function App() {
       <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerOrders} disabled={sellerOrdersLoading}>
         <Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text>
       </TouchableOpacity>
-      {sellerOrdersLoading ? <ActivityIndicator size="large" color="#B5121B" /> : sellerOrders.length === 0 ? (
+      {sellerOrdersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : sellerOrders.length === 0 ? (
         <Text style={styles.emptyText}>Weli dalab alaabta dukaankaaga ah ma jiro.</Text>
       ) : sellerOrders.map((item: any) => {
         const order = item.orders;
@@ -1246,7 +1288,7 @@ export default function App() {
       <Text style={styles.sectionTitle}>Dalabyadayda</Text>
       <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={loadMyOrders}><Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text></TouchableOpacity>
-      {ordersLoading ? <ActivityIndicator size="large" color="#B5121B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab kuma jiro akoonkaaga.</Text> : myOrders.map(order => (
+      {ordersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab kuma jiro akoonkaaga.</Text> : myOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
@@ -1411,7 +1453,7 @@ export default function App() {
           <Text style={styles.buttonText}>Cusboonaysii</Text>
         </TouchableOpacity>
       </View>
-      {adminLoading ? <ActivityIndicator size="large" color="#B5121B" /> : pendingSellers.length === 0 ? (
+      {adminLoading ? <ActivityIndicator size="large" color="#4A286B" /> : pendingSellers.length === 0 ? (
         <Text style={styles.emptyText}>Ma jiraan codsiyo sugaya ansixin.</Text>
       ) : pendingSellers.map((seller) => (
         <View key={seller.id} style={styles.shopStatusCard}>
@@ -1495,7 +1537,7 @@ export default function App() {
       </TouchableOpacity>
 
       {shopLoading ? (
-        <ActivityIndicator size="large" color="#B5121B" />
+        <ActivityIndicator size="large" color="#4A286B" />
       ) : (
         <>
           <Text style={styles.label}>Magaca dukaanka</Text>
@@ -1566,7 +1608,7 @@ export default function App() {
           </TouchableOpacity>
           <Text style={styles.sectionTitle}>Alaabtayda</Text>
           <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerProducts}><Text style={styles.secondaryButtonText}>Cusboonaysii alaabta</Text></TouchableOpacity>
-          {sellerProductsLoading ? <ActivityIndicator color="#B5121B" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>Weli alaab kuma jirto dukaankaaga.</Text> : sellerProducts.map(item => (
+          {sellerProductsLoading ? <ActivityIndicator color="#4A286B" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>Weli alaab kuma jirto dukaankaaga.</Text> : sellerProducts.map(item => (
             <View key={item.id} style={styles.shopStatusCard}>
               <Text style={styles.shopStatusTitle}>{item.name}</Text>
               <Text style={styles.shopStatusText}>{money(item.price)} · Kaydka: {item.stock}</Text>
@@ -1673,7 +1715,7 @@ export default function App() {
   if (!session) {
     return (
       <View style={styles.authContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFF8EC" />
+        <StatusBar barStyle="dark-content" backgroundColor="#FCFAFE" />
 
         <Text style={styles.logo}>IMSIYA 🍰</Text>
         <Text style={styles.authSubtitle}>
@@ -1740,7 +1782,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF8EC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FCFAFE" />
 
       <View style={styles.header}>
         <View>
@@ -1814,35 +1856,35 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8EC',
+    backgroundColor: '#FCFAFE',
   },
   authContainer: {
     flex: 1,
-    backgroundColor: '#FFF8EC',
+    backgroundColor: '#FCFAFE',
     justifyContent: 'center',
     padding: 24,
   },
   logo: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#B5121B',
+    color: '#4A286B',
     textAlign: 'center',
     marginBottom: 8,
   },
   authSubtitle: {
     textAlign: 'center',
-    color: '#80695A',
+    color: '#6F6478',
     marginBottom: 30,
     fontSize: 15,
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#EBDDBE',
+    borderColor: '#E7DDF0',
     borderRadius: 12,
     padding: 14,
     marginBottom: 14,
-    color: '#39221B',
+    color: '#2E203B',
     fontSize: 15,
   },
   multilineInput: {
@@ -1850,7 +1892,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primaryButton: {
-    backgroundColor: '#E5A928',
+    backgroundColor: '#F3A33B',
     padding: 15,
     borderRadius: 14,
     alignItems: 'center',
@@ -1870,7 +1912,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   authSwitchText: {
-    color: '#B5121B',
+    color: '#4A286B',
     fontWeight: '600',
   },
   header: {
@@ -1878,7 +1920,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#EBD5A8',
+    borderBottomColor: '#E5D9EF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1886,14 +1928,14 @@ const styles = StyleSheet.create({
   headerLogo: {
     fontSize: 23,
     fontWeight: 'bold',
-    color: '#B5121B',
+    color: '#4A286B',
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#80695A',
+    color: '#6F6478',
   },
   logoutText: {
-    color: '#D97706',
+    color: '#F09A2A',
     fontWeight: 'bold',
   },
   content: {
@@ -1904,12 +1946,12 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   hero: {
-    backgroundColor: '#B5121B',
+    backgroundColor: '#4A286B',
     borderRadius: 22,
     padding: 22,
     marginBottom: 20,
     borderLeftWidth: 5,
-    borderLeftColor: '#E5A928',
+    borderLeftColor: '#F3A33B',
     elevation: 3,
   },
   heroTitle: {
@@ -1928,15 +1970,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#EBDDBE',
+    borderColor: '#E7DDF0',
     marginBottom: 14,
-    color: '#39221B',
+    color: '#2E203B',
   },
   categoryScroll: {
     marginBottom: 18,
   },
   categoryButton: {
-    backgroundColor: '#FCECCB',
+    backgroundColor: '#F3E8FA',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
@@ -1944,10 +1986,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categorySelected: {
-    backgroundColor: '#B5121B',
+    backgroundColor: '#4A286B',
   },
   categoryText: {
-    color: '#7A2924',
+    color: '#624678',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -1961,13 +2003,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    color: '#8E1018',
+    color: '#38204F',
     fontWeight: 'bold',
     fontSize: 21,
     marginBottom: 14,
   },
   refreshText: {
-    color: '#B5121B',
+    color: '#4A286B',
     fontWeight: 'bold',
   },
   productGrid: {
@@ -1976,9 +2018,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   favoriteToggle: { alignSelf: 'flex-end', paddingHorizontal: 5, paddingVertical: 1 },
-  favoriteToggleText: { color: '#D97706', fontSize: 22, fontWeight: 'bold' },
-  profileAction: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0DFC0', borderRadius: 15, padding: 16, marginBottom: 10 },
-  profileActionText: { color: '#B5121B', fontWeight: 'bold', fontSize: 15 },
+  favoriteToggleText: { color: '#F09A2A', fontSize: 22, fontWeight: 'bold' },
+  profileAction: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7DDF0', borderRadius: 15, padding: 16, marginBottom: 10 },
+  profileActionText: { color: '#4A286B', fontWeight: 'bold', fontSize: 15 },
   productCard: {
     width: '48%',
     backgroundColor: '#FFFFFF',
@@ -1986,7 +2028,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#F0DFC0',
+    borderColor: '#E7DDF0',
     elevation: 2,
   },
   productImage: {
@@ -2006,29 +2048,29 @@ const styles = StyleSheet.create({
     fontSize: 42,
   },
   productName: {
-    color: '#39221B',
+    color: '#2E203B',
     fontWeight: 'bold',
     fontSize: 15,
     marginTop: 9,
   },
   productCategory: {
-    color: '#9A806B',
+    color: '#81738B',
     fontSize: 12,
     marginTop: 4,
   },
   productPrice: {
-    color: '#B5121B',
+    color: '#4A286B',
     fontWeight: 'bold',
     fontSize: 15,
     marginTop: 6,
   },
   stockText: {
-    color: '#80695A',
+    color: '#6F6478',
     fontSize: 11,
     marginTop: 4,
   },
   emptyText: {
-    color: '#80695A',
+    color: '#6F6478',
     textAlign: 'center',
     padding: 25,
   },
@@ -2042,7 +2084,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#F0DFC0',
+    borderColor: '#E7DDF0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -2056,7 +2098,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   quantityButton: {
-    backgroundColor: '#FCECCB',
+    backgroundColor: '#F3E8FA',
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -2064,12 +2106,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButtonText: {
-    color: '#8E1018',
+    color: '#38204F',
     fontSize: 20,
     fontWeight: 'bold',
   },
   quantityText: {
-    color: '#39221B',
+    color: '#2E203B',
     fontWeight: 'bold',
     paddingHorizontal: 12,
   },
@@ -2081,26 +2123,26 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#8E1018',
+    color: '#38204F',
   },
   totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#B5121B',
+    color: '#4A286B',
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: '#B5121B',
+    borderColor: '#4A286B',
     padding: 13,
     borderRadius: 12,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#B5121B',
+    color: '#4A286B',
     fontWeight: 'bold',
   },
   label: {
-    color: '#8E1018',
+    color: '#38204F',
     fontWeight: 'bold',
     marginBottom: 7,
     marginTop: 8,
@@ -2111,21 +2153,21 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginTop: 15,
     borderWidth: 1,
-    borderColor: '#EBDDBE',
+    borderColor: '#E7DDF0',
   },
   shopStatusTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#8E1018',
+    color: '#38204F',
     marginBottom: 8,
   },
   shopStatusText: {
-    color: '#80695A',
+    color: '#6F6478',
     marginBottom: 6,
   },
   divider: {
     height: 1,
-    backgroundColor: '#EBDDBE',
+    backgroundColor: '#E7DDF0',
     marginVertical: 24,
   },
   categoryChoices: {
@@ -2137,7 +2179,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#EBD5A8',
+    borderTopColor: '#E5D9EF',
     paddingVertical: 12,
     elevation: 8,
     justifyContent: 'space-around',
@@ -2150,10 +2192,55 @@ const styles = StyleSheet.create({
     fontSize: 21,
   },
   navText: {
-    color: '#7A2924',
+    color: '#624678',
     fontSize: 11,
     fontWeight: '600',
     marginTop: 3,
   },
+
+  walletScreen: { paddingBottom: 28 },
+  walletTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  walletEyebrow: { color: '#F09A2A', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
+  walletBackButton: { backgroundColor: '#F3E8FA', paddingHorizontal: 12, paddingVertical: 9, borderRadius: 18 },
+  walletBackText: { color: '#4A286B', fontSize: 12, fontWeight: '700' },
+  walletHero: { backgroundColor: '#38204F', borderRadius: 24, padding: 21, marginBottom: 24, elevation: 5 },
+  walletHeroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  walletHeroLabel: { color: '#E9DDF3', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
+  walletCoin: { color: '#F3A33B', fontSize: 24, fontWeight: 'bold' },
+  walletBalance: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', marginTop: 13, marginBottom: 6 },
+  walletHeroNote: { color: '#F5EDF9', fontSize: 13, marginBottom: 5 },
+  walletUpdated: { color: '#CDBDDA', fontSize: 10, marginTop: 7 },
+  walletRefreshButton: { alignSelf: 'flex-start', backgroundColor: '#FFFFFF', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 18, marginTop: 17 },
+  walletRefreshText: { color: '#4A286B', fontWeight: '800', fontSize: 12 },
+  walletSection: { marginBottom: 22 },
+  walletSectionHeading: { marginBottom: 12 },
+  walletSectionTitle: { color: '#38204F', fontWeight: '800', fontSize: 18, marginBottom: 5 },
+  walletSectionCaption: { color: '#81738B', fontSize: 12 },
+  walletEmptyCard: { backgroundColor: '#F5F0F9', borderRadius: 18, padding: 22, alignItems: 'center', borderWidth: 1, borderColor: '#E7DDF0' },
+  walletEmptyIcon: { color: '#F09A2A', fontSize: 27, marginBottom: 8 },
+  walletEmptyTitle: { color: '#38204F', fontSize: 14, fontWeight: '800', marginBottom: 5 },
+  walletMuted: { color: '#81738B', fontSize: 12, lineHeight: 18 },
+  walletTransaction: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E7DDF0', padding: 14, marginBottom: 9, flexDirection: 'row', alignItems: 'center' },
+  walletTransactionIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#F3E8FA', alignItems: 'center', justifyContent: 'center', marginRight: 11 },
+  walletTransactionIconText: { color: '#4A286B', fontSize: 20, fontWeight: '800' },
+  walletTransactionInfo: { flex: 1 },
+  walletTransactionTitle: { color: '#38204F', fontSize: 13, fontWeight: '800', marginBottom: 3 },
+  walletDate: { color: '#A095AA', fontSize: 10, marginTop: 5 },
+  walletTransactionAmount: { color: '#4A286B', fontSize: 13, fontWeight: '800', marginLeft: 8 },
+  walletPayoutCard: { backgroundColor: '#FFFFFF', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: '#E7DDF0', marginBottom: 23, elevation: 2 },
+  walletFieldLabel: { color: '#38204F', fontSize: 12, fontWeight: '800', marginTop: 15, marginBottom: 7 },
+  walletInput: { borderColor: '#E3D8EC', borderRadius: 13, marginBottom: 2, backgroundColor: '#FCFAFE' },
+  walletMethodSelected: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#F5F0F9', borderRadius: 15, borderWidth: 1, borderColor: '#D9C9E8' },
+  walletMethodIcon: { width: 35, height: 35, borderRadius: 18, backgroundColor: '#4A286B', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  walletMethodIconText: { color: '#FFFFFF', fontWeight: '900', fontSize: 16 },
+  walletMethodInfo: { flex: 1 },
+  walletMethodTitle: { color: '#38204F', fontWeight: '800', fontSize: 13, marginBottom: 2 },
+  walletMethodCheck: { color: '#F09A2A', fontSize: 18, fontWeight: '900', marginLeft: 8 },
+  walletComingSoon: { backgroundColor: '#FFF8EE', borderColor: '#F5D8B2', borderWidth: 1, borderRadius: 14, padding: 12, marginTop: 15 },
+  walletComingTitle: { color: '#9A5A13', fontWeight: '800', fontSize: 12, marginBottom: 4 },
+  walletSubmitButton: { backgroundColor: '#F09A2A', paddingVertical: 15, borderRadius: 15, alignItems: 'center', marginTop: 18 },
+  walletSubmitText: { color: '#38204F', fontWeight: '900', fontSize: 14 },
+  walletStatusDot: { color: '#F09A2A', fontSize: 15, marginLeft: 12 },
+
 });
 
