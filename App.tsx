@@ -70,6 +70,8 @@ const orderStatusLabel = (status: unknown, paymentStatus: unknown) => {
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
+  const [language, setLanguage] = useState<'en' | 'so'>('en');
+  const tr = (somali: string, english: string) => language === 'en' ? english : somali;
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [email, setEmail] = useState('');
@@ -1002,7 +1004,7 @@ export default function App() {
         disabled={product.stock <= 0}
         onPress={() => addToCart(product)}
       >
-        <Text style={styles.buttonText}>Ku dar cart-ka</Text>
+        <Text style={styles.buttonText}>{tr("Ku dar cart-ka", "Add to cart")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -1010,7 +1012,7 @@ export default function App() {
   const renderHome = () => (
     <>
       <View style={styles.hero}>
-        <Text style={styles.heroTitle}>Ku soo dhowow IMSIYA</Text>
+        <Text style={styles.heroTitle}>{tr("Ku soo dhowow IMSIYA", "Welcome to IMSIYA")}</Text>
         <Text style={styles.heroText}>
           Macmacaanka aad jeceshahay — hal meel.
         </Text>
@@ -1018,7 +1020,7 @@ export default function App() {
 
       <TextInput
         style={styles.searchInput}
-        placeholder="Raadi macmacaan..."
+        placeholder=tr("Raadi macmacaan...", "Search sweets...")
         placeholderTextColor="#888"
         value={search}
         onChangeText={setSearch}
@@ -1051,9 +1053,9 @@ export default function App() {
       </ScrollView>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Alaabaha Caanka ah</Text>
+        <Text style={styles.sectionTitle}>{tr("Alaabaha Caanka ah", "Popular Products")}</Text>
         <TouchableOpacity onPress={() => { loadProducts(); loadCategories(); }}>
-          <Text style={styles.refreshText}>Cusboonaysii</Text>
+          <Text style={styles.refreshText}>{tr("Cusboonaysii", "Refresh")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1062,7 +1064,7 @@ export default function App() {
       ) : productError ? (
         <Text style={styles.errorText}>{productError}</Text>
       ) : filteredProducts.length === 0 ? (
-        <Text style={styles.emptyText}>Weli alaab lama helin.</Text>
+        <Text style={styles.emptyText}>{tr("Weli alaab lama helin.", "No products found yet.")}</Text>
       ) : (
         <View style={styles.productGrid}>
           {filteredProducts.map(renderProduct)}
@@ -1078,7 +1080,7 @@ export default function App() {
     }
 
     if (cart.length === 0) {
-      Alert.alert('IMSIYA', 'Cart-kaagu waa madhan yahay.');
+      Alert.alert('IMSIYA', tr("Cart-kaagu waa madhan yahay.", "Your cart is empty."));
       return;
     }
 
@@ -1169,13 +1171,13 @@ export default function App() {
 
       <View style={styles.walletHero}>
         <View style={styles.walletHeroTop}>
-          <Text style={styles.walletHeroLabel}>HADHAAGA IIBKAAGA</Text>
+          <Text style={styles.walletHeroLabel}>{tr("HADHAAGA IIBKAAGA", "YOUR SALES BALANCE")}</Text>
           <Text style={styles.walletCoin}>✦</Text>
         </View>
         {walletLoading ? <ActivityIndicator size="large" color="#FFFFFF" /> : (
           <>
             <Text style={styles.walletBalance}>{money(Number(sellerWallet?.balance || 0))}</Text>
-            <Text style={styles.walletHeroNote}>100% lacagta iibka la xaqiijiyey adigaa leh.</Text>
+            <Text style={styles.walletHeroNote}>{tr("100% lacagta iibka la xaqiijiyey adigaa leh.", "You keep 100% of your verified sales.")}</Text>
             <Text style={styles.walletUpdated}>La cusboonaysiiyey: {sellerWallet?.updated_at ? new Date(sellerWallet.updated_at).toLocaleString() : '—'}</Text>
           </>
         )}
@@ -1186,14 +1188,14 @@ export default function App() {
 
       <View style={styles.walletSection}>
         <View style={styles.walletSectionHeading}>
-          <Text style={styles.walletSectionTitle}>Dhaqdhaqaaqa</Text>
-          <Text style={styles.walletSectionCaption}>Taariikhda lacagta</Text>
+          <Text style={styles.walletSectionTitle}>{tr("Dhaqdhaqaaqa", "Activity")}</Text>
+          <Text style={styles.walletSectionCaption}>{tr("Taariikhda lacagta", "Transaction history")}</Text>
         </View>
         {walletLoading ? <ActivityIndicator color="#4A286B" /> : sellerWalletTransactions.length === 0 ? (
           <View style={styles.walletEmptyCard}>
             <Text style={styles.walletEmptyIcon}>↗</Text>
-            <Text style={styles.walletEmptyTitle}>Weli dhaqdhaqaaq ma jiro</Text>
-            <Text style={styles.walletMuted}>Marka iib la xaqiijiyo, halkan ayaad ka arki doontaa.</Text>
+            <Text style={styles.walletEmptyTitle}>{tr("Weli dhaqdhaqaaq ma jiro", "No activity yet")}</Text>
+            <Text style={styles.walletMuted}>{tr("Marka iib la xaqiijiyo, halkan ayaad ka arki doontaa.", "Verified sales will appear here.")}</Text>
           </View>
         ) : sellerWalletTransactions.map(tx => (
           <View key={tx.id} style={styles.walletTransaction}>
@@ -1210,11 +1212,11 @@ export default function App() {
       </View>
 
       <View style={styles.walletPayoutCard}>
-        <Text style={styles.walletSectionTitle}>Codso lacag-bixin</Text>
+        <Text style={styles.walletSectionTitle}>{tr("Codso lacag-bixin", "Request a payout")}</Text>
         <Text style={styles.walletMuted}>Codsigaaga maamulka ayaa hubinaya. Lacagta si toos ah looma dirayo weli.</Text>
-        <Text style={styles.walletFieldLabel}>Lacagta (KSh)</Text>
+        <Text style={styles.walletFieldLabel}>{tr("Lacagta (KSh)", "Amount (KSh)")}</Text>
         <TextInput style={[styles.input, styles.walletInput]} keyboardType="decimal-pad" placeholder="Tusaale: 1,000" value={payoutAmount} onChangeText={setPayoutAmount} />
-        <Text style={styles.walletFieldLabel}>Habka lacag-bixinta</Text>
+        <Text style={styles.walletFieldLabel}>{tr("Habka lacag-bixinta", "Payout method")}</Text>
         <View style={styles.walletMethodSelected}>
           <View style={styles.walletMethodIcon}><Text style={styles.walletMethodIconText}>P</Text></View>
           <View style={styles.walletMethodInfo}>
@@ -1223,19 +1225,19 @@ export default function App() {
           </View>
           <Text style={styles.walletMethodCheck}>✓</Text>
         </View>
-        <Text style={styles.walletFieldLabel}>Email-ka PayPal</Text>
+        <Text style={styles.walletFieldLabel}>{tr("Email-ka PayPal", "PayPal email")}</Text>
         <TextInput style={[styles.input, styles.walletInput]} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" value={payoutAccount} onChangeText={setPayoutAccount} />
         <View style={styles.walletComingSoon}>
           <Text style={styles.walletComingTitle}>M-Pesa  ·  Coming Soon</Text>
           <Text style={styles.walletMuted}>Waxaan hawlgelin doonnaa marka API-ga iyo shortcode-ku diyaar noqdaan.</Text>
         </View>
         <TouchableOpacity style={[styles.walletSubmitButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
-          {payoutSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.walletSubmitText}>Gudbi codsiga</Text>}
+          {payoutSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.walletSubmitText}>{tr("Gudbi codsiga", "Submit request")}</Text>}
         </TouchableOpacity>
       </View>
 
       <View style={styles.walletSection}>
-        <Text style={styles.walletSectionTitle}>Codsiyadayda</Text>
+        <Text style={styles.walletSectionTitle}>{tr("Codsiyadayda", "My Requests")}</Text>
         {payoutRequests.length === 0 ? (
           <View style={styles.walletEmptyCard}>
             <Text style={styles.walletEmptyIcon}>◷</Text>
@@ -1258,10 +1260,10 @@ export default function App() {
 
   const renderSellerOrders = () => (
     <View>
-      <Text style={styles.sectionTitle}>Dalabyada dukaankayga</Text>
-      <TouchableOpacity onPress={() => setScreen('shop')}><Text style={styles.refreshText}>← Ku noqo dukaanka</Text></TouchableOpacity>
+      <Text style={styles.sectionTitle}>{tr("Dalabyada dukaankayga", "My Shop Orders")}</Text>
+      <TouchableOpacity onPress={() => setScreen('shop')}><Text style={styles.refreshText}>{tr("← Ku noqo dukaanka", "← Back to Shop")}</Text></TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerOrders} disabled={sellerOrdersLoading}>
-        <Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text>
+        <Text style={styles.secondaryButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
       </TouchableOpacity>
       {sellerOrdersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : sellerOrders.length === 0 ? (
         <Text style={styles.emptyText}>Weli dalab alaabta dukaankaaga ah ma jiro.</Text>
@@ -1285,10 +1287,10 @@ export default function App() {
 
   const renderOrderHistory = () => (
     <View>
-      <Text style={styles.sectionTitle}>Dalabyadayda</Text>
+      <Text style={styles.sectionTitle}>{tr("Dalabyadayda", "My Orders")}</Text>
       <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
-      <TouchableOpacity style={styles.secondaryButton} onPress={loadMyOrders}><Text style={styles.secondaryButtonText}>Cusboonaysii dalabyada</Text></TouchableOpacity>
-      {ordersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab kuma jiro akoonkaaga.</Text> : myOrders.map(order => (
+      <TouchableOpacity style={styles.secondaryButton} onPress={loadMyOrders}><Text style={styles.secondaryButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text></TouchableOpacity>
+      {ordersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>{tr("Weli dalab kuma jiro akoonkaaga.", "You have no orders yet.")}</Text> : myOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
@@ -1304,7 +1306,7 @@ export default function App() {
   const renderProfile = () => (
     <View>
       <View style={styles.hero}>
-        <Text style={styles.heroTitle}>Akoonkayga</Text>
+        <Text style={styles.heroTitle}>{tr("Akoonkayga", "My Account")}</Text>
         <Text style={styles.heroText}>{session?.user?.user_metadata?.full_name || fullName || 'Macmiilka IMSIYA'}</Text>
       </View>
       <View style={styles.shopStatusCard}>
@@ -1335,7 +1337,7 @@ export default function App() {
     const favoriteProducts = products.filter(product => favoriteIds.includes(product.id));
     return (
       <View>
-        <Text style={styles.sectionTitle}>Alaabta aan jeclahay</Text>
+        <Text style={styles.sectionTitle}>{tr("Alaabta aan jeclahay", "My Favorites")}</Text>
         <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
         {favoriteProducts.length === 0 ? <Text style={styles.emptyText}>Weli ma aadan dooran alaab aad jeceshahay.</Text> : <View style={styles.productGrid}>{favoriteProducts.map(renderProduct)}</View>}
       </View>
@@ -1354,7 +1356,7 @@ export default function App() {
         <Text style={styles.shopStatusText}>{selectedProduct.description?.trim() || 'Sharaxaad dheeraad ah weli lama gelin.'}</Text>
         <Text style={styles.stockText}>{selectedProduct.stock > 0 ? `Kaydka: ${selectedProduct.stock}` : 'Waa dhammaatay'}</Text>
         <TouchableOpacity style={[styles.primaryButton, selectedProduct.stock <= 0 && styles.disabledButton]} disabled={selectedProduct.stock <= 0} onPress={() => addToCart(selectedProduct)}>
-          <Text style={styles.buttonText}>Ku dar cart-ka</Text>
+          <Text style={styles.buttonText}>{tr("Ku dar cart-ka", "Add to cart")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -1362,10 +1364,10 @@ export default function App() {
 
   const renderCart = () => (
     <View>
-      <Text style={styles.sectionTitle}>Cart-kaaga</Text>
+      <Text style={styles.sectionTitle}>{tr("Cart-kaaga", "Your Cart")}</Text>
 
       {cart.length === 0 ? (
-        <Text style={styles.emptyText}>Cart-kaagu waa madhan yahay.</Text>
+        <Text style={styles.emptyText}>{tr("Cart-kaagu waa madhan yahay.", "Your cart is empty.")}</Text>
       ) : (
         <>
           {cart.map(item => (
@@ -1404,7 +1406,7 @@ export default function App() {
           ))}
 
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Wadarta</Text>
+            <Text style={styles.totalLabel}>{tr("Wadarta", "Total")}</Text>
             <Text style={styles.totalAmount}>{money(cartTotal)}</Text>
           </View>
 
@@ -1416,7 +1418,7 @@ export default function App() {
             {checkoutLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Ku bixi PayPal</Text>
+              <Text style={styles.buttonText}>{tr("Ku bixi PayPal", "Pay with PayPal")}</Text>
             )}
           </TouchableOpacity>
 
@@ -1424,7 +1426,7 @@ export default function App() {
             style={styles.secondaryButton}
             onPress={() => setCart([])}
           >
-            <Text style={styles.secondaryButtonText}>Nadiifi cart-ka</Text>
+            <Text style={styles.secondaryButtonText}>{tr("Nadiifi cart-ka", "Clear cart")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -1434,7 +1436,7 @@ export default function App() {
   const renderAdmin = () => (
     <View>
       <View style={styles.hero}>
-        <Text style={styles.heroTitle}>Maamulka IMSIYA</Text>
+        <Text style={styles.heroTitle}>{tr("Maamulka IMSIYA", "IMSIYA Admin")}</Text>
         <Text style={styles.heroText}>Super Admin Dashboard · {session?.user?.email}</Text>
       </View>
       {profileRole === 'super_admin' && (
@@ -1447,10 +1449,10 @@ export default function App() {
         </View>
       )}
       <View style={styles.shopStatusCard}>
-        <Text style={styles.shopStatusTitle}>Codsiyada iibiyeyaasha</Text>
+        <Text style={styles.shopStatusTitle}>{tr("Codsiyada iibiyeyaasha", "Seller Applications")}</Text>
         <Text style={styles.shopStatusText}>Sugaya ansixinta: {pendingSellers.length}</Text>
         <TouchableOpacity style={styles.primaryButton} onPress={loadAdminData}>
-          <Text style={styles.buttonText}>Cusboonaysii</Text>
+          <Text style={styles.buttonText}>{tr("Cusboonaysii", "Refresh")}</Text>
         </TouchableOpacity>
       </View>
       {adminLoading ? <ActivityIndicator size="large" color="#4A286B" /> : pendingSellers.length === 0 ? (
@@ -1468,13 +1470,13 @@ export default function App() {
       <Text style={styles.emptyText}>Xusuusin: ansixinta iibiyaha ma dhaqaajiso dukaanka ilaa lacagta subscription-ka $20 la xaqiijiyo.</Text>
 
       <View style={styles.shopStatusCard}>
-        <Text style={styles.shopStatusTitle}>Guudmar maamulka</Text>
+        <Text style={styles.shopStatusTitle}>{tr("Guudmar maamulka", "Admin Overview")}</Text>
         <Text style={styles.shopStatusText}>Dalabyada: {adminOrders.length} kii ugu dambeeyey</Text>
         <Text style={styles.shopStatusText}>Subscriptions: {adminSubscriptions.length} kii ugu dambeeyey</Text>
         <Text style={styles.shopStatusText}>Wallet transactions: {adminWallet.length} kii ugu dambeeyey</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Dalabyada macaamiisha</Text>
+      <Text style={styles.sectionTitle}>{tr("Dalabyada macaamiisha", "Customer Orders")}</Text>
       {adminOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab ma jiro.</Text> : adminOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
@@ -1493,7 +1495,7 @@ export default function App() {
         </View>
       ))}
 
-      <Text style={styles.sectionTitle}>Lacagaha dukaamada ($20 bishii)</Text>
+      <Text style={styles.sectionTitle}>{tr("Lacagaha dukaamada ($20 bishii)", "Shop Subscriptions ($20/month)")}</Text>
       {adminSubscriptions.length === 0 ? <Text style={styles.emptyText}>Weli subscription lama diiwaangelin.</Text> : adminSubscriptions.map(sub => (
         <View key={sub.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{sub.currency || 'USD'} {Number(sub.amount || 0).toFixed(2)} · {sub.status}</Text>
@@ -1503,7 +1505,7 @@ export default function App() {
         </View>
       ))}
 
-      <Text style={styles.sectionTitle}>Codsiyada lacag-bixinta iibiyeyaasha</Text>
+      <Text style={styles.sectionTitle}>{tr("Codsiyada lacag-bixinta iibiyeyaasha", "Seller Payout Requests")}</Text>
       {adminPayoutRequests.length === 0 ? <Text style={styles.emptyText}>Weli codsi lacag-bixin ma jiro.</Text> : adminPayoutRequests.map(req => (
         <View key={req.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · {req.payout_method === 'mpesa' ? 'M-Pesa' : 'PayPal'}</Text>
@@ -1517,7 +1519,7 @@ export default function App() {
         </View>
       ))}
 
-      <Text style={styles.sectionTitle}>Dhaqdhaqaaqa wallet-ka iibiyeyaasha</Text>
+      <Text style={styles.sectionTitle}>{tr("Dhaqdhaqaaqa wallet-ka iibiyeyaasha", "Seller Wallet Activity")}</Text>
       {adminWallet.length === 0 ? <Text style={styles.emptyText}>Weli dhaqdhaqaaq wallet ma jiro.</Text> : adminWallet.map(tx => (
         <View key={tx.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{money(Number(tx.amount || 0))} · {tx.transaction_type}</Text>
@@ -1531,7 +1533,7 @@ export default function App() {
 
   const renderShop = () => (
     <View>
-      <Text style={styles.sectionTitle}>Dukaankayga</Text>
+      <Text style={styles.sectionTitle}>{tr("Dukaankayga", "My Shop")}</Text>
       <TouchableOpacity style={styles.secondaryButton} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}>
         <Text style={styles.secondaryButtonText}>💰 Fur Wallet-kayga</Text>
       </TouchableOpacity>
@@ -1540,7 +1542,7 @@ export default function App() {
         <ActivityIndicator size="large" color="#4A286B" />
       ) : (
         <>
-          <Text style={styles.label}>Magaca dukaanka</Text>
+          <Text style={styles.label}>{tr("Magaca dukaanka", "Shop Name")}</Text>
           <TextInput
             style={styles.input}
             placeholder="Tusaale: IMSIYA Sweets"
@@ -1548,7 +1550,7 @@ export default function App() {
             onChangeText={setShopName}
           />
 
-          <Text style={styles.label}>Sharaxaadda dukaanka</Text>
+          <Text style={styles.label}>{tr("Sharaxaadda dukaanka", "Shop Description")}</Text>
           <TextInput
             style={[styles.input, styles.multilineInput]}
             placeholder="Wax ka sheeg dukaankaaga..."
@@ -1573,13 +1575,13 @@ export default function App() {
                 {myShop.shop_name}
               </Text>
               <Text style={styles.shopStatusText}>
-                Xaaladda: {myShop.active ? 'Wuu furan yahay' : 'Weli ma furna'}
+                Xaaladda: {myShop.active ? tr("Wuu furan yahay", "Open") : tr("Weli ma furna", "Not active yet")}
               </Text>
               <Text style={styles.shopStatusText}>
                 Lacagta dukaanka: $20 USD bishii
               </Text>
               <TouchableOpacity style={styles.secondaryButton} onPress={loadMyShop} disabled={shopLoading}>
-                <Text style={styles.secondaryButtonText}>Hubi xaaladda dukaanka</Text>
+                <Text style={styles.secondaryButtonText}>{tr("Hubi xaaladda dukaanka", "Check Shop Status")}</Text>
               </TouchableOpacity>
 
               {!myShop.active && (
@@ -1602,43 +1604,43 @@ export default function App() {
 
           <View style={styles.divider} />
 
-          <Text style={styles.sectionTitle}>Dalabyada dukaankayga</Text>
+          <Text style={styles.sectionTitle}>{tr("Dalabyada dukaankayga", "My Shop Orders")}</Text>
           <TouchableOpacity style={styles.secondaryButton} onPress={() => { setScreen('seller-orders'); loadMySellerOrders(); }}>
-            <Text style={styles.secondaryButtonText}>Eeg dalabyada iibka</Text>
+            <Text style={styles.secondaryButtonText}>{tr("Eeg dalabyada iibka", "View Sales Orders")}</Text>
           </TouchableOpacity>
-          <Text style={styles.sectionTitle}>Alaabtayda</Text>
-          <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerProducts}><Text style={styles.secondaryButtonText}>Cusboonaysii alaabta</Text></TouchableOpacity>
-          {sellerProductsLoading ? <ActivityIndicator color="#4A286B" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>Weli alaab kuma jirto dukaankaaga.</Text> : sellerProducts.map(item => (
+          <Text style={styles.sectionTitle}>{tr("Alaabtayda", "My Products")}</Text>
+          <TouchableOpacity style={styles.secondaryButton} onPress={loadMySellerProducts}><Text style={styles.secondaryButtonText}>{tr("Cusboonaysii alaabta", "Refresh Products")}</Text></TouchableOpacity>
+          {sellerProductsLoading ? <ActivityIndicator color="#4A286B" /> : sellerProducts.length === 0 ? <Text style={styles.emptyText}>{tr("Weli alaab kuma jirto dukaankaaga.", "Your shop has no products yet.")}</Text> : sellerProducts.map(item => (
             <View key={item.id} style={styles.shopStatusCard}>
               <Text style={styles.shopStatusTitle}>{item.name}</Text>
               <Text style={styles.shopStatusText}>{money(item.price)} · Kaydka: {item.stock}</Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => beginEditProduct(item)}><Text style={styles.secondaryButtonText}>Tafatir</Text></TouchableOpacity>
-                <TouchableOpacity style={[styles.secondaryButton, { flex: 1, borderColor: '#B3261E' }]} onPress={() => deleteSellerProduct(item.id)}><Text style={[styles.secondaryButtonText, { color: '#B3261E' }]}>Tirtir</Text></TouchableOpacity>
+                <TouchableOpacity style={[styles.secondaryButton, { flex: 1, borderColor: '#B3261E' }]} onPress={() => deleteSellerProduct(item.id)}><Text style={[styles.secondaryButtonText, { color: '#B3261E' }]}>{tr("Tirtir", "Delete")}</Text></TouchableOpacity>
               </View>
             </View>
           ))}
 
-          <Text style={styles.sectionTitle}>{editingProductId ? 'Tafatir alaabta' : 'Ku dar alaab cusub'}</Text>
-          {editingProductId && <TouchableOpacity onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductImageMimeType(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>Jooji tafatirka</Text></TouchableOpacity>}
+          <Text style={styles.sectionTitle}>{editingProductId ? tr("Tafatir alaabta", "Edit Product") : tr("Ku dar alaab cusub", "Add New Product")}</Text>
+          {editingProductId && <TouchableOpacity onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductImageMimeType(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>{tr("Jooji tafatirka", "Cancel Editing")}</Text></TouchableOpacity>}
 
-          <Text style={styles.label}>Magaca alaabta</Text>
+          <Text style={styles.label}>{tr("Magaca alaabta", "Product Name")}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Magaca macmacaanka"
+            placeholder=tr("Magaca macmacaanka", "Sweet Name")
             value={productName}
             onChangeText={setProductName}
           />
 
-          <Text style={styles.label}>Sharaxaadda</Text>
+          <Text style={styles.label}>{tr("Sharaxaadda", "Description")}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Sharax alaabta"
+            placeholder=tr("Sharax alaabta", "Describe the product")
             value={productDescription}
             onChangeText={setProductDescription}
           />
 
-          <Text style={styles.label}>Qiimaha (KSh)</Text>
+          <Text style={styles.label}>{tr("Qiimaha (KSh)", "Price (KSh)")}</Text>
           <TextInput
             style={styles.input}
             placeholder="Tusaale: 500"
@@ -1647,7 +1649,7 @@ export default function App() {
             keyboardType="numeric"
           />
 
-          <Text style={styles.label}>Tirada kaydka</Text>
+          <Text style={styles.label}>{tr("Tirada kaydka", "Stock Quantity")}</Text>
           <TextInput
             style={styles.input}
             placeholder="10"
@@ -1656,9 +1658,9 @@ export default function App() {
             keyboardType="numeric"
           />
 
-          <Text style={styles.label}>Sawirka alaabta</Text>
+          <Text style={styles.label}>{tr("Sawirka alaabta", "Product Image")}</Text>
           <TouchableOpacity style={styles.secondaryButton} onPress={pickProductImage} disabled={productImageUploading}>
-            <Text style={styles.secondaryButtonText}>Ka dooro sawir telefoonka</Text>
+            <Text style={styles.secondaryButtonText}>{tr("Ka dooro sawir telefoonka", "Choose a photo from your phone")}</Text>
           </TouchableOpacity>
           {productImage ? <Image source={{ uri: productImage }} style={{ width: '100%', height: 180, borderRadius: 14, marginVertical: 10 }} resizeMode="cover" /> : null}
           <Text style={styles.shopStatusText}>Sawirka JPG, PNG ama WEBP; ugu badnaan 5 MB.</Text>
@@ -1670,7 +1672,7 @@ export default function App() {
             autoCapitalize="none"
           />
 
-          <Text style={styles.label}>Qaybta alaabta</Text>
+          <Text style={styles.label}>{tr("Qaybta alaabta", "Product Category")}</Text>
           <View style={styles.categoryChoices}>
             {categoryRows.map(item => item.name).map(item => (
               <TouchableOpacity
@@ -1704,7 +1706,7 @@ export default function App() {
             {addingProduct || productImageUploading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>{editingProductId ? 'Kaydi isbeddelka' : 'Ku dar alaabta'}</Text>
+              <Text style={styles.buttonText}>{editingProductId ? tr("Kaydi isbeddelka", "Save Changes") : tr("Ku dar alaabta", "Add Product")}</Text>
             )}
           </TouchableOpacity>
         </>
@@ -1725,7 +1727,7 @@ export default function App() {
         {authMode === 'signup' && (
           <TextInput
             style={styles.input}
-            placeholder="Magacaaga"
+            placeholder=tr("Magacaaga", "Your Name")
             value={fullName}
             onChangeText={setFullName}
           />
@@ -1733,7 +1735,7 @@ export default function App() {
 
         <TextInput
           style={styles.input}
-          placeholder="Email-kaaga"
+          placeholder=tr("Email-kaaga", "Your Email")
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -1757,7 +1759,7 @@ export default function App() {
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>
-              {authMode === 'signup' ? 'Samee akoon' : 'Gal akoonka'}
+              {authMode === 'signup' ? tr("Samee akoon", "Create Account") : tr("Gal akoonka", "Sign In")}
             </Text>
           )}
         </TouchableOpacity>
@@ -1772,8 +1774,8 @@ export default function App() {
         >
           <Text style={styles.authSwitchText}>
             {authMode === 'signup'
-              ? 'Akoon ma leedahay? Gal halkan'
-              : 'Akoon ma lihid? Isdiiwaangeli'}
+              ? tr("Akoon ma leedahay? Gal halkan", "Already have an account? Sign in")
+              : tr("Akoon ma lihid? Isdiiwaangeli", "Don't have an account? Sign up")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -1787,12 +1789,12 @@ export default function App() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerLogo}>IMSIYA</Text>
-          <Text style={styles.headerSubtitle}>Suuqa macmacaanka</Text>
+          <Text style={styles.headerSubtitle}>{tr("Suuqa macmacaanka", "Sweets Marketplace")}</Text>
         </View>
 
-        <TouchableOpacity onPress={signOut}>
-          <Text style={styles.logoutText}>Ka bax</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><TouchableOpacity onPress={() => setLanguage(current => current === 'en' ? 'so' : 'en')} style={{ backgroundColor: '#F3E8FA', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14 }}><Text style={{ color: '#4A286B', fontWeight: '800', fontSize: 11 }}>{language === 'en' ? 'EN | SO' : 'SO | EN'}</Text></TouchableOpacity><TouchableOpacity onPress={signOut}>
+          <Text style={styles.logoutText}>{tr('Ka bax', 'Sign Out')}</Text>
+          </TouchableOpacity></View>
       </View>
 
       <ScrollView
@@ -1818,7 +1820,7 @@ export default function App() {
           onPress={() => setScreen('home')}
         >
           <Text style={styles.navIcon}>🏠</Text>
-          <Text style={styles.navText}>Hoyga</Text>
+          <Text style={styles.navText}>{tr("Hoyga", "Home")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -1836,7 +1838,7 @@ export default function App() {
           onPress={() => setScreen('shop')}
         >
           <Text style={styles.navIcon}>🏪</Text>
-          <Text style={styles.navText}>Dukaankayga</Text>
+          <Text style={styles.navText}>{tr("Dukaankayga", "My Shop")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => setScreen('profile')}>
           <Text style={styles.navIcon}>👤</Text>
