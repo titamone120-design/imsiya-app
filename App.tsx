@@ -284,7 +284,7 @@ export default function App() {
       { text: 'Maya', style: 'cancel' },
       { text: 'Haa, tirtir', style: 'destructive', onPress: async () => {
         try {
-          const { error } = await supabase.from('products').delete().eq('id', productId).eq('seller_id', session?.user?.id || '');
+          const { error } = await supabase.from('products').update({ active: false }).eq('id', productId).eq('seller_id', session?.user?.id || '');
           if (error) throw error;
           setSellerProducts(current => current.filter(item => item.id !== productId));
           await loadProducts();
@@ -770,11 +770,10 @@ export default function App() {
         price,
         image_url: productImage.trim() || null,
         stock,
-        active: true,
       };
       const result = editingProductId
         ? await supabase.from('products').update(productPayload).eq('id', editingProductId).eq('seller_id', session.user.id)
-        : await supabase.from('products').insert(productPayload);
+        : await supabase.from('products').insert({ ...productPayload, active: true });
       if (result.error) throw result.error;
 
       setEditingProductId(null);
