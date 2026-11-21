@@ -899,7 +899,7 @@ export default function App() {
       <Text style={styles.sectionTitle}>Dalabyada macaamiisha</Text>
       {adminOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab ma jiro.</Text> : adminOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
-          <Text style={styles.shopStatusTitle}>{money(Number(order.total_amount || 0))} {order.currency || 'KES'}</Text>
+          <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>Xaalad: {order.status} · Bixin: {order.payment_status}</Text>
           <Text style={styles.shopStatusText}>Habka: {order.payment_method || 'Lama cayimin'}</Text>
           <Text style={styles.shopStatusText}>Order ID: {order.id}</Text>
