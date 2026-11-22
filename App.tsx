@@ -772,7 +772,7 @@ export default function App() {
           },
           {
             onConflict: 'id',
-            ignoreDuplicates: true,
+            ignoreDuplicates: false,
           }
         );
 
