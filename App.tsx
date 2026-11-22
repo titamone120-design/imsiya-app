@@ -76,6 +76,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
@@ -1331,24 +1332,39 @@ export default function App() {
   const renderProfile = () => (
     <View>
       {!session ? (
-        <>
-          <View style={styles.hero}>
-            <Text style={styles.heroTitle}>{tr("Ku soo dhowow IMSIYA", "Welcome to IMSIYA")}</Text>
-            <Text style={styles.heroText}>{tr("Samee akoon ama gal akoonkaaga si aad u maamusho profile-kaaga, dalabyadaada iyo dukaankaaga.", "Create an account or sign in to manage your profile, orders and shop.")}</Text>
+        <View style={styles.authPage}>
+          <View style={styles.authBrand}>
+            <Text style={styles.authBrandIcon}>🛍️</Text>
+            <Text style={styles.authBrandName}>IMSIYA</Text>
+            <Text style={styles.authBrandTagline}>Sweetness for Everyone</Text>
           </View>
-          <View style={styles.shopStatusCard}>
-            <Text style={styles.shopStatusTitle}>{authMode === 'signup' ? tr("Samee akoon cusub", "Create your account") : tr("Gal akoonkaaga", "Sign in to your account")}</Text>
-            {authMode === 'signup' && <TextInput style={styles.input} placeholder={tr("Magacaaga oo buuxa", "Your full name")} value={fullName} onChangeText={setFullName} />}
-            <TextInput style={styles.input} placeholder={tr("Email-kaaga", "Your email")} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-            <TextInput style={styles.input} placeholder="Password (ugu yaraan 8 xaraf)" value={password} onChangeText={setPassword} secureTextEntry />
-            <TouchableOpacity style={[styles.primaryButton, authLoading && styles.disabledButton]} onPress={signInOrSignUp} disabled={authLoading}>
-              {authLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{authMode === 'signup' ? tr("Samee akoon", "Create Account") : tr("Gal akoonka", "Sign In")}</Text>}
+          <View style={styles.authCard}>
+            <View style={styles.authTabs}>
+              <TouchableOpacity style={[styles.authTab, authMode === 'login' && styles.authTabActive]} onPress={() => setAuthMode('login')}>
+                <Text style={[styles.authTabText, authMode === 'login' && styles.authTabTextActive]}>{tr("Gal", "Login")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.authTab, authMode === 'signup' && styles.authTabActive]} onPress={() => setAuthMode('signup')}>
+                <Text style={[styles.authTabText, authMode === 'signup' && styles.authTabTextActive]}>{tr("Isdiiwaangeli", "Register")}</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.authHeading}>{authMode === 'signup' ? tr("Ku soo biir IMSIYA", "Create your account") : tr("Ku soo dhowow", "Welcome back")}</Text>
+            <Text style={styles.authDescription}>{authMode === 'signup' ? tr("Samee akoon si aad u iibsato ama u iibiso macmacaanka.", "Create an account to buy and sell sweets.") : tr("Gal akoonkaaga si aad u sii wadato.", "Sign in to continue shopping.")}</Text>
+            {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8D8299" value={fullName} onChangeText={setFullName} /></View>}
+            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8D8299" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
+            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} /></View>
+            <TouchableOpacity style={styles.authForgot} onPress={async () => {
+              if (!email.trim()) { Alert.alert('IMSIYA', tr("Marka hore geli email-kaaga.", "Enter your email address first.")); return; }
+              const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+              Alert.alert('IMSIYA', error ? error.message : tr("Haddii email-ku sax yahay, link dib-u-dejin ah ayaa laguugu soo diray.", "If the email is valid, a password reset link has been sent."));
+            }}>
+              <Text style={styles.authForgotText}>{tr("Password ma illowday?", "Forgot Password?")}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.authSwitch} onPress={() => setAuthMode(current => current === 'signup' ? 'login' : 'signup')}>
-              <Text style={styles.authSwitchText}>{authMode === 'signup' ? tr("Akoon ma leedahay? Gal halkan", "Already have an account? Sign in") : tr("Akoon ma lihid? Isdiiwaangeli", "Don't have an account? Sign up")}</Text>
+            <TouchableOpacity style={[styles.authSubmit, authLoading && styles.disabledButton]} onPress={signInOrSignUp} disabled={authLoading}>
+              {authLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{authMode === 'signup' ? tr("Samee akoon", "Register") : tr("Gal akoonka", "Login")}</Text>}
             </TouchableOpacity>
+            <Text style={styles.authBottomText}>{authMode === 'signup' ? tr("Akoon ma leedahay?", "Already have an account?") : tr("Akoon ma lihid?", "Don't have an account?")} <Text style={styles.authBottomLink} onPress={() => setAuthMode(current => current === 'signup' ? 'login' : 'signup')}>{authMode === 'signup' ? tr("Gal", "Login") : tr("Isdiiwaangeli", "Sign Up")}</Text></Text>
           </View>
-        </>
+        </View>
       ) : (
         <>
           <View style={styles.hero}>
@@ -1845,6 +1861,27 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.5,
   },
+  authPage: { paddingTop: 12, paddingBottom: 26 },
+  authBrand: { alignItems: 'center', paddingVertical: 24 },
+  authBrandIcon: { fontSize: 54, marginBottom: 2 },
+  authBrandName: { color: '#4B078B', fontSize: 36, fontWeight: '900', letterSpacing: 1.2 },
+  authBrandTagline: { color: '#E99500', fontSize: 14, fontWeight: '800', fontStyle: 'italic', marginTop: 1 },
+  authCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, borderWidth: 1, borderColor: '#E9E0F1', elevation: 3 },
+  authTabs: { flexDirection: 'row', backgroundColor: '#F2EAF9', borderRadius: 18, padding: 4, marginBottom: 22 },
+  authTab: { flex: 1, minHeight: 43, alignItems: 'center', justifyContent: 'center', borderRadius: 14 },
+  authTabActive: { backgroundColor: '#5B0AA8', elevation: 2 },
+  authTabText: { color: '#35243F', fontSize: 14, fontWeight: '800' },
+  authTabTextActive: { color: '#FFFFFF' },
+  authHeading: { color: '#35104F', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 5 },
+  authDescription: { color: '#786B82', fontSize: 13, textAlign: 'center', marginBottom: 20 },
+  authInputWrap: { minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E4D9ED', borderRadius: 15, paddingHorizontal: 13, marginBottom: 13 },
+  authInputIcon: { width: 27, color: '#5B0AA8', fontSize: 17, textAlign: 'center', marginRight: 8 },
+  authInput: { flex: 1, minHeight: 50, color: '#2E203B', fontSize: 15, paddingVertical: 8 },
+  authForgot: { alignSelf: 'flex-end', paddingVertical: 5, paddingHorizontal: 2 },
+  authForgotText: { color: '#5B0AA8', fontWeight: '800', fontSize: 12 },
+  authSubmit: { backgroundColor: '#5B0AA8', minHeight: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 13, marginBottom: 14, elevation: 2 },
+  authBottomText: { color: '#6F6478', textAlign: 'center', fontSize: 13, marginTop: 3 },
+  authBottomLink: { color: '#5B0AA8', fontWeight: '900' },
   authSwitch: {
     padding: 12,
     alignItems: 'center',
