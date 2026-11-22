@@ -15,6 +15,7 @@ import {
   Linking,
   Image,
   Platform,
+  Modal,
 } from 'react-native';
 
 import type { Session } from '@supabase/supabase-js';
@@ -69,10 +70,16 @@ const orderStatusLabel = (status: unknown, paymentStatus: unknown) => {
   return state ? `Xaaladda dalabka: ${state}` : 'Xaalad lama hayo';
 };
 
+const IMSIYA_LANGUAGES = [["en","🇬🇧","English"],["so","🇸🇴","Somali"],["ar","🇸🇦","العربية"],["sw","🇰🇪","Kiswahili"],["fr","🇫🇷","Français"],["es","🇪🇸","Español"],["zh","🇨🇳","中文"],["hi","🇮🇳","हिन्दी"],["pt","🇵🇹","Português"],["de","🇩🇪","Deutsch"],["tr","🇹🇷","Türkçe"],["ru","🇷🇺","Русский"],["ja","🇯🇵","日本語"],["ko","🇰🇷","한국어"],["it","🇮🇹","Italiano"],["nl","🇳🇱","Nederlands"],["bn","🇧🇩","বাংলা"],["id","🇮🇩","Bahasa Indonesia"],["ur","🇵🇰","اردو"],["am","🇪🇹","አማርኛ"],["ha","🇳🇬","Hausa"],["yo","🇳🇬","Yorùbá"],["th","🇹🇭","ไทย"],["vi","🇻🇳","Tiếng Việt"],["pl","🇵🇱","Polski"],["uk","🇺🇦","Українська"],["fa","🇮🇷","فارسی"],["ms","🇲🇾","Bahasa Melayu"],["el","🇬🇷","Ελληνικά"],["sv","🇸🇪","Svenska"]] as const;
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
-  const [language, setLanguage] = useState<'en' | 'so'>('en');
-  const tr = (somali: string, english: string) => language === 'en' ? english : somali;
+  const [language, setLanguage] = useState<string>('en');
+  const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
+  const selectedLanguage = IMSIYA_LANGUAGES.find(item => item[0] === language) || IMSIYA_LANGUAGES[0];
+  const tr = (somali: string, english: string) => language === 'so' ? somali : english;
+  useEffect(() => { AsyncStorage.getItem('imsiya:language').then(saved => { if (saved && IMSIYA_LANGUAGES.some(item => item[0] === saved)) setLanguage(saved); }).catch(error => console.log('Language preference restore failed:', error?.message || error)); }, []);
+  const chooseLanguage = async (code: string) => { setLanguage(code); setLanguagePickerOpen(false); try { await AsyncStorage.setItem('imsiya:language', code); } catch (error: any) { console.log('Language preference save failed:', error?.message || error); } };
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [email, setEmail] = useState('');
@@ -1396,6 +1403,7 @@ export default function App() {
             <Text style={styles.shopStatusText}>Email: {session.user.email || '—'}</Text>
             <Text style={styles.shopStatusText}>{tr("Nooca akoonka: ", "Account type: ")}{myShop ? tr("Iibiye", "Seller") : profileRole === 'admin' || profileRole === 'super_admin' ? 'Admin' : tr("Macmiil", "Customer")}</Text>
           </View>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setLanguagePickerOpen(true)}><Text style={styles.profileActionText}>🌐  Language / Luqadda: {selectedLanguage[1]} {selectedLanguage[2]}</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text></TouchableOpacity>
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
@@ -1767,6 +1775,17 @@ export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FCFAFE" />
+      <Modal visible={languagePickerOpen} transparent animationType="slide" onRequestClose={() => setLanguagePickerOpen(false)}>
+        <View style={{ flex: 1, backgroundColor: "rgba(20,10,30,0.55)", justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: "#FFFFFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: "78%" }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <Text style={{ color: "#38204F", fontSize: 20, fontWeight: "900" }}>Choose language / Dooro luqadda</Text>
+              <TouchableOpacity onPress={() => setLanguagePickerOpen(false)}><Text style={{ color: "#5B0AA8", fontSize: 22 }}>×</Text></TouchableOpacity>
+            </View>
+            <ScrollView>{IMSIYA_LANGUAGES.map(item => <TouchableOpacity key={item[0]} onPress={() => chooseLanguage(item[0])} style={{ flexDirection: "row", alignItems: "center", padding: 13, borderRadius: 12, marginBottom: 5, backgroundColor: language === item[0] ? "#F3E8FA" : "#FFFFFF", borderWidth: 1, borderColor: language === item[0] ? "#5B0AA8" : "#EEE7F3" }}><Text style={{ fontSize: 20, marginRight: 12 }}>{item[1]}</Text><Text style={{ flex: 1, color: "#38204F", fontSize: 15, fontWeight: "700" }}>{item[2]}</Text>{language === item[0] ? <Text style={{ color: "#5B0AA8" }}>✓</Text> : null}</TouchableOpacity>)}</ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerMenuButton} onPress={() => setScreen('profile')} accessibilityLabel="Menu">
@@ -2409,4 +2428,3 @@ const styles = StyleSheet.create({
   checkoutPaypalButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
 
 });
-
