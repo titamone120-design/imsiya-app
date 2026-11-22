@@ -79,6 +79,7 @@ export default function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
@@ -597,24 +598,25 @@ export default function App() {
 
   const signInOrSignUp = async () => {
     const cleanEmail = email.trim().toLowerCase();
+    setAuthMessage('');
 
     if (authMode === 'signup' && !fullName.trim()) {
-      Alert.alert('IMSIYA', 'Fadlan geli magacaaga oo buuxa.');
+      setAuthMessage('Fadlan geli magacaaga oo buuxa.');
       return;
     }
 
     if (!cleanEmail || !password) {
-      Alert.alert('IMSIYA', 'Geli email-ka iyo password-ka.');
+      setAuthMessage('Geli email-ka iyo password-ka.');
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      Alert.alert('IMSIYA', 'Email-ka aad gelisay sax ma aha. Hubi email-ka.');
+      setAuthMessage('Email-ka aad gelisay sax ma aha. Hubi email-ka.');
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert('IMSIYA', 'Password-ku waa inuu ahaadaa ugu yaraan 8 xaraf si akoonkaagu u sii ammaan badnaado.');
+      setAuthMessage('Password-ku waa inuu ahaadaa ugu yaraan 8 xaraf.');
       return;
     }
 
@@ -640,20 +642,18 @@ export default function App() {
         }
 
         if (!data.session) {
-          Alert.alert(
-            'IMSIYA',
-            'Codsiga akoonka waa la aqbalay. Ka eeg email-kaaga link-ga xaqiijinta. Haddii uusan iman, hubi Spam/Junk.'
-          );
+          setAuthMessage('Diiwaangelinta waa la aqbalay. Fadlan email-kaaga ka xaqiiji link-ga la soo diray. Hubi Spam/Junk.');
         } else {
-          Alert.alert('IMSIYA', 'Akoonkaaga waa la sameeyey.');
+          setSession(data.session);
+          setScreen('home');
+          setAuthMessage('Akoonkaaga waa la sameeyey. Ku soo dhowow IMSIYA!');
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password,
-        });
-
+        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) throw error;
+        if (!data.session) throw new Error('Gelitaanku ma dhammaan. Mar kale isku day.');
+        setSession(data.session);
+        setScreen('home');
       }
     } catch (e: any) {
       const status = Number(e?.status || 0);
@@ -665,12 +665,9 @@ export default function App() {
         (status >= 500 || errorCode === 'unexpected_failure' ||
           /smtp|email provider|sending email|mail server/i.test(message))
       ) {
-        Alert.alert(
-          'IMSIYA — Email-ka xaqiijinta',
-          'Diiwaangelintu ma dhammaan sababtoo ah server-ka email-ka xaqiijinta ayaa cilad leh. Tani ma aha password-ka aad gelisay. Maamulka waa inuu hagaajiyaa SMTP-ga Supabase ka hor inta aadan mar kale isdiiwaangelin.'
-        );
+        setAuthMessage('Diiwaangelintu ma dhammaan sababtoo ah server-ka email-ka xaqiijinta ayaa cilad leh. Maamulka waa inuu hagaajiyaa SMTP-ga Supabase.');
       } else {
-        Alert.alert('IMSIYA', message || 'Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.');
+        setAuthMessage(message || 'Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.');
       }
     } finally {
       setAuthLoading(false);
@@ -1349,6 +1346,7 @@ export default function App() {
             </View>
             <Text style={styles.authHeading}>{authMode === 'signup' ? tr("Ku soo biir IMSIYA", "Create your account") : tr("Ku soo dhowow", "Welcome back")}</Text>
             <Text style={styles.authDescription}>{authMode === 'signup' ? tr("Samee akoon si aad u iibsato ama u iibiso macmacaanka.", "Create an account to buy and sell sweets.") : tr("Gal akoonkaaga si aad u sii wadato.", "Sign in to continue shopping.")}</Text>
+            {!!authMessage && <Text style={styles.authMessage}>{authMessage}</Text>}
             {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8D8299" value={fullName} onChangeText={setFullName} /></View>}
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8D8299" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} /></View>
@@ -1874,6 +1872,7 @@ const styles = StyleSheet.create({
   authTabTextActive: { color: '#FFFFFF' },
   authHeading: { color: '#35104F', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 5 },
   authDescription: { color: '#786B82', fontSize: 13, textAlign: 'center', marginBottom: 20 },
+  authMessage: { color: '#B3261E', backgroundColor: '#FFF0EF', borderRadius: 12, padding: 11, marginBottom: 12, fontSize: 13, lineHeight: 19 },
   authInputWrap: { minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E4D9ED', borderRadius: 15, paddingHorizontal: 13, marginBottom: 13 },
   authInputIcon: { width: 27, color: '#5B0AA8', fontSize: 17, textAlign: 'center', marginRight: 8 },
   authInput: { flex: 1, minHeight: 50, color: '#2E203B', fontSize: 15, paddingVertical: 8 },
