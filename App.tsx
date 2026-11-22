@@ -1027,7 +1027,7 @@ export default function App() {
         <View style={styles.promoCopy}>
           <Text style={styles.promoEyebrow}>IMSIYA SPECIAL</Text>
           <Text style={styles.promoTitle}>{tr("Macmacaan kuu gaar ah", "Sweet Deals")}</Text>
-          <Text style={styles.promoSubtitle}>{tr("Ilaa 50% qiimo-dhimis", "Up to 50% OFF")}</Text>
+          <Text style={styles.promoSubtitle}>{tr("Soo hel macmacaanka aad jeceshahay", "Discover sweets you will love")}</Text>
           <TouchableOpacity style={styles.promoButton} onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
             <Text style={styles.promoButtonText}>{tr("Hadda iibso", "Shop Now")}  →</Text>
           </TouchableOpacity>
@@ -1061,9 +1061,10 @@ export default function App() {
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{tr("Alaab cusub", "New Products")}</Text>
-        <TouchableOpacity onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
-          <Text style={styles.seeAllText}>{tr("Eeg dhammaan", "See All")} →</Text>
+        <Text style={styles.sectionTitle}>{tr("Alaabta caanka ah", "Popular Products")}</Text>
+        <TouchableOpacity style={styles.refreshButton} onPress={() => { loadProducts(); loadCategories(); }} disabled={productsLoading} accessibilityLabel={tr("Cusboonaysii", "Refresh")}>
+          {productsLoading ? <ActivityIndicator size="small" color="#5B12A8" /> : <Text style={styles.refreshIcon}>↻</Text>}
+          <Text style={styles.refreshButtonText}>{tr("Cusboonaysii", "Refresh")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1075,9 +1076,6 @@ export default function App() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-        <TouchableOpacity style={styles.refreshButton} onPress={() => { loadProducts(); loadCategories(); }} disabled={productsLoading} accessibilityLabel={tr("Cusboonaysii", "Refresh")}>
-          {productsLoading ? <ActivityIndicator size="small" color="#5B12A8" /> : <Text style={styles.refreshIcon}>↻</Text>}
-        </TouchableOpacity>
       </View>
 
       {productsLoading ? (
@@ -1734,7 +1732,7 @@ export default function App() {
           <Text style={styles.headerMenuIcon}>☰</Text>
         </TouchableOpacity>
         <View style={styles.headerBrand}>
-          <Text style={styles.headerLogo}>🛍️ IMSIYA</Text>
+          <Text style={styles.headerLogo}>IMSIYA</Text>
           <Text style={styles.headerSubtitle}>{tr("Suuqa macmacaanka", "Sweetness for Everyone")}</Text>
         </View>
         <TouchableOpacity style={styles.headerCartButton} onPress={() => setScreen('cart')} accessibilityLabel="Cart">
