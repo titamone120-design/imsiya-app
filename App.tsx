@@ -56,6 +56,55 @@ const categories = [
   'Macmacaan kale',
 ];
 
+
+const SWEET_TERM_TRANSLATIONS: Record<string, string[]> = {
+  en: ['Biscuit','Halwa','Cake','Chocolate','Other sweets','All'],
+  so: ['Buskut','Xalwo','Keeg','Shukulaato','Macmacaan kale','Dhammaan'],
+  ar: ['بسكويت','حلاوة','كعكة','شوكولاتة','حلويات أخرى','الكل'],
+  sw: ['Biskuti','Halwa','Keki','Chokoleti','Vitamu vingine','Zote'],
+  fr: ['Biscuit','Halva','Gâteau','Chocolat','Autres douceurs','Tout'],
+  es: ['Galleta','Halva','Pastel','Chocolate','Otros dulces','Todos'],
+  zh: ['饼干','哈尔瓦','蛋糕','巧克力','其他甜点','全部'],
+  hi: ['बिस्कुट','हलवा','केक','चॉकलेट','अन्य मिठाइयाँ','सभी'],
+  pt: ['Biscoito','Halva','Bolo','Chocolate','Outros doces','Todos'],
+  de: ['Keks','Halwa','Kuchen','Schokolade','Andere Süßigkeiten','Alle'],
+  tr: ['Bisküvi','Helva','Kek','Çikolata','Diğer tatlılar','Tümü'],
+  ru: ['Печенье','Халва','Торт','Шоколад','Другие сладости','Все'],
+  ja: ['ビスケット','ハルヴァ','ケーキ','チョコレート','その他のお菓子','すべて'],
+  ko: ['비스킷','할와','케이크','초콜릿','기타 디저트','전체'],
+  it: ['Biscotto','Halva','Torta','Cioccolato','Altri dolci','Tutti'],
+  nl: ['Koekje','Halva','Taart','Chocolade','Andere zoetigheden','Alles'],
+  bn: ['বিস্কুট','হালুয়া','কেক','চকোলেট','অন্যান্য মিষ্টি','সব'],
+  id: ['Biskuit','Halwa','Kue','Cokelat','Manisan lainnya','Semua'],
+  ur: ['بسکٹ','حلوہ','کیک','چاکلیٹ','دیگر مٹھائیاں','سب'],
+  am: ['ብስኩት','ሃልዋ','ኬክ','ቸኮሌት','ሌሎች ጣፋጮች','ሁሉም'],
+  ha: ['Biskit','Halwa','Kek','Cakulan','Sauran kayan zaki','Duka'],
+  yo: ['Bisikiti','Halwa','Keeki','Chokoleeti','Àwọn adùn míì','Gbogbo'],
+  th: ['บิสกิต','ฮาลวา','เค้ก','ช็อกโกแลต','ขนมหวานอื่น ๆ','ทั้งหมด'],
+  vi: ['Bánh quy','Halva','Bánh kem','Sô cô la','Món ngọt khác','Tất cả'],
+  pl: ['Herbatniki','Chałwa','Ciasto','Czekolada','Inne słodycze','Wszystkie'],
+  uk: ['Печиво','Халва','Торт','Шоколад','Інші солодощі','Усі'],
+  fa: ['بیسکویت','حلوا','کیک','شکلات','شیرینی‌های دیگر','همه'],
+  ms: ['Biskut','Halwa','Kek','Coklat','Manisan lain','Semua'],
+  el: ['Μπισκότο','Χαλβάς','Κέικ','Σοκολάτα','Άλλα γλυκά','Όλα'],
+  sv: ['Kex','Halva','Tårta','Choklad','Andra sötsaker','Alla'],
+};
+
+const translateSweetName = (value: string, language: string) => {
+  if (!value || language === 'so') return value;
+  const terms = SWEET_TERM_TRANSLATIONS[language];
+  if (!terms) return value;
+  const replacements: [string, number][] = [
+    ['Macmacaan kale', 4], ['Shukulaato', 3], ['Buskut', 0],
+    ['Xalwo', 1], ['Keeg', 2], ['Dhammaan', 5],
+  ];
+  let translated = value;
+  replacements.forEach(([source, targetIndex]) => {
+    translated = translated.replace(new RegExp(source, 'gi'), terms[targetIndex]);
+  });
+  return translated;
+};
+
 const money = (amount: number) =>
   `KSh ${Number(amount || 0).toLocaleString('en-KE')}`;
 
@@ -1042,8 +1091,8 @@ export default function App() {
       )}
 
       <TouchableOpacity style={styles.favoriteToggle} onPress={() => toggleFavorite(product.id)}><Text style={styles.favoriteToggleText}>{favoriteIds.includes(product.id) ? '♥' : '♡'}</Text></TouchableOpacity>
-      <Text style={styles.productName}>{product.name}</Text>
-      <Text style={styles.productCategory}>{product.category}</Text>
+      <Text style={styles.productName}>{translateSweetName(product.name, language)}</Text>
+      <Text style={styles.productCategory}>{translateSweetName(product.category, language)}</Text>
       <TouchableOpacity onPress={() => { setSelectedProduct(product); setScreen('product'); }} style={styles.secondaryButton}>
         <Text style={styles.secondaryButtonText}>Faahfaahin</Text>
       </TouchableOpacity>
@@ -1113,7 +1162,7 @@ export default function App() {
         ].map(item => (
           <TouchableOpacity key={item.name} style={[styles.homeCategoryCard, category === item.name && styles.homeCategoryActive]} onPress={() => setCategory(item.name)}>
             <Text style={styles.homeCategoryIcon}>{item.icon}</Text>
-            <Text style={[styles.homeCategoryName, category === item.name && styles.homeCategoryNameActive]}>{item.name}</Text>
+            <Text style={[styles.homeCategoryName, category === item.name && styles.homeCategoryNameActive]}>{translateSweetName(item.name, language)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -1130,7 +1179,7 @@ export default function App() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
           {['Dhammaan', ...(categoryRows.length ? categoryRows.map(item => item.name) : categories.slice(1))].map(item => (
             <TouchableOpacity key={item} style={[styles.categoryButton, category === item && styles.categorySelected]} onPress={() => setCategory(item)}>
-              <Text style={[styles.categoryText, category === item && styles.categorySelectedText]}>{item}</Text>
+              <Text style={[styles.categoryText, category === item && styles.categorySelectedText]} >{translateSweetName(item, language)}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -1466,8 +1515,8 @@ export default function App() {
       <View>
         <TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>← Ku noqo alaabta</Text></TouchableOpacity>
         {selectedProduct.image_url ? <Image source={{ uri: selectedProduct.image_url }} style={{ width: '100%', height: 240, borderRadius: 18, marginVertical: 14 }} resizeMode="cover" /> : <View style={[styles.imagePlaceholder, { height: 220, marginVertical: 14 }]}><Text style={styles.placeholderText}>🍬</Text></View>}
-        <Text style={styles.sectionTitle}>{selectedProduct.name}</Text>
-        <Text style={styles.productCategory}>{selectedProduct.category}</Text>
+        <Text style={styles.sectionTitle}>{translateSweetName(selectedProduct.name, language)}</Text>
+        <Text style={styles.productCategory}>{translateSweetName(selectedProduct.category, language)}</Text>
         <Text style={[styles.productPrice, { fontSize: 22, marginVertical: 10 }]}>{money(selectedProduct.price)}</Text>
         <Text style={styles.shopStatusText}>{selectedProduct.description?.trim() || 'Sharaxaad dheeraad ah weli lama gelin.'}</Text>
         <Text style={styles.stockText}>{selectedProduct.stock > 0 ? `Kaydka: ${selectedProduct.stock}` : 'Waa dhammaatay'}</Text>
@@ -1489,7 +1538,7 @@ export default function App() {
           {cart.map(item => (
             <View key={item.id} style={styles.cartItem}>
               <View style={styles.cartInfo}>
-                <Text style={styles.productName}>{item.name}</Text>
+                <Text style={styles.productName} >{translateSweetName(item.name, language)}</Text>
                 <Text style={styles.productPrice}>
                   {money(item.price * item.quantity)}
                 </Text>
