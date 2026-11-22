@@ -432,7 +432,7 @@ export default function App() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('IMSIYA', 'Fadlan oggolow in IMSIYA ay ka doorato sawirrada telefoonkaaga.');
+        Alert.alert('IMSIYA', tr('Fadlan oggolow in IMSIYA ay ka doorato sawirrada telefoonkaaga.', 'Please allow IMSIYA to access photos on your phone.'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -507,7 +507,7 @@ export default function App() {
       return;
     }
     if (!payoutAccount.trim()) {
-      Alert.alert('IMSIYA Wallet', 'Geli email-ka PayPal.');
+      Alert.alert('IMSIYA Wallet', tr('Geli email-ka PayPal.', 'Enter your PayPal email.'));
       return;
     }
     setPayoutSubmitting(true);
@@ -719,7 +719,7 @@ export default function App() {
     }
 
     if (!cleanEmail || !password) {
-      setAuthMessage('Geli email-ka iyo password-ka.');
+      setAuthMessage(tr('Geli email-ka iyo password-ka.', 'Enter your email and password.'));
       return;
     }
 
@@ -729,7 +729,7 @@ export default function App() {
     }
 
     if (password.length < 8) {
-      setAuthMessage('Password-ku waa inuu ahaadaa ugu yaraan 8 xaraf.');
+      setAuthMessage(tr('Password-ku waa inuu ahaadaa ugu yaraan 8 xaraf.', 'Password must be at least 8 characters.'));
       return;
     }
 
@@ -780,7 +780,7 @@ export default function App() {
       ) {
         setAuthMessage(tr('Diiwaangelintu ma dhammaan sababtoo ah server-ka email-ka xaqiijinta ayaa cilad leh. Maamulka waa inuu hagaajiyaa SMTP-ga Supabase.', 'Registration could not finish because the email verification server has an issue. The administrator must fix Supabase SMTP settings.'));
       } else {
-        setAuthMessage(message || 'Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.');
+        setAuthMessage(message || tr('Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.', 'Sign-in failed. Check your details and try again.'));
       }
     } finally {
       setAuthLoading(false);
@@ -791,7 +791,7 @@ export default function App() {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      Alert.alert('IMSIYA', error.message);
+      Alert.alert('IMSIYA', error.message || tr('Waxbaa khaldamay. Fadlan mar kale isku day.', 'Something went wrong. Please try again.'));
       return;
     }
 
@@ -917,7 +917,7 @@ export default function App() {
 
   const setupPayPalPlan = async () => {
     if (profileRole !== 'super_admin') {
-      Alert.alert('IMSIYA Admin', 'Kaliya Super Admin ayaa diyaarin kara PayPal plan-ka.');
+      Alert.alert('IMSIYA Admin', tr('Kaliya Super Admin ayaa diyaarin kara PayPal plan-ka.', 'Only the Super Admin can set up the PayPal plan.'));
       return;
     }
     setPlanSetupLoading(true);
@@ -931,7 +931,7 @@ export default function App() {
       }
       Alert.alert('IMSIYA Admin', tr('PayPal LIVE plan-ka $20 bishii waa la diyaariyey lana xaqiijiyey. Wax subscription ama lacag-bixin ah lama samayn.', 'PayPal LIVE plan for $20/month has been set up and verified. No subscription was started and no payment was charged.'));
     } catch (e: any) {
-      Alert.alert('IMSIYA Admin', e.message || 'PayPal plan setup wuu fashilmay.');
+      Alert.alert('IMSIYA Admin', e.message || tr('PayPal plan setup wuu fashilmay.', 'PayPal plan setup failed.'));
     } finally {
       setPlanSetupLoading(false);
     }
