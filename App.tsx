@@ -107,8 +107,8 @@ const translateSweetName = (value: string, language: string) => {
 
   if (normalizedLanguage === 'so') return value;
   const replacements: [RegExp, number][] = [
-    [/macmacaan(?:o)?\\s+kale/gi, 4],
-    [/other\\s+sweets/gi, 4],
+    [/macmacaan(?:o)?\s+kale/gi, 4],
+    [/other\s+sweets/gi, 4],
     [/shukulaato/gi, 3],
     [/chocolate/gi, 3],
     [/buskut/gi, 0],
