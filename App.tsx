@@ -1563,10 +1563,11 @@ export default function App() {
         <View key={req.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · PayPal</Text>
           <Text style={styles.shopStatusText}>Seller ID: {req.seller_id}</Text>
+          <Text style={styles.shopStatusText}>Ogow: lacagta marka hore ku dir PayPal; badhanka hoose wuxuu diiwaangelinayaa oo keliya bixinta aad hore u samaysay.</Text>
           <Text style={styles.shopStatusText}>Akoonka lacagta: {req.payout_account || '—'}</Text>
           <Text style={styles.shopStatusText}>Xaalad: {req.status}</Text>
           {req.status === 'pending' || req.status === 'processing' ? <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'paid')}><Text style={styles.secondaryButtonText}>Calaamadee: la bixiyey</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'paid')}><Text style={styles.secondaryButtonText}>Xaqiiji: PayPal waa la diray</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'rejected')}><Text style={styles.secondaryButtonText}>Diid codsiga</Text></TouchableOpacity>
           </View> : null}
         </View>
