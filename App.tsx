@@ -130,15 +130,21 @@ const translateSweetName = (value: string, language: string) => {
 const money = (amount: number) =>
   `KSh ${Number(amount || 0).toLocaleString('en-KE')}`;
 
-const orderStatusLabel = (status: unknown, paymentStatus: unknown) => {
+const orderStatusLabel = (status: unknown, paymentStatus: unknown, language = 'en') => {
   const payment = String(paymentStatus || '').toLowerCase();
   const state = String(status || '').toLowerCase();
-  if (payment !== 'paid') return 'Payment not verified';
-  if (state === 'processing' || state === 'pending') return 'Order received — preparing';
-  if (state === 'shipped' || state === 'in_transit' || state === 'in transit') return 'Order shipped';
-  if (state === 'delivered' || state === 'completed') return 'Order delivered';
-  if (state === 'cancelled' || state === 'canceled') return 'Order cancelled';
-  return state ? `Order status: ${state}` : 'No status available';
+  const labels: Record<string, Record<string, string>> = {
+    so: { unpaid: 'Lacagta lama xaqiijin', preparing: 'Dalabka waa la helay — waa la diyaarinayaa', shipped: 'Dalabka waa la diray', delivered: 'Dalabka waa la gaarsiiyey', cancelled: 'Dalabka waa la joojiyey', unknown: 'Xaalad lama hayo' },
+    ar: { unpaid: 'لم يتم تأكيد الدفع', preparing: 'تم استلام الطلب — جارٍ التجهيز', shipped: 'تم شحن الطلب', delivered: 'تم تسليم الطلب', cancelled: 'تم إلغاء الطلب', unknown: 'الحالة غير متاحة' },
+    sw: { unpaid: 'Malipo hayajathibitishwa', preparing: 'Agizo limepokelewa — linaandaliwa', shipped: 'Agizo limetumwa', delivered: 'Agizo limewasilishwa', cancelled: 'Agizo limeghairiwa', unknown: 'Hali haipatikani' },
+  };
+  const translated = labels[language];
+  if (payment !== 'paid') return translated?.unpaid || 'Payment not verified';
+  if (state === 'processing' || state === 'pending') return translated?.preparing || 'Order received — preparing';
+  if (state === 'shipped' || state === 'in_transit' || state === 'in transit') return translated?.shipped || 'Order shipped';
+  if (state === 'delivered' || state === 'completed') return translated?.delivered || 'Order delivered';
+  if (state === 'cancelled' || state === 'canceled') return translated?.cancelled || 'Order cancelled';
+  return state ? `Order status: ${state}` : (translated?.unknown || 'No status available');
 };
 
 const IMSIYA_LANGUAGES = [["en","🇬🇧","English"],["so","🇸🇴","Somali"],["ar","🇸🇦","العربية"],["sw","🇰🇪","Kiswahili"]] as const;
@@ -1462,7 +1468,7 @@ export default function App() {
             <Text style={styles.shopStatusTitle}>{product?.name || tr('Alaabta IMSIYA', 'IMSIYA Product')}</Text>
             <Text style={styles.shopStatusText}>{tr('Tirada:', 'Quantity:')} {item.quantity} · {tr('Qiimaha:', 'Price:')} {money(Number(item.unit_price || 0) * Number(item.quantity || 0))}</Text>
             <Text style={styles.shopStatusText}>{tr('Wadarta dalabka:', 'Order total:')} {order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
-            <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
+            <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status, language)}</Text>
             <Text style={styles.shopStatusText}>{tr('Bixinta:', 'Payment:')} {String(order.payment_status || '—')} · {tr('Habka:', 'Method:')} {order.payment_method || '—'}</Text>
             <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
             <Text style={styles.shopStatusText}>{tr('Dalab:', 'Order:')} {String(order.id).slice(0, 12)}</Text>
@@ -1483,7 +1489,7 @@ export default function App() {
       {ordersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>{tr("Weli dalab kuma jiro akoonkaaga.", "You have no orders yet.")}</Text> : myOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
-          <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
+          <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status, language)}</Text>
           <Text style={styles.shopStatusText}>{tr('Bixinta:', 'Payment:')} {String(order.payment_status || '—')}</Text>
           <Text style={styles.shopStatusText}>{tr('Habka:', 'Method:')} {order.payment_method || '—'}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
@@ -1541,7 +1547,7 @@ export default function App() {
             <Text style={styles.shopStatusText}>{tr("Iimayl:", "Email:")} {session.user.email || '—'}</Text>
             <Text style={styles.shopStatusText}>{tr("Nooca akoonka: ", "Account type: ")}{myShop ? tr("Iibiye", "Seller") : profileRole === 'admin' || profileRole === 'super_admin' ? 'Admin' : tr("Macmiil", "Customer")}</Text>
           </View>
-          <TouchableOpacity style={styles.profileAction} onPress={() => setLanguagePickerOpen(true)}><Text style={styles.profileActionText}>🌐  Language / Luqadda: {selectedLanguage[1]} {selectedLanguage[2]}</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setLanguagePickerOpen(true)}><Text style={styles.profileActionText}>🌐  {tr('Luqadda', 'Language')}: {selectedLanguage[1]} {selectedLanguage[2]}</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  {tr("Alaabta aan jeclahay", "My Favorites")} ({favoriteIds.length})</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  {tr("Dukaankayga iyo iibiyaha", "My Shop and Seller Account")}</Text></TouchableOpacity>
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
@@ -1718,7 +1724,7 @@ export default function App() {
       {adminOrders.length === 0 ? <Text style={styles.emptyText}>{tr('Weli dalab ma jiro.', 'No orders yet.')}</Text> : adminOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
-          <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {orderStatusLabel(order.status, order.payment_status)} · {tr('Bixin:', 'Payment:')} {order.payment_status}</Text>
+          <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {orderStatusLabel(order.status, order.payment_status, language)} · {tr('Bixin:', 'Payment:')} {order.payment_status}</Text>
           <Text style={styles.shopStatusText}>{tr('Habka:', 'Method:')} {order.payment_method || tr('Lama cayimin', 'Not specified')}</Text>
           <Text style={styles.shopStatusText}>Order ID: {order.id}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
