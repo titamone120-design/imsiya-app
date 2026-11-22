@@ -1299,10 +1299,10 @@ export default function App() {
       <View style={styles.walletTopRow}>
         <View>
           <Text style={styles.walletEyebrow}>IMSIYA SELLER</Text>
-          <Text style={styles.sectionTitle}>Wallet-kayga</Text>
+          <Text style={styles.sectionTitle}>{tr("Wallet-kayga", "My Wallet")}</Text>
         </View>
         <TouchableOpacity style={styles.walletBackButton} onPress={() => setScreen('shop')}>
-          <Text style={styles.walletBackText}>← Dukaankayga</Text>
+          <Text style={styles.walletBackText}>{tr("← Dukaankayga", "← My Shop")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1315,7 +1315,7 @@ export default function App() {
           <>
             <Text style={styles.walletBalance}>{money(Number(sellerWallet?.balance || 0))}</Text>
             <Text style={styles.walletHeroNote}>{tr("100% lacagta iibka la xaqiijiyey adigaa leh.", "You keep 100% of your verified sales.")}</Text>
-            <Text style={styles.walletUpdated}>La cusboonaysiiyey: {sellerWallet?.updated_at ? new Date(sellerWallet.updated_at).toLocaleString() : '—'}</Text>
+            <Text style={styles.walletUpdated}>{tr("La cusboonaysiiyey:", "Last updated:")} {sellerWallet?.updated_at ? new Date(sellerWallet.updated_at).toLocaleString() : '—'}</Text>
           </>
         )}
         <TouchableOpacity style={styles.walletRefreshButton} onPress={loadSellerWallet} disabled={walletLoading}>
@@ -1339,9 +1339,9 @@ export default function App() {
           <View key={tx.id} style={styles.walletTransaction}>
             <View style={styles.walletTransactionIcon}><Text style={styles.walletTransactionIconText}>↗</Text></View>
             <View style={styles.walletTransactionInfo}>
-              <Text style={styles.walletTransactionTitle}>{tx.transaction_type || 'Iib'}</Text>
-              <Text style={styles.walletMuted}>{tx.description || 'Lacagta iibka'}</Text>
-              {tx.order_id ? <Text style={styles.walletMuted}>Dalab: {String(tx.order_id).slice(0, 12)}</Text> : null}
+              <Text style={styles.walletTransactionTitle}>{tx.transaction_type === "sale" || tx.transaction_type === "Iib" ? tr("Iib", "Sale") : tx.transaction_type || tr("Dhaqdhaqaaq", "Transaction")}</Text>
+              <Text style={styles.walletMuted}>{tx.description || tr("Lacagta iibka", "Sales payment")}</Text>
+              {tx.order_id ? <Text style={styles.walletMuted}>{tr("Dalab:", "Order:")} {String(tx.order_id).slice(0, 12)}</Text> : null}
               <Text style={styles.walletDate}>{tx.created_at ? new Date(tx.created_at).toLocaleString() : '—'}</Text>
             </View>
             <Text style={styles.walletTransactionAmount}>{money(Number(tx.amount || 0))}</Text>
@@ -1351,23 +1351,23 @@ export default function App() {
 
       <View style={styles.walletPayoutCard}>
         <Text style={styles.walletSectionTitle}>{tr("Codso lacag-bixin", "Request a payout")}</Text>
-        <Text style={styles.walletMuted}>Codsigaaga maamulka ayaa hubinaya. Lacagta si toos ah looma dirayo weli.</Text>
+        <Text style={styles.walletMuted}>{tr("Codsigaaga maamulka ayaa hubinaya. Lacagta si toos ah looma dirayo weli.", "Your request will be reviewed by the IMSIYA team. Payment is not sent automatically yet.")}</Text>
         <Text style={styles.walletFieldLabel}>{tr("Lacagta (KSh)", "Amount (KSh)")}</Text>
-        <TextInput style={[styles.input, styles.walletInput]} keyboardType="decimal-pad" placeholder="Tusaale: 1,000" value={payoutAmount} onChangeText={setPayoutAmount} />
+        <TextInput style={[styles.input, styles.walletInput]} keyboardType="decimal-pad" placeholder={tr("Tusaale: 1,000", "Example: 1,000")} value={payoutAmount} onChangeText={setPayoutAmount} />
         <Text style={styles.walletFieldLabel}>{tr("Habka lacag-bixinta", "Payout method")}</Text>
         <View style={styles.walletMethodSelected}>
           <View style={styles.walletMethodIcon}><Text style={styles.walletMethodIconText}>P</Text></View>
           <View style={styles.walletMethodInfo}>
             <Text style={styles.walletMethodTitle}>PayPal</Text>
-            <Text style={styles.walletMuted}>Lacagta waxaa laguugu diraa email-kaaga PayPal.</Text>
+            <Text style={styles.walletMuted}>{tr("Lacagta waxaa laguugu diraa email-kaaga PayPal.", "Your payout will be sent to your PayPal email.")}</Text>
           </View>
           <Text style={styles.walletMethodCheck}>✓</Text>
         </View>
         <Text style={styles.walletFieldLabel}>{tr("Email-ka PayPal", "PayPal email")}</Text>
         <TextInput style={[styles.input, styles.walletInput]} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" value={payoutAccount} onChangeText={setPayoutAccount} />
         <View style={styles.walletComingSoon}>
-          <Text style={styles.walletComingTitle}>Bixinta PayPal</Text>
-          <Text style={styles.walletMuted}>Codsiga waxaa hubinaya maamulka IMSIYA. Lacagta waxaa la calaamadaynayaa marka PayPal si dhab ah loo diro.</Text>
+          <Text style={styles.walletComingTitle}>{tr("Bixinta PayPal", "PayPal Payout")}</Text>
+          <Text style={styles.walletMuted}>{tr("Codsiga waxaa hubinaya maamulka IMSIYA. Lacagta waxaa la calaamadaynayaa marka PayPal si dhab ah loo diro.", "IMSIYA will review the request. It will be marked as paid only after PayPal confirms the transfer.")}</Text>
         </View>
         <TouchableOpacity style={[styles.walletSubmitButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
           {payoutSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.walletSubmitText}>{tr("Gudbi codsiga", "Submit request")}</Text>}
@@ -1379,8 +1379,8 @@ export default function App() {
         {payoutRequests.length === 0 ? (
           <View style={styles.walletEmptyCard}>
             <Text style={styles.walletEmptyIcon}>◷</Text>
-            <Text style={styles.walletEmptyTitle}>Codsi lacag-bixin ma jiro</Text>
-            <Text style={styles.walletMuted}>Codsiyada aad gudbiso halkan ayay ka muuqan doonaan.</Text>
+            <Text style={styles.walletEmptyTitle}>{tr("Codsi lacag-bixin ma jiro", "No payout requests yet")}</Text>
+            <Text style={styles.walletMuted}>{tr("Codsiyada aad gudbiso halkan ayay ka muuqan doonaan.", "Your submitted requests will appear here.")}</Text>
           </View>
         ) : payoutRequests.map(req => (
           <View key={req.id} style={styles.walletTransaction}>
@@ -1489,17 +1489,17 @@ export default function App() {
             <Text style={styles.heroText}>{session.user.user_metadata?.full_name || fullName || 'Macmiilka IMSIYA'}</Text>
           </View>
           <View style={styles.shopStatusCard}>
-            <Text style={styles.shopStatusTitle}>Xogta akoonka</Text>
+            <Text style={styles.shopStatusTitle}>{tr("Xogta akoonka", "Account Details")}</Text>
             <Text style={styles.shopStatusText}>Email: {session.user.email || '—'}</Text>
             <Text style={styles.shopStatusText}>{tr("Nooca akoonka: ", "Account type: ")}{myShop ? tr("Iibiye", "Seller") : profileRole === 'admin' || profileRole === 'super_admin' ? 'Admin' : tr("Macmiil", "Customer")}</Text>
           </View>
           <TouchableOpacity style={styles.profileAction} onPress={() => setLanguagePickerOpen(true)}><Text style={styles.profileActionText}>🌐  Language / Luqadda: {selectedLanguage[1]} {selectedLanguage[2]}</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  {tr("Dukaankayga iyo iibiyaha", "My Shop and Seller Account")}</Text></TouchableOpacity>
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
-          <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  Dalabyadayda</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}><Text style={styles.profileActionText}>🛒  Cart-kayga ({cart.length})</Text></TouchableOpacity>
-          <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>Ka bax akoonka</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  {tr("Dalabyadayda", "My Orders")}</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}><Text style={styles.profileActionText}>🛒  {tr("Cart-kayga", "My Cart")} ({cart.length})</Text></TouchableOpacity>
+          <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>{tr("Ka bax akoonka", "Sign Out")}</Text></TouchableOpacity>
         </>
       )}
     </View>
@@ -1727,7 +1727,7 @@ export default function App() {
       <View style={styles.myShopHeader}>
         <View style={styles.myShopHeaderIcon}><Text style={styles.myShopHeaderEmoji}>🏪</Text></View>
         <View style={styles.myShopHeaderCopy}>
-          <Text style={styles.myShopEyebrow}>IMSIYA SELLER</Text>
+          <Text style={styles.myShopEyebrow}>{tr("IMSIYA IIBIYE", "IMSIYA SELLER")}</Text>
           <Text style={styles.myShopTitle}>{tr("Dukaankayga", "My Shop")}</Text>
           <Text style={styles.myShopSubtitle}>{tr("Maamul dukaankaaga iyo alaabta aad iibiso.", "Manage your shop and the products you sell.")}</Text>
         </View>
@@ -1745,7 +1745,7 @@ export default function App() {
               </View>
             </View>
             <Text style={styles.label}>{tr("Magaca dukaanka", "Shop Name")}</Text>
-            <TextInput style={styles.input} placeholder="Tusaale: IMSIYA Sweets" value={shopName} onChangeText={setShopName} />
+            <TextInput style={styles.input} placeholder={tr("Tusaale: IMSIYA Sweets", "Example: IMSIYA Sweets")} value={shopName} onChangeText={setShopName} />
             <Text style={styles.label}>{tr("Sharaxaadda dukaanka", "Shop Description")}</Text>
             <TextInput style={[styles.input, styles.multilineInput]} placeholder={tr("Wax ka sheeg dukaankaaga...", "Tell customers about your shop...")} value={shopDescription} onChangeText={setShopDescription} multiline />
             <TouchableOpacity style={styles.primaryButton} onPress={createOrUpdateShop} disabled={shopLoading}>
