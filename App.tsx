@@ -263,6 +263,34 @@ export default function App() {
       setFavoriteIds([]);
       setLocalDataReadyForUser(null);
       return () => { active = false; };
+    }
+
+    setLocalDataReadyForUser(null);
+    setCart([]);
+    setFavoriteIds([]);
+    AsyncStorage.multiGet([`imsiya:cart:${userId}`, `imsiya:favorites:${userId}`])
+      .then(([cartEntry, favoritesEntry]) => {
+        if (!active) return;
+        try {
+          const savedCart = cartEntry?.[1] ? JSON.parse(cartEntry[1]) : [];
+          setCart(Array.isArray(savedCart) ? savedCart : []);
+        } catch {
+          setCart([]);
+        }
+        try {
+          const savedFavorites = favoritesEntry?.[1] ? JSON.parse(favoritesEntry[1]) : [];
+          setFavoriteIds(Array.isArray(savedFavorites) ? savedFavorites.filter((id: unknown) => typeof id === 'string') : []);
+        } catch {
+          setFavoriteIds([]);
+        }
+        setLocalDataReadyForUser(userId);
+      })
+      .catch(error => {
+        console.log('Local cart/favorites restore failed:', error?.message || error);
+        if (active) setLocalDataReadyForUser(userId);
+      });
+
+    return () => { active = false; };
   }, [session?.user?.id]);
 
   useEffect(() => {
