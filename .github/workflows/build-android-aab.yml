@@ -1,0 +1,55 @@
+name: Build IMSIYA Android AAB
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build signed Android App Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production AAB with Expo EAS
+        run: npx eas-cli@latest build --platform android --profile production --non-interactive --wait --json > eas-build.json
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Download generated AAB
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const result = JSON.parse(fs.readFileSync('eas-build.json', 'utf8'));
+          const build = Array.isArray(result) ? result[0] : result;
+          const url = build?.artifacts?.buildUrl || build?.artifacts?.applicationArchiveUrl;
+          if (!url) {
+            console.error('EAS did not return an AAB download URL. Build response:', JSON.stringify(result, null, 2));
+            process.exit(1);
+          }
+          (async () => {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`AAB download failed: HTTP ${response.status}`);
+            const bytes = Buffer.from(await response.arrayBuffer());
+            if (bytes.length < 1024) throw new Error('Downloaded AAB is unexpectedly small');
+            fs.writeFileSync('IMSIYA-production.aab', bytes);
+            console.log(`Downloaded production AAB (${bytes.length} bytes)`);
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
+
+      - name: Upload production AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: IMSIYA-Android-AAB
+          path: IMSIYA-production.aab
+          if-no-files-found: error
+          retention-days: 30
