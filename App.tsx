@@ -1873,6 +1873,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#FFC04D',
     fontWeight: '700',
+    fontStyle: 'italic',
+    letterSpacing: 0.25,
+    textAlign: 'center',
   },
   logoutText: {
     color: '#F09A2A',
