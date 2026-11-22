@@ -1371,11 +1371,11 @@ export default function App() {
           <View style={styles.shopStatusCard}>
             <Text style={styles.shopStatusTitle}>Xogta akoonka</Text>
             <Text style={styles.shopStatusText}>Email: {session.user.email || '—'}</Text>
-            <Text style={styles.shopStatusText}>Nooca akoonka: {myShop ? 'Iibiye' : (profileRole || 'Macmiil')}</Text>
+            <Text style={styles.shopStatusText}>{tr("Nooca akoonka: ", "Account type: ")}{myShop ? tr("Iibiye", "Seller") : profileRole === 'admin' || profileRole === 'super_admin' ? 'Admin' : tr("Macmiil", "Customer")}</Text>
           </View>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  Wallet-kayga iibka</Text></TouchableOpacity>
+          {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  Dalabyadayda</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}><Text style={styles.profileActionText}>🛒  Cart-kayga ({cart.length})</Text></TouchableOpacity>
           <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>Ka bax akoonka</Text></TouchableOpacity>
