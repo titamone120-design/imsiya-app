@@ -1371,7 +1371,7 @@ export default function App() {
           <View style={styles.shopStatusCard}>
             <Text style={styles.shopStatusTitle}>Xogta akoonka</Text>
             <Text style={styles.shopStatusText}>Email: {session.user.email || '—'}</Text>
-            <Text style={styles.shopStatusText}>Nooca akoonka: {profileRole || 'Macmiil'}</Text>
+            <Text style={styles.shopStatusText}>Nooca akoonka: {myShop ? 'Iibiye' : (profileRole || 'Macmiil')}</Text>
           </View>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  Dukaankayga iyo iibiyaha</Text></TouchableOpacity>
