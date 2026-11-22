@@ -1184,7 +1184,7 @@ export default function App() {
 
       <View style={styles.productSectionTools}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-          {['Dhammaan', ...(categoryRows.length ? categoryRows.map(item => item.name) : categories.slice(1))].map(item => (
+          {['Dhammaan', ...Array.from(new Set([...categories.slice(1), ...categoryRows.map(item => item.name)]))].map(item => (
             <TouchableOpacity key={item} style={[styles.categoryButton, category === item && styles.categorySelected]} onPress={() => setCategory(item)}>
               <Text style={[styles.categoryText, category === item && styles.categorySelectedText]} >{translateSweetName(item, language)}</Text>
             </TouchableOpacity>
@@ -1847,7 +1847,7 @@ export default function App() {
             <TextInput style={styles.input} placeholder={tr("Ama geli URL sawir (https://...)", "Or enter an image URL (https://...)")} value={productImage.startsWith('file://') || productImage.startsWith('content://') ? '' : productImage} onChangeText={value => { setProductImage(value); setProductImageMimeType(''); }} autoCapitalize="none" />
             <Text style={styles.label}>{tr("Qaybta alaabta", "Product Category")}</Text>
             <View style={styles.categoryChoices}>
-              {categoryRows.map(item => item.name).map(item => (
+              {Array.from(new Set([...categories.slice(1), ...categoryRows.map(item => item.name)])).map(item => (
                 <TouchableOpacity key={item} style={[styles.categoryButton, productCategory === item && styles.categorySelected]} onPress={() => setProductCategory(item)}>
                   <Text style={[styles.categoryText, productCategory === item && styles.categorySelectedText]}>{translateSweetName(item, language)}</Text>
                 </TouchableOpacity>
