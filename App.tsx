@@ -92,19 +92,35 @@ const SWEET_TERM_TRANSLATIONS: Record<string, string[]> = {
 
 const translateSweetName = (value: string, language: string) => {
   if (!value) return value;
-  const normalizedLanguage = String(language || 'en').toLowerCase();
+  const normalizedLanguage = String(language || 'en').trim().toLowerCase();
+  const terms = SWEET_TERM_TRANSLATIONS[normalizedLanguage] || SWEET_TERM_TRANSLATIONS.en;
+  const normalizedValue = value.normalize('NFKC').trim().toLocaleLowerCase();
+
+  // Match a known category regardless of the language in which it was saved
+  // (for example, a Somali category saved in Supabase must display in English).
+  for (const sourceTerms of Object.values(SWEET_TERM_TRANSLATIONS)) {
+    const matchedIndex = sourceTerms.findIndex(term =>
+      term.normalize('NFKC').trim().toLocaleLowerCase() === normalizedValue
+    );
+    if (matchedIndex >= 0) return terms[matchedIndex];
+  }
+
   if (normalizedLanguage === 'so') return value;
-  const terms = SWEET_TERM_TRANSLATIONS[normalizedLanguage];
-  if (!terms) return value;
   const replacements: [RegExp, number][] = [
-    [/macmacaan(?:o)?\s+kale/gi, 4],
+    [/macmacaan(?:o)?\\s+kale/gi, 4],
+    [/other\\s+sweets/gi, 4],
     [/shukulaato/gi, 3],
+    [/chocolate/gi, 3],
     [/buskut/gi, 0],
+    [/biscuit/gi, 0],
     [/xalwo/gi, 1],
+    [/halwa/gi, 1],
     [/keeg/gi, 2],
+    [/cake/gi, 2],
     [/dhammaan/gi, 5],
+    [/all/gi, 5],
   ];
-  let translated = value.trim();
+  let translated = value;
   replacements.forEach(([pattern, targetIndex]) => {
     translated = translated.replace(pattern, terms[targetIndex]);
   });
