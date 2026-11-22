@@ -1011,69 +1011,85 @@ export default function App() {
 
   const renderHome = () => (
     <>
-      <TextInput
-        style={styles.searchInput}
-        placeholder={tr("Raadi macmacaan...", "Search sweets...")}
-        placeholderTextColor="#888"
-        value={search}
-        onChangeText={setSearch}
-      />
-
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{tr("Ku soo dhowow IMSIYA", "Welcome to IMSIYA")}</Text>
-        <Text style={styles.heroText}>
-          Macmacaanka aad jeceshahay — hal meel.
-        </Text>
+      <View style={styles.homeSearchWrap}>
+        <Text style={styles.searchGlyph}>⌕</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder={tr("Raadi macmacaan...", "Search sweets...")}
+          placeholderTextColor="#8D8299"
+          value={search}
+          onChangeText={setSearch}
+        />
+        <TouchableOpacity style={styles.searchFilter} onPress={() => { loadProducts(); loadCategories(); }}>
+          <Text style={styles.searchFilterText}>☷</Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryScroll}
-      >
-        {['Dhammaan', ...(categoryRows.length ? categoryRows.map(item => item.name) : categories.slice(1))].map(item => (
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.categoryButton,
-              category === item && styles.categorySelected,
-            ]}
-            onPress={() => setCategory(item)}
-          >
-            <Text
-              style={[
-                styles.categoryText,
-                category === item && styles.categorySelectedText,
-              ]}
-            >
-              {item}
-            </Text>
+      <View style={styles.promoBanner}>
+        <View style={styles.promoCopy}>
+          <Text style={styles.promoEyebrow}>IMSIYA SPECIAL</Text>
+          <Text style={styles.promoTitle}>{tr("Macmacaan kuu gaar ah", "Sweet Deals")}</Text>
+          <Text style={styles.promoSubtitle}>{tr("Ilaa 50% qiimo-dhimis", "Up to 50% OFF")}</Text>
+          <TouchableOpacity style={styles.promoButton} onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
+            <Text style={styles.promoButtonText}>{tr("Hadda iibso", "Shop Now")}  →</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </View>
+        <View style={styles.promoArt}>
+          {products[0]?.image_url ? (
+            <Image source={{ uri: products[0].image_url }} style={styles.promoImage} resizeMode="cover" />
+          ) : <Text style={styles.promoEmoji}>🍰</Text>}
+        </View>
+        <View style={styles.promoOrb} />
+      </View>
 
       <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{tr("Alaabaha Caanka ah", "Popular Products")}</Text>
-        <TouchableOpacity
-          style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F3E8FA', borderWidth: 1, borderColor: '#E3D4EF' }}
-          onPress={() => { loadProducts(); loadCategories(); }}
-          disabled={productsLoading}
-          accessibilityLabel={tr("Cusboonaysii", "Refresh")}
-        >
-          {productsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={[styles.refreshIcon, { fontSize: 23 }]}>↻</Text>}
+        <Text style={styles.sectionTitle}>{tr("Qaybaha", "Categories")}</Text>
+        <TouchableOpacity onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
+          <Text style={styles.seeAllText}>{tr("Dhammaan", "See All")} →</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.homeCategoryGrid}>
+        {[
+          { name: 'Keeg', icon: '🍰' },
+          { name: 'Buskut', icon: '🍪' },
+          { name: 'Xalwo', icon: '🍯' },
+          { name: 'Macmacaan kale', icon: '🍬' },
+        ].map(item => (
+          <TouchableOpacity key={item.name} style={[styles.homeCategoryCard, category === item.name && styles.homeCategoryActive]} onPress={() => setCategory(item.name)}>
+            <Text style={styles.homeCategoryIcon}>{item.icon}</Text>
+            <Text style={[styles.homeCategoryName, category === item.name && styles.homeCategoryNameActive]}>{item.name}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{tr("Alaab cusub", "New Products")}</Text>
+        <TouchableOpacity onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
+          <Text style={styles.seeAllText}>{tr("Eeg dhammaan", "See All")} →</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.productSectionTools}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+          {['Dhammaan', ...(categoryRows.length ? categoryRows.map(item => item.name) : categories.slice(1))].map(item => (
+            <TouchableOpacity key={item} style={[styles.categoryButton, category === item && styles.categorySelected]} onPress={() => setCategory(item)}>
+              <Text style={[styles.categoryText, category === item && styles.categorySelectedText]}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <TouchableOpacity style={styles.refreshButton} onPress={() => { loadProducts(); loadCategories(); }} disabled={productsLoading} accessibilityLabel={tr("Cusboonaysii", "Refresh")}>
+          {productsLoading ? <ActivityIndicator size="small" color="#5B12A8" /> : <Text style={styles.refreshIcon}>↻</Text>}
         </TouchableOpacity>
       </View>
 
       {productsLoading ? (
-        <ActivityIndicator size="large" color="#4A286B" />
+        <ActivityIndicator size="large" color="#5B12A8" />
       ) : productError ? (
         <Text style={styles.errorText}>{productError}</Text>
       ) : filteredProducts.length === 0 ? (
         <Text style={styles.emptyText}>{tr("Weli alaab lama helin.", "No products found yet.")}</Text>
       ) : (
-        <View style={styles.productGrid}>
-          {filteredProducts.map(renderProduct)}
-        </View>
+        <View style={styles.productGrid}>{filteredProducts.map(renderProduct)}</View>
       )}
     </>
   );
@@ -1698,16 +1714,18 @@ export default function App() {
       <StatusBar barStyle="dark-content" backgroundColor="#FCFAFE" />
 
       <View style={styles.header}>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={styles.headerLogo}>IMSIYA</Text>
-          <Text style={styles.headerSubtitle}>{tr("Suuqa macmacaanka", "Sweets Marketplace")}</Text>
+        <TouchableOpacity style={styles.headerMenuButton} onPress={() => setScreen('profile')} accessibilityLabel="Menu">
+          <Text style={styles.headerMenuIcon}>☰</Text>
+        </TouchableOpacity>
+        <View style={styles.headerBrand}>
+          <Text style={styles.headerLogo}>🛍️ IMSIYA</Text>
+          <Text style={styles.headerSubtitle}>{tr("Suuqa macmacaanka", "Sweetness for Everyone")}</Text>
         </View>
-
-        <View style={{ position: 'absolute', right: 14, top: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}><TouchableOpacity onPress={() => setLanguage(current => current === 'en' ? 'so' : 'en')} style={{ backgroundColor: '#F3E8FA', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14 }}><Text style={{ color: '#4A286B', fontWeight: '800', fontSize: 11 }}>{language === 'en' ? 'EN | SO' : 'SO | EN'}</Text></TouchableOpacity><TouchableOpacity onPress={signOut}>
-          <Text style={styles.logoutText}>{tr('Ka bax', 'Sign Out')}</Text>
-          </TouchableOpacity></View>
+        <TouchableOpacity style={styles.headerCartButton} onPress={() => setScreen('cart')} accessibilityLabel="Cart">
+          <Text style={styles.headerCartIcon}>🛒</Text>
+          {cart.reduce((sum, item) => sum + item.quantity, 0) > 0 && <View style={styles.cartBadge}><Text style={styles.cartBadgeText}>{cart.reduce((sum, item) => sum + item.quantity, 0)}</Text></View>}
+        </TouchableOpacity>
       </View>
-
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
@@ -1769,7 +1787,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FCFAFE',
+    backgroundColor: '#F8F5FC',
   },
   authContainer: {
     flex: 1,
@@ -1807,7 +1825,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primaryButton: {
-    backgroundColor: '#F3A33B',
+    backgroundColor: '#5B0AA8',
     paddingVertical: 17,
     paddingHorizontal: 18,
     minHeight: 54,
@@ -1836,11 +1854,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5D9EF',
+    backgroundColor: '#4B078B',
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    minHeight: 66,
+    borderBottomWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1849,11 +1867,12 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '900',
     letterSpacing: 1.4,
-    color: '#4A286B',
+    color: '#FFFFFF',
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#6F6478',
+    color: '#FFC04D',
+    fontWeight: '700',
   },
   logoutText: {
     color: '#F09A2A',
@@ -1867,7 +1886,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   hero: {
-    backgroundColor: '#4A286B',
+    backgroundColor: '#4B078B',
     borderRadius: 22,
     padding: 22,
     marginBottom: 20,
@@ -1907,7 +1926,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categorySelected: {
-    backgroundColor: '#4A286B',
+    backgroundColor: '#5B0AA8',
   },
   categoryText: {
     color: '#624678',
@@ -2150,8 +2169,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E5D9EF',
-    paddingVertical: 12,
+    borderTopColor: '#E9E0F1',
+    paddingVertical: 9,
     elevation: 8,
     justifyContent: 'space-around',
   },
@@ -2168,6 +2187,37 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 4,
   },
+
+  headerMenuButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
+  headerMenuIcon: { color: '#FFFFFF', fontSize: 25, fontWeight: '700' },
+  headerBrand: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  headerCartButton: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  headerCartIcon: { color: '#FFFFFF', fontSize: 23 },
+  cartBadge: { position: 'absolute', top: 0, right: 0, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: '#FF8A00', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  cartBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
+  homeSearchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 17, borderWidth: 1, borderColor: '#E9E0F1', paddingHorizontal: 12, marginBottom: 16, minHeight: 49, elevation: 1 },
+  searchGlyph: { color: '#5B12A8', fontSize: 25, marginRight: 8 },
+  searchFilter: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#F3EAFB', alignItems: 'center', justifyContent: 'center' },
+  searchFilterText: { color: '#5B12A8', fontSize: 22, fontWeight: '800' },
+  promoBanner: { minHeight: 166, borderRadius: 23, backgroundColor: '#4B078B', padding: 18, marginBottom: 22, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 4 },
+  promoCopy: { flex: 1, zIndex: 2 },
+  promoEyebrow: { color: '#FFC04D', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 7 },
+  promoTitle: { color: '#FFFFFF', fontSize: 23, lineHeight: 27, fontWeight: '900', marginBottom: 4 },
+  promoSubtitle: { color: '#F8EFFF', fontSize: 14, fontWeight: '700', marginBottom: 12 },
+  promoButton: { alignSelf: 'flex-start', backgroundColor: '#FF9D00', borderRadius: 18, paddingVertical: 9, paddingHorizontal: 13 },
+  promoButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
+  promoArt: { width: 116, height: 116, borderRadius: 58, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginLeft: 8, zIndex: 1, overflow: 'hidden' },
+  promoImage: { width: '100%', height: '100%' },
+  promoEmoji: { fontSize: 64 },
+  promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#FF9D00', right: -70, top: -92, opacity: 0.95 },
+  seeAllText: { color: '#5B0AA8', fontSize: 12, fontWeight: '900' },
+  homeCategoryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 23, gap: 8 },
+  homeCategoryCard: { flex: 1, minHeight: 94, borderRadius: 17, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0E8F6', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, elevation: 1 },
+  homeCategoryActive: { borderColor: '#5B0AA8', backgroundColor: '#F4EAFE' },
+  homeCategoryIcon: { fontSize: 29, marginBottom: 7 },
+  homeCategoryName: { color: '#33243D', fontSize: 11, fontWeight: '800', textAlign: 'center' },
+  homeCategoryNameActive: { color: '#5B0AA8' },
+  productSectionTools: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
 
   myShopScreen: { paddingBottom: 24 },
   myShopHeader: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#4A286B', borderRadius: 22, padding: 18, marginBottom: 18, borderLeftWidth: 5, borderLeftColor: '#F3A33B', elevation: 3 },
