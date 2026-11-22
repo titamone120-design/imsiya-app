@@ -844,7 +844,7 @@ export default function App() {
 
   const createOrUpdateShop = async () => {
     if (!session?.user?.id) {
-      Alert.alert('IMSIYA', 'Marka hore akoonka gal.');
+      Alert.alert('IMSIYA', tr('Marka hore akoonka gal.', 'Please sign in first.'));
       return;
     }
 
@@ -939,7 +939,7 @@ export default function App() {
 
   const payShopSubscription = async () => {
     if (!session?.user?.id) {
-      Alert.alert('IMSIYA', 'Marka hore akoonka gal.');
+      Alert.alert('IMSIYA', tr('Marka hore akoonka gal.', 'Please sign in first.'));
       return;
     }
 
@@ -1100,7 +1100,7 @@ export default function App() {
       <Text style={styles.productName}>{translateSweetName(product.name, language)}</Text>
       <Text style={styles.productCategory}>{translateSweetName(product.category, language)}</Text>
       <TouchableOpacity onPress={() => { setSelectedProduct(product); setScreen('product'); }} style={styles.secondaryButton}>
-        <Text style={styles.secondaryButtonText}>Faahfaahin</Text>
+        <Text style={styles.secondaryButtonText}>{tr("Faahfaahin", "Details")}</Text>
       </TouchableOpacity>
       <Text style={styles.productPrice}>{money(product.price)}</Text>
       <Text style={styles.stockText}>
@@ -1206,7 +1206,7 @@ export default function App() {
 
   const checkoutCart = async () => {
     if (!session?.user?.id) {
-      Alert.alert('IMSIYA', 'Marka hore akoonka gal.');
+      Alert.alert('IMSIYA', tr('Marka hore akoonka gal.', 'Please sign in first.'));
       return;
     }
 
@@ -1249,7 +1249,7 @@ export default function App() {
         );
       }
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Lacag-bixinta lama bilaabi karin.');
+      Alert.alert('IMSIYA', e.message || tr('Lacag-bixinta lama bilaabi karin.', 'Could not start payment.'));
     } finally {
       setCheckoutLoading(false);
     }
@@ -1269,7 +1269,7 @@ export default function App() {
       if (error) throw error;
       setMyOrders(data || []);
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Dalabyada lama soo qaadi karin.');
+      Alert.alert('IMSIYA', e.message || tr('Dalabyada lama soo qaadi karin.', 'Could not load orders.'));
     } finally {
       setOrdersLoading(false);
     }
@@ -1288,7 +1288,7 @@ export default function App() {
       if (error) throw error;
       setSellerOrders((data || []).filter((item: any) => item.orders));
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Dalabyada iibiyaha lama soo qaadi karin.');
+      Alert.alert('IMSIYA', e.message || tr('Dalabyada iibiyaha lama soo qaadi karin.', 'Could not load seller orders.'));
     } finally {
       setSellerOrdersLoading(false);
     }
@@ -1411,13 +1411,13 @@ export default function App() {
         const product = Array.isArray(item.products) ? item.products[0] : item.products;
         return (
           <View key={item.id} style={styles.shopStatusCard}>
-            <Text style={styles.shopStatusTitle}>{product?.name || 'Alaabta IMSIYA'}</Text>
-            <Text style={styles.shopStatusText}>Tirada: {item.quantity} · Qiimaha: {money(Number(item.unit_price || 0) * Number(item.quantity || 0))}</Text>
-            <Text style={styles.shopStatusText}>Wadarta dalabka: {order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
+            <Text style={styles.shopStatusTitle}>{product?.name || tr('Alaabta IMSIYA', 'IMSIYA Product')}</Text>
+            <Text style={styles.shopStatusText}>{tr('Tirada:', 'Quantity:')} {item.quantity} · {tr('Qiimaha:', 'Price:')} {money(Number(item.unit_price || 0) * Number(item.quantity || 0))}</Text>
+            <Text style={styles.shopStatusText}>{tr('Wadarta dalabka:', 'Order total:')} {order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
             <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
-            <Text style={styles.shopStatusText}>Bixinta: {String(order.payment_status || '—')} · Habka: {order.payment_method || '—'}</Text>
+            <Text style={styles.shopStatusText}>{tr('Bixinta:', 'Payment:')} {String(order.payment_status || '—')} · {tr('Habka:', 'Method:')} {order.payment_method || '—'}</Text>
             <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
-            <Text style={styles.shopStatusText}>Dalab: {String(order.id).slice(0, 12)}</Text>
+            <Text style={styles.shopStatusText}>{tr('Dalab:', 'Order:')} {String(order.id).slice(0, 12)}</Text>
           </View>
         );
       })}
@@ -1427,7 +1427,7 @@ export default function App() {
   const renderOrderHistory = () => (
     <View>
       <Text style={styles.sectionTitle}>{tr("Dalabyadayda", "My Orders")}</Text>
-      <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>{tr('← Ku noqo Profile', '← Back to Profile')}</Text></TouchableOpacity>
       <TouchableOpacity style={styles.refreshWideButton} onPress={loadMyOrders} disabled={ordersLoading}>
         {ordersLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
         <Text style={styles.refreshButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
@@ -1436,10 +1436,10 @@ export default function App() {
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status)}</Text>
-          <Text style={styles.shopStatusText}>Bixinta: {String(order.payment_status || '—')}</Text>
-          <Text style={styles.shopStatusText}>Habka: {order.payment_method || '—'}</Text>
+          <Text style={styles.shopStatusText}>{tr('Bixinta:', 'Payment:')} {String(order.payment_status || '—')}</Text>
+          <Text style={styles.shopStatusText}>{tr('Habka:', 'Method:')} {order.payment_method || '—'}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
-          <Text style={styles.shopStatusText}>Dalab: {String(order.id).slice(0, 12)}</Text>
+          <Text style={styles.shopStatusText}>{tr('Dalab:', 'Order:')} {String(order.id).slice(0, 12)}</Text>
         </View>
       ))}
     </View>
@@ -1486,7 +1486,7 @@ export default function App() {
         <>
           <View style={styles.hero}>
             <Text style={styles.heroTitle}>{tr("Akoonkayga", "My Account")}</Text>
-            <Text style={styles.heroText}>{session.user.user_metadata?.full_name || fullName || 'Macmiilka IMSIYA'}</Text>
+            <Text style={styles.heroText}>{session.user.user_metadata?.full_name || fullName || tr('Macmiilka IMSIYA', 'IMSIYA Customer')}</Text>
           </View>
           <View style={styles.shopStatusCard}>
             <Text style={styles.shopStatusTitle}>{tr("Xogta akoonka", "Account Details")}</Text>
@@ -1510,23 +1510,23 @@ export default function App() {
     return (
       <View>
         <Text style={styles.sectionTitle}>{tr("Alaabta aan jeclahay", "My Favorites")}</Text>
-        <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>← Ku noqo Profile</Text></TouchableOpacity>
-        {favoriteProducts.length === 0 ? <Text style={styles.emptyText}>Weli ma aadan dooran alaab aad jeceshahay.</Text> : <View style={styles.productGrid}>{favoriteProducts.map(renderProduct)}</View>}
+        <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>{tr('← Ku noqo Profile', '← Back to Profile')}</Text></TouchableOpacity>
+        {favoriteProducts.length === 0 ? <Text style={styles.emptyText}>{tr('Weli ma aadan dooran alaab aad jeceshahay.', 'You have not added any favorites yet.')}</Text> : <View style={styles.productGrid}>{favoriteProducts.map(renderProduct)}</View>}
       </View>
     );
   };
 
   const renderProductDetails = () => {
-    if (!selectedProduct) return <View><Text style={styles.emptyText}>Alaabta lama helin.</Text><TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>← Ku noqo Hoyga</Text></TouchableOpacity></View>;
+    if (!selectedProduct) return <View><Text style={styles.emptyText}>{tr('Alaabta lama helin.', 'Product not found.')}</Text><TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>{tr('← Ku noqo Hoyga', '← Back to Home')}</Text></TouchableOpacity></View>;
     return (
       <View>
-        <TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>← Ku noqo alaabta</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>{tr('← Ku noqo alaabta', '← Back to Products')}</Text></TouchableOpacity>
         {selectedProduct.image_url ? <Image source={{ uri: selectedProduct.image_url }} style={{ width: '100%', height: 240, borderRadius: 18, marginVertical: 14 }} resizeMode="cover" /> : <View style={[styles.imagePlaceholder, { height: 220, marginVertical: 14 }]}><Text style={styles.placeholderText}>🍬</Text></View>}
         <Text style={styles.sectionTitle}>{translateSweetName(selectedProduct.name, language)}</Text>
         <Text style={styles.productCategory}>{translateSweetName(selectedProduct.category, language)}</Text>
         <Text style={[styles.productPrice, { fontSize: 22, marginVertical: 10 }]}>{money(selectedProduct.price)}</Text>
-        <Text style={styles.shopStatusText}>{selectedProduct.description?.trim() || 'Sharaxaad dheeraad ah weli lama gelin.'}</Text>
-        <Text style={styles.stockText}>{selectedProduct.stock > 0 ? `Kaydka: ${selectedProduct.stock}` : 'Waa dhammaatay'}</Text>
+        <Text style={styles.shopStatusText}>{selectedProduct.description?.trim() || tr('Sharaxaad dheeraad ah weli lama gelin.', 'No additional description has been added yet.')}</Text>
+        <Text style={styles.stockText}>{selectedProduct.stock > 0 ? `${tr('Kaydka:', 'Stock:')} ${selectedProduct.stock}` : tr('Waa dhammaatay', 'Out of stock')}</Text>
         <TouchableOpacity style={[styles.primaryButton, selectedProduct.stock <= 0 && styles.disabledButton]} disabled={selectedProduct.stock <= 0} onPress={() => addToCart(selectedProduct)}>
           <Text style={styles.buttonText}>{tr("Ku dar cart-ka", "Add to cart")}</Text>
         </TouchableOpacity>
@@ -1565,7 +1565,7 @@ export default function App() {
                   style={styles.quantityButton}
                   onPress={() => {
                     if (item.quantity >= item.stock) {
-                      Alert.alert('IMSIYA', 'Kaydka intaas kuma filna.');
+                      Alert.alert('IMSIYA', tr('Kaydka intaas kuma filna.', 'Not enough stock available.'));
                       return;
                     }
                     changeQuantity(item.id, 1);
@@ -1631,90 +1631,90 @@ export default function App() {
       </View>
       {profileRole === 'super_admin' && (
         <View style={styles.shopStatusCard}>
-          <Text style={styles.shopStatusTitle}>PayPal LIVE — $20 bishii</Text>
-          <Text style={styles.shopStatusText}>Diyaari oo xaqiiji product-ka iyo billing plan-ka. Tani ma bilaabayso subscription, mana qaaddo lacag.</Text>
+          <Text style={styles.shopStatusTitle}>{tr('PayPal LIVE — $20 bishii', 'PayPal LIVE — $20/month')}</Text>
+          <Text style={styles.shopStatusText}>{tr('Diyaari oo xaqiiji product-ka iyo billing plan-ka. Tani ma bilaabayso subscription, mana qaaddo lacag.', 'Set up and verify the product and billing plan. This will not start a subscription or charge money.')}</Text>
           <TouchableOpacity style={[styles.primaryButton, planSetupLoading && styles.disabledButton]} onPress={setupPayPalPlan} disabled={planSetupLoading}>
-            {planSetupLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Diyaari PayPal LIVE Plan</Text>}
+            {planSetupLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{tr('Diyaari PayPal LIVE Plan', 'Set up PayPal LIVE Plan')}</Text>}
           </TouchableOpacity>
         </View>
       )}
       <View style={styles.shopStatusCard}>
         <Text style={styles.shopStatusTitle}>{tr("Codsiyada iibiyeyaasha", "Seller Applications")}</Text>
-        <Text style={styles.shopStatusText}>Sugaya ansixinta: {pendingSellers.length}</Text>
+        <Text style={styles.shopStatusText}>{tr('Sugaya ansixinta:', 'Awaiting approval:')} {pendingSellers.length}</Text>
         <TouchableOpacity style={styles.primaryButton} onPress={loadAdminData}>
           <Text style={styles.buttonText}>{tr("Cusboonaysii", "Refresh")}</Text>
         </TouchableOpacity>
       </View>
       {adminLoading ? <ActivityIndicator size="large" color="#4A286B" /> : pendingSellers.length === 0 ? (
-        <Text style={styles.emptyText}>Ma jiraan codsiyo sugaya ansixin.</Text>
+        <Text style={styles.emptyText}>{tr('Ma jiraan codsiyo sugaya ansixin.', 'There are no applications awaiting approval.')}</Text>
       ) : pendingSellers.map((seller) => (
         <View key={seller.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{seller.shop_name}</Text>
-          <Text style={styles.shopStatusText}>{seller.description || 'Sharaxaad ma jirto'}</Text>
+          <Text style={styles.shopStatusText}>{seller.description || tr('Sharaxaad ma jirto', 'No description provided')}</Text>
           <Text style={styles.shopStatusText}>Seller ID: {seller.id}</Text>
           <TouchableOpacity style={styles.primaryButton} onPress={() => approveSeller(seller.id)}>
-            <Text style={styles.buttonText}>Ansixi iibiyahan</Text>
+            <Text style={styles.buttonText}>{tr('Ansixi iibiyahan', 'Approve this seller')}</Text>
           </TouchableOpacity>
         </View>
       ))}
-      <Text style={styles.emptyText}>Xusuusin: ansixinta iibiyaha ma dhaqaajiso dukaanka ilaa lacagta subscription-ka $20 la xaqiijiyo.</Text>
+      <Text style={styles.emptyText}>{tr('Xusuusin: ansixinta iibiyaha ma dhaqaajiso dukaanka ilaa lacagta subscription-ka $20 la xaqiijiyo.', 'Note: approving a seller does not activate the shop until the $20 subscription payment is verified.')}</Text>
 
       <View style={styles.shopStatusCard}>
         <Text style={styles.shopStatusTitle}>{tr("Guudmar maamulka", "Admin Overview")}</Text>
-        <Text style={styles.shopStatusText}>Dalabyada: {adminOrders.length} kii ugu dambeeyey</Text>
-        <Text style={styles.shopStatusText}>Subscriptions: {adminSubscriptions.length} kii ugu dambeeyey</Text>
-        <Text style={styles.shopStatusText}>Wallet transactions: {adminWallet.length} kii ugu dambeeyey</Text>
+        <Text style={styles.shopStatusText}>{tr('Dalabyada:', 'Orders:')} {adminOrders.length} {tr('kii ugu dambeeyey', 'most recent')}</Text>
+        <Text style={styles.shopStatusText}>Subscriptions: {adminSubscriptions.length} {tr('kii ugu dambeeyey', 'most recent')}</Text>
+        <Text style={styles.shopStatusText}>Wallet transactions: {adminWallet.length} {tr('kii ugu dambeeyey', 'most recent')}</Text>
       </View>
 
       <Text style={styles.sectionTitle}>{tr("Dalabyada macaamiisha", "Customer Orders")}</Text>
-      {adminOrders.length === 0 ? <Text style={styles.emptyText}>Weli dalab ma jiro.</Text> : adminOrders.map(order => (
+      {adminOrders.length === 0 ? <Text style={styles.emptyText}>{tr('Weli dalab ma jiro.', 'No orders yet.')}</Text> : adminOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
-          <Text style={styles.shopStatusText}>Xaalad: {orderStatusLabel(order.status, order.payment_status)} · Bixin: {order.payment_status}</Text>
-          <Text style={styles.shopStatusText}>Habka: {order.payment_method || 'Lama cayimin'}</Text>
+          <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {orderStatusLabel(order.status, order.payment_status)} · {tr('Bixin:', 'Payment:')} {order.payment_status}</Text>
+          <Text style={styles.shopStatusText}>{tr('Habka:', 'Method:')} {order.payment_method || tr('Lama cayimin', 'Not specified')}</Text>
           <Text style={styles.shopStatusText}>Order ID: {order.id}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
           {order.payment_status === 'paid' && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-              {order.status === 'pending' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'processing')}><Text style={styles.secondaryButtonText}>Bilow diyaarinta</Text></TouchableOpacity>}
-              {order.status === 'processing' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'shipped')}><Text style={styles.secondaryButtonText}>Dalabka dir</Text></TouchableOpacity>}
-              {order.status === 'shipped' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'delivered')}><Text style={styles.secondaryButtonText}>Xaqiiji gaarsiinta</Text></TouchableOpacity>}
-              {order.status === 'delivered' && <Text style={styles.shopStatusText}>Dalabkan waa la gaarsiiyey.</Text>}
+              {order.status === 'pending' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'processing')}><Text style={styles.secondaryButtonText}>{tr('Bilow diyaarinta', 'Start preparing')}</Text></TouchableOpacity>}
+              {order.status === 'processing' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'shipped')}><Text style={styles.secondaryButtonText}>{tr('Dalabka dir', 'Ship order')}</Text></TouchableOpacity>}
+              {order.status === 'shipped' && <TouchableOpacity style={[styles.secondaryButton, { flexGrow: 1 }]} onPress={() => updateOrderTrackingStatus(order.id, 'delivered')}><Text style={styles.secondaryButtonText}>{tr('Xaqiiji gaarsiinta', 'Confirm delivery')}</Text></TouchableOpacity>}
+              {order.status === 'delivered' && <Text style={styles.shopStatusText}>{tr('Dalabkan waa la gaarsiiyey.', 'This order has been delivered.')}</Text>}
             </View>
           )}
         </View>
       ))}
 
       <Text style={styles.sectionTitle}>{tr("Lacagaha dukaamada ($20 bishii)", "Shop Subscriptions ($20/month)")}</Text>
-      {adminSubscriptions.length === 0 ? <Text style={styles.emptyText}>Weli subscription lama diiwaangelin.</Text> : adminSubscriptions.map(sub => (
+      {adminSubscriptions.length === 0 ? <Text style={styles.emptyText}>{tr('Weli subscription lama diiwaangelin.', 'No subscriptions have been recorded yet.')}</Text> : adminSubscriptions.map(sub => (
         <View key={sub.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{sub.currency || 'USD'} {Number(sub.amount || 0).toFixed(2)} · {sub.status}</Text>
           <Text style={styles.shopStatusText}>Shop ID: {sub.shop_id}</Text>
-          <Text style={styles.shopStatusText}>Bilow: {sub.started_at ? new Date(sub.started_at).toLocaleDateString() : '—'}</Text>
-          <Text style={styles.shopStatusText}>Dhamaad: {sub.expires_at ? new Date(sub.expires_at).toLocaleDateString() : '—'}</Text>
+          <Text style={styles.shopStatusText}>{tr('Bilow:', 'Started:')} {sub.started_at ? new Date(sub.started_at).toLocaleDateString() : '—'}</Text>
+          <Text style={styles.shopStatusText}>{tr('Dhamaad:', 'Expires:')} {sub.expires_at ? new Date(sub.expires_at).toLocaleDateString() : '—'}</Text>
         </View>
       ))}
 
       <Text style={styles.sectionTitle}>{tr("Codsiyada lacag-bixinta iibiyeyaasha", "Seller Payout Requests")}</Text>
-      {adminPayoutRequests.length === 0 ? <Text style={styles.emptyText}>Weli codsi lacag-bixin ma jiro.</Text> : adminPayoutRequests.map(req => (
+      {adminPayoutRequests.length === 0 ? <Text style={styles.emptyText}>{tr('Weli codsi lacag-bixin ma jiro.', 'No payout requests yet.')}</Text> : adminPayoutRequests.map(req => (
         <View key={req.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · PayPal</Text>
           <Text style={styles.shopStatusText}>Seller ID: {req.seller_id}</Text>
-          <Text style={styles.shopStatusText}>Ogow: lacagta marka hore ku dir PayPal; badhanka hoose wuxuu diiwaangelinayaa oo keliya bixinta aad hore u samaysay.</Text>
-          <Text style={styles.shopStatusText}>Akoonka lacagta: {req.payout_account || '—'}</Text>
-          <Text style={styles.shopStatusText}>Xaalad: {req.status}</Text>
+          <Text style={styles.shopStatusText}>{tr('Ogow: lacagta marka hore ku dir PayPal; badhanka hoose wuxuu diiwaangelinayaa oo keliya bixinta aad hore u samaysay.', 'Important: send the money through PayPal first; the button below only records a transfer you have already made.')}</Text>
+          <Text style={styles.shopStatusText}>{tr('Akoonka lacagta:', 'Payout account:')} {req.payout_account || '—'}</Text>
+          <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {req.status}</Text>
           {req.status === 'pending' || req.status === 'processing' ? <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'paid')}><Text style={styles.secondaryButtonText}>Xaqiiji: PayPal waa la diray</Text></TouchableOpacity>
-            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'rejected')}><Text style={styles.secondaryButtonText}>Diid codsiga</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'paid')}><Text style={styles.secondaryButtonText}>{tr('Xaqiiji: PayPal waa la diray', 'Confirm: PayPal transfer sent')}</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'rejected')}><Text style={styles.secondaryButtonText}>{tr('Diid codsiga', 'Reject request')}</Text></TouchableOpacity>
           </View> : null}
         </View>
       ))}
 
       <Text style={styles.sectionTitle}>{tr("Dhaqdhaqaaqa wallet-ka iibiyeyaasha", "Seller Wallet Activity")}</Text>
-      {adminWallet.length === 0 ? <Text style={styles.emptyText}>Weli dhaqdhaqaaq wallet ma jiro.</Text> : adminWallet.map(tx => (
+      {adminWallet.length === 0 ? <Text style={styles.emptyText}>{tr('Weli dhaqdhaqaaq wallet ma jiro.', 'No wallet activity yet.')}</Text> : adminWallet.map(tx => (
         <View key={tx.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{money(Number(tx.amount || 0))} · {tx.transaction_type}</Text>
-          <Text style={styles.shopStatusText}>{tx.description || 'Faahfaahin ma jirto'}</Text>
+          <Text style={styles.shopStatusText}>{tx.description || tr('Faahfaahin ma jirto', 'No details provided')}</Text>
           <Text style={styles.shopStatusText}>Seller ID: {tx.seller_id}</Text>
           <Text style={styles.shopStatusText}>Order ID: {tx.order_id || '—'}</Text>
         </View>
