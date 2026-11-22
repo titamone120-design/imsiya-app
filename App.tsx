@@ -1298,7 +1298,7 @@ export default function App() {
     <View style={styles.walletScreen}>
       <View style={styles.walletTopRow}>
         <View>
-          <Text style={styles.walletEyebrow}>IMSIYA SELLER</Text>
+          <Text style={styles.walletEyebrow}>{tr("IMSIYA IIBIYE", "IMSIYA SELLER")}</Text>
           <Text style={styles.sectionTitle}>{tr("Wallet-kayga", "My Wallet")}</Text>
         </View>
         <TouchableOpacity style={styles.walletBackButton} onPress={() => setScreen('shop')}>
@@ -1386,7 +1386,7 @@ export default function App() {
           <View key={req.id} style={styles.walletTransaction}>
             <View style={styles.walletTransactionInfo}>
               <Text style={styles.walletTransactionTitle}>{money(Number(req.amount || 0))} · PayPal</Text>
-              <Text style={styles.walletMuted}>Xaalad: {req.status === 'paid' ? 'La bixiyey' : req.status === 'rejected' ? 'La diiday' : req.status === 'processing' ? 'La shaqaynayo' : 'Sugaya maamulka'}</Text>
+              <Text style={styles.walletMuted}>{tr("Xaalad:", "Status:")} {req.status === 'paid' ? tr("La bixiyey", "Paid") : req.status === 'rejected' ? tr("La diiday", "Rejected") : req.status === 'processing' ? tr("La shaqaynayo", "Processing") : tr("Sugaya maamulka", "Awaiting review")}</Text>
               <Text style={styles.walletDate}>{req.created_at ? new Date(req.created_at).toLocaleString() : '—'}</Text>
             </View>
             <Text style={styles.walletStatusDot}>●</Text>
@@ -1405,7 +1405,7 @@ export default function App() {
         <Text style={styles.refreshButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
       </TouchableOpacity>
       {sellerOrdersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : sellerOrders.length === 0 ? (
-        <Text style={styles.emptyText}>Weli dalab alaabta dukaankaaga ah ma jiro.</Text>
+        <Text style={styles.emptyText}>{tr("Weli dalab alaabta dukaankaaga ah ma jiro.", "No shop product orders yet.")}</Text>
       ) : sellerOrders.map((item: any) => {
         const order = item.orders;
         const product = Array.isArray(item.products) ? item.products[0] : item.products;
@@ -1490,11 +1490,11 @@ export default function App() {
           </View>
           <View style={styles.shopStatusCard}>
             <Text style={styles.shopStatusTitle}>{tr("Xogta akoonka", "Account Details")}</Text>
-            <Text style={styles.shopStatusText}>Email: {session.user.email || '—'}</Text>
+            <Text style={styles.shopStatusText}>{tr("Iimayl:", "Email:")} {session.user.email || '—'}</Text>
             <Text style={styles.shopStatusText}>{tr("Nooca akoonka: ", "Account type: ")}{myShop ? tr("Iibiye", "Seller") : profileRole === 'admin' || profileRole === 'super_admin' ? 'Admin' : tr("Macmiil", "Customer")}</Text>
           </View>
           <TouchableOpacity style={styles.profileAction} onPress={() => setLanguagePickerOpen(true)}><Text style={styles.profileActionText}>🌐  Language / Luqadda: {selectedLanguage[1]} {selectedLanguage[2]}</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  Alaabta aan jeclahay ({favoriteIds.length})</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  {tr("Alaabta aan jeclahay", "My Favorites")} ({favoriteIds.length})</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  {tr("Dukaankayga iyo iibiyaha", "My Shop and Seller Account")}</Text></TouchableOpacity>
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  {tr("Dalabyadayda", "My Orders")}</Text></TouchableOpacity>
