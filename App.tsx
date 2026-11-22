@@ -1803,7 +1803,7 @@ export default function App() {
             <View key={item.id} style={styles.myShopProductCard}>
               {item.image_url ? <Image source={{ uri: item.image_url }} style={styles.myShopProductImage} resizeMode="cover" /> : <View style={styles.myShopProductPlaceholder}><Text style={{ fontSize: 27 }}>🍰</Text></View>}
               <View style={styles.myShopProductInfo}>
-                <Text style={styles.myShopProductName}>{item.name}</Text>
+                <Text style={styles.myShopProductName}>{translateSweetName(item.name, language)}</Text>
                 <Text style={styles.myShopProductPrice}>{money(item.price)}</Text>
                 <Text style={styles.myShopHint}>{tr("Kaydka", "Stock")}: {item.stock}</Text>
                 <View style={styles.myShopProductActions}>
@@ -1842,7 +1842,7 @@ export default function App() {
             <View style={styles.categoryChoices}>
               {categoryRows.map(item => item.name).map(item => (
                 <TouchableOpacity key={item} style={[styles.categoryButton, productCategory === item && styles.categorySelected]} onPress={() => setProductCategory(item)}>
-                  <Text style={[styles.categoryText, productCategory === item && styles.categorySelectedText]}>{item}</Text>
+                  <Text style={[styles.categoryText, productCategory === item && styles.categorySelectedText]}>{translateSweetName(item, language)}</Text>
                 </TouchableOpacity>
               ))}
             </View>
