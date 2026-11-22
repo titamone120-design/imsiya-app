@@ -141,7 +141,7 @@ const orderStatusLabel = (status: unknown, paymentStatus: unknown) => {
   return state ? `Order status: ${state}` : 'No status available';
 };
 
-const IMSIYA_LANGUAGES = [["en","🇬🇧","English"],["so","🇸🇴","Somali"],["ar","🇸🇦","العربية"],["sw","🇰🇪","Kiswahili"],["fr","🇫🇷","Français"],["es","🇪🇸","Español"],["zh","🇨🇳","中文"],["hi","🇮🇳","हिन्दी"],["pt","🇵🇹","Português"],["de","🇩🇪","Deutsch"],["tr","🇹🇷","Türkçe"],["ru","🇷🇺","Русский"],["ja","🇯🇵","日本語"],["ko","🇰🇷","한국어"],["it","🇮🇹","Italiano"],["nl","🇳🇱","Nederlands"],["bn","🇧🇩","বাংলা"],["id","🇮🇩","Bahasa Indonesia"],["ur","🇵🇰","اردو"],["am","🇪🇹","አማርኛ"],["ha","🇳🇬","Hausa"],["yo","🇳🇬","Yorùbá"],["th","🇹🇭","ไทย"],["vi","🇻🇳","Tiếng Việt"],["pl","🇵🇱","Polski"],["uk","🇺🇦","Українська"],["fa","🇮🇷","فارسی"],["ms","🇲🇾","Bahasa Melayu"],["el","🇬🇷","Ελληνικά"],["sv","🇸🇪","Svenska"]] as const;
+const IMSIYA_LANGUAGES = [["en","🇬🇧","English"],["so","🇸🇴","Somali"],["ar","🇸🇦","العربية"],["sw","🇰🇪","Kiswahili"]] as const;
 
 
 // Core IMSIYA interface translations. Keys are kept in English so product data is not altered.
