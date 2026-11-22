@@ -117,12 +117,12 @@ const money = (amount: number) =>
 const orderStatusLabel = (status: unknown, paymentStatus: unknown) => {
   const payment = String(paymentStatus || '').toLowerCase();
   const state = String(status || '').toLowerCase();
-  if (payment !== 'paid') return 'Lacag-bixinta lama xaqiijin';
-  if (state === 'processing' || state === 'pending') return 'Dalabka waa la helay — diyaarin';
-  if (state === 'shipped' || state === 'in_transit' || state === 'in transit') return 'Dalabka waa la soo diray';
-  if (state === 'delivered' || state === 'completed') return 'Dalabka waa la gaarsiiyey';
-  if (state === 'cancelled' || state === 'canceled') return 'Dalabka waa la joojiyey';
-  return state ? `Xaaladda dalabka: ${state}` : 'Xaalad lama hayo';
+  if (payment !== 'paid') return 'Payment not verified';
+  if (state === 'processing' || state === 'pending') return 'Order received — preparing';
+  if (state === 'shipped' || state === 'in_transit' || state === 'in transit') return 'Order shipped';
+  if (state === 'delivered' || state === 'completed') return 'Order delivered';
+  if (state === 'cancelled' || state === 'canceled') return 'Order cancelled';
+  return state ? `Order status: ${state}` : 'No status available';
 };
 
 const IMSIYA_LANGUAGES = [["en","🇬🇧","English"],["so","🇸🇴","Somali"],["ar","🇸🇦","العربية"],["sw","🇰🇪","Kiswahili"],["fr","🇫🇷","Français"],["es","🇪🇸","Español"],["zh","🇨🇳","中文"],["hi","🇮🇳","हिन्दी"],["pt","🇵🇹","Português"],["de","🇩🇪","Deutsch"],["tr","🇹🇷","Türkçe"],["ru","🇷🇺","Русский"],["ja","🇯🇵","日本語"],["ko","🇰🇷","한국어"],["it","🇮🇹","Italiano"],["nl","🇳🇱","Nederlands"],["bn","🇧🇩","বাংলা"],["id","🇮🇩","Bahasa Indonesia"],["ur","🇵🇰","اردو"],["am","🇪🇹","አማርኛ"],["ha","🇳🇬","Hausa"],["yo","🇳🇬","Yorùbá"],["th","🇹🇭","ไทย"],["vi","🇻🇳","Tiếng Việt"],["pl","🇵🇱","Polski"],["uk","🇺🇦","Українська"],["fa","🇮🇷","فارسی"],["ms","🇲🇾","Bahasa Melayu"],["el","🇬🇷","Ελληνικά"],["sv","🇸🇪","Svenska"]] as const;
@@ -1104,7 +1104,7 @@ export default function App() {
       </TouchableOpacity>
       <Text style={styles.productPrice}>{money(product.price)}</Text>
       <Text style={styles.stockText}>
-        {product.stock > 0 ? `Kaydka: ${product.stock}` : 'Waa dhammaatay'}
+        {product.stock > 0 ? `${tr('Kaydka:', 'Stock:')} ${product.stock}` : tr('Waa dhammaatay', 'Out of stock')}
       </Text>
 
       <TouchableOpacity
