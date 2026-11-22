@@ -1138,14 +1138,19 @@ export default function App() {
         throw new Error('PayPal ma soo celin link-ga lacag-bixinta.');
       }
 
-      Alert.alert(
-        'Xaqiiji lacagta',
-        'Wadarta alaabta: KES ' + data.kes_amount + '\nLacagta PayPal: USD ' + data.usd_amount,
-        [
-          { text: 'Sii wad PayPal', onPress: () => Linking.openURL(data.checkout_url) },
-          { text: 'Jooji', style: 'cancel' },
-        ]
-      );
+      if (Platform.OS === 'web') {
+        // Browser checkout must navigate directly; native Alert button callbacks are not reliable on web.
+        await Linking.openURL(data.checkout_url);
+      } else {
+        Alert.alert(
+          'Xaqiiji lacagta',
+          'Wadarta alaabta: KES ' + data.kes_amount + '\nLacagta PayPal: USD ' + data.usd_amount,
+          [
+            { text: 'Sii wad PayPal', onPress: () => Linking.openURL(data.checkout_url) },
+            { text: 'Jooji', style: 'cancel' },
+          ]
+        );
+      }
     } catch (e: any) {
       Alert.alert('IMSIYA', e.message || 'Lacag-bixinta lama bilaabi karin.');
     } finally {
