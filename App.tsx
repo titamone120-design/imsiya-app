@@ -91,16 +91,22 @@ const SWEET_TERM_TRANSLATIONS: Record<string, string[]> = {
 };
 
 const translateSweetName = (value: string, language: string) => {
-  if (!value || language === 'so') return value;
-  const terms = SWEET_TERM_TRANSLATIONS[language];
+  if (!value) return value;
+  const normalizedLanguage = String(language || 'en').toLowerCase();
+  if (normalizedLanguage === 'so') return value;
+  const terms = SWEET_TERM_TRANSLATIONS[normalizedLanguage];
   if (!terms) return value;
-  const replacements: [string, number][] = [
-    ['Macmacaan kale', 4], ['Shukulaato', 3], ['Buskut', 0],
-    ['Xalwo', 1], ['Keeg', 2], ['Dhammaan', 5],
+  const replacements: [RegExp, number][] = [
+    [/macmacaan(?:o)?\\s+kale/gi, 4],
+    [/shukulaato/gi, 3],
+    [/buskut/gi, 0],
+    [/xalwo/gi, 1],
+    [/keeg/gi, 2],
+    [/dhammaan/gi, 5],
   ];
-  let translated = value;
-  replacements.forEach(([source, targetIndex]) => {
-    translated = translated.replace(new RegExp(source, 'gi'), terms[targetIndex]);
+  let translated = value.trim();
+  replacements.forEach(([pattern, targetIndex]) => {
+    translated = translated.replace(pattern, terms[targetIndex]);
   });
   return translated;
 };
@@ -1158,6 +1164,7 @@ export default function App() {
           { name: 'Keeg', icon: '🍰' },
           { name: 'Buskut', icon: '🍪' },
           { name: 'Xalwo', icon: '🍯' },
+          { name: 'Shukulaato', icon: '🍫' },
           { name: 'Macmacaan kale', icon: '🍬' },
         ].map(item => (
           <TouchableOpacity key={item.name} style={[styles.homeCategoryCard, category === item.name && styles.homeCategoryActive]} onPress={() => setCategory(item.name)}>
