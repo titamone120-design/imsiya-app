@@ -1983,7 +1983,7 @@ export default function App() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => setScreen('profile')}>
           <Text style={styles.navIcon}>👤</Text>
-          <Text style={styles.navText}>{tr('Profile', 'Profile')}</Text>
+          <Text style={styles.navText}>{tr('My Account', 'My Account')}</Text>
         </TouchableOpacity>
         {isAdmin && (
           <TouchableOpacity style={styles.navItem} onPress={() => { setScreen('admin'); loadAdminData(); }}>
