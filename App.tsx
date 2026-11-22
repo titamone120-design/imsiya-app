@@ -332,7 +332,7 @@ export default function App() {
 
       setProducts(formatted);
     } catch (e: any) {
-      setProductError(e.message || 'Alaabta lama soo qaadi karin.');
+      setProductError(e.message || tr('Alaabta lama soo qaadi karin.', 'Could not load products.'));
     } finally {
       setProductsLoading(false);
     }
@@ -360,7 +360,7 @@ export default function App() {
       setAdminWallet(walletResult.data || []);
       setAdminPayoutRequests(payoutsResult.data || []);
     } catch (e: any) {
-      Alert.alert('IMSIYA Admin', e.message || 'Codsiyada lama soo qaadi karin.');
+      Alert.alert('IMSIYA Admin', e.message || tr('Codsiyada lama soo qaadi karin.', 'Could not load applications.'));
     } finally {
       setAdminLoading(false);
     }
@@ -373,16 +373,16 @@ export default function App() {
         .update({ approved: true })
         .eq('id', sellerId);
       if (error) throw error;
-      Alert.alert('IMSIYA Admin', 'Iibiyaha waa la ansixiyey. Dukaanku wuxuu furmayaa marka subscription-ka $20 la xaqiijiyo.');
+      Alert.alert('IMSIYA Admin', tr('Iibiyaha waa la ansixiyey. Dukaanku wuxuu furmayaa marka subscription-ka $20 la xaqiijiyo.', 'Seller approved. The shop will open after the $20 subscription is verified.'));
       await loadAdminData();
     } catch (e: any) {
-      Alert.alert('IMSIYA Admin', e.message || 'Ansixinta way fashilantay.');
+      Alert.alert('IMSIYA Admin', e.message || tr('Ansixinta way fashilantay.', 'Approval failed.'));
     }
   };
 
   const updateOrderTrackingStatus = async (orderId: string, nextStatus: 'processing' | 'shipped' | 'delivered') => {
     if (!isAdmin) {
-      Alert.alert('IMSIYA Admin', 'Kaliya maamulka ayaa beddeli kara xaaladda dalabka.');
+      Alert.alert('IMSIYA Admin', tr('Kaliya maamulka ayaa beddeli kara xaaladda dalabka.', 'Only an administrator can change the order status.'));
       return;
     }
     try {
@@ -394,11 +394,11 @@ export default function App() {
         .select('id')
         .maybeSingle();
       if (error) throw error;
-      if (!data) throw new Error('Dalabka lama helin ama lama oggola in xaaladdiisa la beddelo.');
+      if (!data) throw new Error(tr('Dalabka lama helin ama lama oggola in xaaladdiisa la beddelo.', 'Order not found or you are not allowed to change its status.'));
       await loadAdminData();
-      Alert.alert('IMSIYA Admin', 'Xaaladda dalabka waa la cusboonaysiiyey.');
+      Alert.alert('IMSIYA Admin', tr('Xaaladda dalabka waa la cusboonaysiiyey.', 'Order status updated.'));
     } catch (e: any) {
-      Alert.alert('IMSIYA Admin', e.message || 'Xaaladda dalabka lama beddeli karin.');
+      Alert.alert('IMSIYA Admin', e.message || tr('Xaaladda dalabka lama beddeli karin.', 'Could not update order status.'));
     }
   };
 
@@ -422,7 +422,7 @@ export default function App() {
         category: Array.isArray(item.categories) ? item.categories[0]?.name || 'Macmacaan kale' : item.categories?.name || 'Macmacaan kale',
       })));
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Alaabta dukaanka lama soo qaadi karin.');
+      Alert.alert('IMSIYA', e.message || tr('Alaabta dukaanka lama soo qaadi karin.', 'Could not load shop products.'));
     } finally {
       setSellerProductsLoading(false);
     }
@@ -446,7 +446,7 @@ export default function App() {
         setProductImageMimeType(result.assets[0].mimeType || 'image/jpeg');
       }
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Sawirka lama dooran karin.');
+      Alert.alert('IMSIYA', e.message || tr('Sawirka lama dooran karin.', 'Could not select the image.'));
     }
   };
 
@@ -462,17 +462,17 @@ export default function App() {
   };
 
   const deleteSellerProduct = (productId: string) => {
-    Alert.alert('Tirtir alaabta', 'Ma hubtaa inaad tirtirayso alaabtan?', [
+    Alert.alert(tr('Tirtir alaabta', 'Delete product'), tr('Ma hubtaa inaad tirtirayso alaabtan?', 'Are you sure you want to delete this product?'), [
       { text: 'Maya', style: 'cancel' },
-      { text: 'Haa, tirtir', style: 'destructive', onPress: async () => {
+      { text: tr('Haa, tirtir', 'Yes, delete'), style: 'destructive', onPress: async () => {
         try {
           const { error } = await supabase.from('products').update({ active: false }).eq('id', productId).eq('seller_id', session?.user?.id || '');
           if (error) throw error;
           setSellerProducts(current => current.filter(item => item.id !== productId));
           await loadProducts();
-          Alert.alert('IMSIYA', 'Alaabta waa la tirtiray.');
+          Alert.alert('IMSIYA', tr('Alaabta waa la tirtiray.', 'Product deleted.'));
         } catch (e: any) {
-          Alert.alert('IMSIYA', e.message || 'Alaabta lama tirtiri karin.');
+          Alert.alert('IMSIYA', e.message || tr('Alaabta lama tirtiri karin.', 'Could not delete product.'));
         }
       } },
     ]);
@@ -494,7 +494,7 @@ export default function App() {
       setSellerWalletTransactions(transactionsResult.data || []);
       setPayoutRequests(payoutsResult.data || []);
     } catch (e: any) {
-      Alert.alert('IMSIYA Wallet', e.message || 'Wallet-ka lama soo qaadi karin.');
+      Alert.alert('IMSIYA Wallet', e.message || tr('Wallet-ka lama soo qaadi karin.', 'Could not load wallet.'));
     } finally {
       setWalletLoading(false);
     }
@@ -503,7 +503,7 @@ export default function App() {
   const requestSellerPayout = async () => {
     const amount = Number(payoutAmount);
     if (!Number.isFinite(amount) || amount <= 0) {
-      Alert.alert('IMSIYA Wallet', 'Geli lacag sax ah.');
+      Alert.alert('IMSIYA Wallet', tr('Geli lacag sax ah.', 'Enter a valid amount.'));
       return;
     }
     if (!payoutAccount.trim()) {
@@ -520,9 +520,9 @@ export default function App() {
       if (error) throw error;
       setPayoutAmount('');
       await loadSellerWallet();
-      Alert.alert('IMSIYA Wallet', 'Codsiga lacag-bixinta waa la gudbiyey. Maamulka ayaa hubinaya oo gacanta ku bixinaya.');
+      Alert.alert('IMSIYA Wallet', tr('Codsiga lacag-bixinta waa la gudbiyey. Maamulka ayaa hubinaya oo gacanta ku bixinaya.', 'Payout request submitted. The team will review it and process the payment manually.'));
     } catch (e: any) {
-      Alert.alert('IMSIYA Wallet', e.message || 'Codsiga lacag-bixinta lama gudbin karin.');
+      Alert.alert('IMSIYA Wallet', e.message || tr('Codsiga lacag-bixinta lama gudbin karin.', 'Could not submit payout request.'));
     } finally {
       setPayoutSubmitting(false);
     }
@@ -537,9 +537,9 @@ export default function App() {
       });
       if (error) throw error;
       await loadAdminData();
-      Alert.alert('IMSIYA Admin', nextStatus === 'paid' ? 'Codsiga waxaa loo calaamadeeyey in lacagta la diray.' : 'Codsiga waa la diiday.');
+      Alert.alert('IMSIYA Admin', nextStatus === 'paid' ? tr('Codsiga waxaa loo calaamadeeyey in lacagta la diray.', 'The request was marked as paid.') : tr('Codsiga waa la diiday.', 'The request was rejected.'));
     } catch (e: any) {
-      Alert.alert('IMSIYA Admin', e.message || 'Xaaladda codsiga lama beddeli karin.');
+      Alert.alert('IMSIYA Admin', e.message || tr('Xaaladda codsiga lama beddeli karin.', 'Could not update request status.'));
     }
   };
 
@@ -568,7 +568,7 @@ export default function App() {
         setShopDescription(data.description || '');
       }
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Dukaanka lama soo qaadi karin.');
+      Alert.alert('IMSIYA', e.message || tr('Dukaanka lama soo qaadi karin.', 'Could not load shop.'));
     } finally {
       setShopLoading(false);
     }
@@ -596,7 +596,7 @@ export default function App() {
     if (url.startsWith('imsiya://subscription-success')) {
       Alert.alert(
         'IMSIYA',
-        'PayPal wuxuu soo celiyey oggolaanshaha. Xaqiijinta rasmiga ah waxaa samaynaya PayPal webhook; dukaanka wuxuu furmayaa marka lacagta $20 la xaqiijiyo.'
+        tr('PayPal wuxuu soo celiyey oggolaanshaha. Xaqiijinta rasmiga ah waxaa samaynaya PayPal webhook; dukaanka wuxuu furmayaa marka lacagta $20 la xaqiijiyo.', 'PayPal returned approval. Final verification is handled by the PayPal webhook; the shop opens after the $20 payment is verified.')
       );
       await loadMyShop();
       return;
@@ -607,32 +607,32 @@ export default function App() {
         const parsed = new URL(url);
         const paypalOrderId = parsed.searchParams.get('token');
         if (!paypalOrderId) {
-          Alert.alert('IMSIYA', 'PayPal ma soo dirin lambarka dalabka. Fadlan nala soo xiriir ka hor intaadan mar kale bixin.');
+          Alert.alert('IMSIYA', tr('PayPal ma soo dirin lambarka dalabka. Fadlan nala soo xiriir ka hor intaadan mar kale bixin.', 'PayPal did not return an order ID. Please contact us before trying to pay again.'));
           return;
         }
         const { data, error } = await supabase.functions.invoke('capture-paypal-order', {
           body: { paypal_order_id: paypalOrderId },
         });
         if (error) throw error;
-        if (!data?.success) throw new Error('PayPal lacag-bixinta lama xaqiijin.');
-        Alert.alert('IMSIYA', 'Lacag-bixinta PayPal waa la xaqiijiyey. Dalabkaagu waa la diyaarinayaa.');
+        if (!data?.success) throw new Error(tr('PayPal lacag-bixinta lama xaqiijin.', 'PayPal payment was not verified.'));
+        Alert.alert('IMSIYA', tr('Lacag-bixinta PayPal waa la xaqiijiyey. Dalabkaagu waa la diyaarinayaa.', 'PayPal payment verified. Your order is being prepared.'));
         setCart([]);
         await Promise.all([loadProducts(), loadMyOrders()]);
       } catch (e: any) {
-        Alert.alert('IMSIYA', e.message || 'Lacag-bixinta PayPal lama xaqiijin karin. Ha ku celin bixinta ilaa xaaladda la hubiyo.');
+        Alert.alert('IMSIYA', e.message || tr('Lacag-bixinta PayPal lama xaqiijin karin. Ha ku celin bixinta ilaa xaaladda la hubiyo.', 'PayPal payment could not be verified. Do not pay again until the status has been checked.'));
       }
       return;
     }
 
     if (url.startsWith('imsiya://order-cancel')) {
-      Alert.alert('IMSIYA', 'Lacag-bixinta dalabka waa la joojiyey. Wax lacag ah lagama qaadin.');
+      Alert.alert('IMSIYA', tr('Lacag-bixinta dalabka waa la joojiyey. Wax lacag ah lagama qaadin.', 'Order payment was cancelled. No money was charged.'));
       return;
     }
 
     if (url.startsWith('imsiya://subscription-cancel')) {
       Alert.alert(
         'IMSIYA',
-        'Lacag-bixinta waa la joojiyey. Dukaankaagu weli ma furna.'
+        tr('Lacag-bixinta waa la joojiyey. Dukaankaagu weli ma furna.', 'Payment was cancelled. Your shop is not open yet.')
       );
       return;
     }
@@ -648,7 +648,7 @@ export default function App() {
         if (error) throw error;
       }
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Link-ga lama xaqiijin karin.');
+      Alert.alert('IMSIYA', e.message || tr('Link-ga lama xaqiijin karin.', 'Could not verify the link.'));
     }
   };
 
@@ -714,7 +714,7 @@ export default function App() {
     setAuthMessage('');
 
     if (authMode === 'signup' && !fullName.trim()) {
-      setAuthMessage('Fadlan geli magacaaga oo buuxa.');
+      setAuthMessage(tr('Fadlan geli magacaaga oo buuxa.', 'Please enter your full name.'));
       return;
     }
 
@@ -724,7 +724,7 @@ export default function App() {
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      setAuthMessage('Email-ka aad gelisay sax ma aha. Hubi email-ka.');
+      setAuthMessage(tr('Email-ka aad gelisay sax ma aha. Hubi email-ka.', 'The email address is invalid. Please check it.'));
       return;
     }
 
@@ -751,20 +751,20 @@ export default function App() {
         if (error) throw error;
 
         if (!data.user) {
-          throw new Error('Akoonka lama samayn. Fadlan mar kale isku day.');
+          throw new Error(tr('Akoonka lama samayn. Fadlan mar kale isku day.', 'Account could not be created. Please try again.'));
         }
 
         if (!data.session) {
-          setAuthMessage('Diiwaangelinta waa la aqbalay. Fadlan email-kaaga ka xaqiiji link-ga la soo diray. Hubi Spam/Junk.');
+          setAuthMessage(tr('Diiwaangelinta waa la aqbalay. Fadlan email-kaaga ka xaqiiji link-ga la soo diray. Hubi Spam/Junk.', 'Registration accepted. Verify your email using the link we sent. Check Spam/Junk too.'));
         } else {
           setSession(data.session);
           setScreen('home');
-          setAuthMessage('Akoonkaaga waa la sameeyey. Ku soo dhowow IMSIYA!');
+          setAuthMessage(tr('Akoonkaaga waa la sameeyey. Ku soo dhowow IMSIYA!', 'Your account has been created. Welcome to IMSIYA!'));
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) throw error;
-        if (!data.session) throw new Error('Gelitaanku ma dhammaan. Mar kale isku day.');
+        if (!data.session) throw new Error(tr('Gelitaanku ma dhammaan. Mar kale isku day.', 'Sign-in did not complete. Please try again.'));
         setSession(data.session);
         setScreen('home');
       }
@@ -778,7 +778,7 @@ export default function App() {
         (status >= 500 || errorCode === 'unexpected_failure' ||
           /smtp|email provider|sending email|mail server/i.test(message))
       ) {
-        setAuthMessage('Diiwaangelintu ma dhammaan sababtoo ah server-ka email-ka xaqiijinta ayaa cilad leh. Maamulka waa inuu hagaajiyaa SMTP-ga Supabase.');
+        setAuthMessage(tr('Diiwaangelintu ma dhammaan sababtoo ah server-ka email-ka xaqiijinta ayaa cilad leh. Maamulka waa inuu hagaajiyaa SMTP-ga Supabase.', 'Registration could not finish because the email verification server has an issue. The administrator must fix Supabase SMTP settings.'));
       } else {
         setAuthMessage(message || 'Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.');
       }
@@ -800,13 +800,13 @@ export default function App() {
 
   const addToCart = (product: Product) => {
     if (product.stock <= 0) {
-      Alert.alert('IMSIYA', 'Alaabtani hadda ma taallo.');
+      Alert.alert('IMSIYA', tr('Alaabtani hadda ma taallo.', 'This product is currently unavailable.'));
       return;
     }
 
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem && existingItem.quantity >= product.stock) {
-      Alert.alert('IMSIYA', 'Tirada alaabta intaas kama badnaan karto.');
+      Alert.alert('IMSIYA', tr('Tirada alaabta intaas kama badnaan karto.', 'The quantity cannot exceed the available stock.'));
       return;
     }
 
@@ -822,7 +822,7 @@ export default function App() {
       return [...current, { ...product, quantity: 1 }];
     });
 
-    Alert.alert('IMSIYA', 'Alaabta waxaa lagu daray cart-ka.');
+    Alert.alert('IMSIYA', tr('Alaabta waxaa lagu daray cart-ka.', 'Product added to cart.'));
   };
 
   const changeQuantity = (id: string, amount: number) => {
@@ -849,7 +849,7 @@ export default function App() {
     }
 
     if (!shopName.trim()) {
-      Alert.alert('IMSIYA', 'Geli magaca dukaanka.');
+      Alert.alert('IMSIYA', tr('Geli magaca dukaanka.', 'Enter your shop name.'));
       return;
     }
 
@@ -906,10 +906,10 @@ export default function App() {
 
       Alert.alert(
         'IMSIYA',
-        'Codsiga dukaanka waa la kaydiyey. Si dukaanku u furmo, bixi $20 bishii, maamulka ayaana xaqiijinaya oggolaanshaha.'
+        tr('Codsiga dukaanka waa la kaydiyey. Si dukaanku u furmo, bixi $20 bishii, maamulka ayaana xaqiijinaya oggolaanshaha.', 'Shop application saved. Pay $20 per month to open the shop; an administrator will verify the payment.')
       );
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Dukaanka lama kaydin karin.');
+      Alert.alert('IMSIYA', e.message || tr('Dukaanka lama kaydin karin.', 'Could not save shop details.'));
     } finally {
       setShopLoading(false);
     }
@@ -927,9 +927,9 @@ export default function App() {
       });
       if (error) throw error;
       if (!data?.success || data?.status !== 'ACTIVE') {
-        throw new Error(data?.error || 'PayPal LIVE plan-ka lama xaqiijin.');
+        throw new Error(data?.error || tr('PayPal LIVE plan-ka lama xaqiijin.', 'PayPal LIVE plan could not be verified.'));
       }
-      Alert.alert('IMSIYA Admin', 'PayPal LIVE plan-ka $20 bishii waa la diyaariyey lana xaqiijiyey. Wax subscription ama lacag-bixin ah lama samayn.');
+      Alert.alert('IMSIYA Admin', tr('PayPal LIVE plan-ka $20 bishii waa la diyaariyey lana xaqiijiyey. Wax subscription ama lacag-bixin ah lama samayn.', 'PayPal LIVE plan for $20/month has been set up and verified. No subscription was started and no payment was charged.'));
     } catch (e: any) {
       Alert.alert('IMSIYA Admin', e.message || 'PayPal plan setup wuu fashilmay.');
     } finally {
@@ -944,7 +944,7 @@ export default function App() {
     }
 
     if (!myShop?.id) {
-      Alert.alert('IMSIYA', 'Marka hore samee dukaankaaga.');
+      Alert.alert('IMSIYA', tr('Marka hore samee dukaankaaga.', 'Please create your shop first.'));
       return;
     }
 
@@ -958,14 +958,14 @@ export default function App() {
 
       if (error) throw error;
       if (!data?.approval_url) {
-        throw new Error('PayPal ma soo celin link-ga subscription-ka.');
+        throw new Error(tr('PayPal ma soo celin link-ga subscription-ka.', 'PayPal did not return a subscription link.'));
       }
 
       await Linking.openURL(data.approval_url);
     } catch (e: any) {
       Alert.alert(
         'IMSIYA',
-        e.message || 'Lacag-bixinta lama bilaabi karin.'
+        e.message || tr('Lacag-bixinta lama bilaabi karin.', 'Could not start payment.')
       );
     } finally {
       setPaymentLoading(false);
@@ -974,14 +974,14 @@ export default function App() {
 
   const addProduct = async () => {
     if (!session?.user?.id || !myShop?.id) {
-      Alert.alert('IMSIYA', 'Marka hore samee dukaankaaga.');
+      Alert.alert('IMSIYA', tr('Marka hore samee dukaankaaga.', 'Please create your shop first.'));
       return;
     }
 
     if (!myShop.active) {
       Alert.alert(
         'IMSIYA',
-        'Dukaankaagu weli ma shaqaynayo. Sug xaqiijinta lacagta iyo oggolaanshaha maamulka.'
+        tr('Dukaankaagu weli ma shaqaynayo. Sug xaqiijinta lacagta iyo oggolaanshaha maamulka.', 'Your shop is not active yet. Wait for payment verification and administrator approval.')
       );
       return;
     }
@@ -990,17 +990,17 @@ export default function App() {
     const stock = Number(productStock);
 
     if (!productName.trim() || !productPrice.trim()) {
-      Alert.alert('IMSIYA', 'Geli magaca alaabta iyo qiimaheeda.');
+      Alert.alert('IMSIYA', tr('Geli magaca alaabta iyo qiimaheeda.', 'Enter the product name and price.'));
       return;
     }
 
     if (!Number.isFinite(price) || price <= 0) {
-      Alert.alert('IMSIYA', 'Qiimaha alaabtu sax ma aha.');
+      Alert.alert('IMSIYA', tr('Qiimaha alaabtu sax ma aha.', 'The product price is invalid.'));
       return;
     }
 
     if (!Number.isInteger(stock) || stock < 0) {
-      Alert.alert('IMSIYA', 'Tirada alaabtu sax ma aha.');
+      Alert.alert('IMSIYA', tr('Tirada alaabtu sax ma aha.', 'The product quantity is invalid.'));
       return;
     }
 
@@ -1011,7 +1011,7 @@ export default function App() {
     if (!selectedCategory) {
       Alert.alert(
         'IMSIYA',
-        'Qaybta alaabta lama helin. Hubi categories-ka Supabase.'
+        tr('Qaybta alaabta lama helin. Hubi categories-ka Supabase.', 'Product category not found. Check the categories in Supabase.')
       );
       return;
     }
@@ -1023,7 +1023,7 @@ export default function App() {
       if (savedImageUrl && !/^https?:\/\//i.test(savedImageUrl)) {
         setProductImageUploading(true);
         const imageResponse = await fetch(savedImageUrl);
-        if (!imageResponse.ok) throw new Error('Sawirka telefoonka lama akhrin karin.');
+        if (!imageResponse.ok) throw new Error(tr('Sawirka telefoonka lama akhrin karin.', 'Could not read the image from your phone.'));
         const imageBuffer = await imageResponse.arrayBuffer();
         const mimeType = String(productImageMimeType || imageResponse.headers.get('content-type') || 'image/jpeg').toLowerCase().split(';')[0];
         const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : mimeType === 'image/jpeg' ? 'jpg' : '';
@@ -1061,10 +1061,10 @@ export default function App() {
       setProductImage('');
       setProductImageMimeType('');
 
-      Alert.alert('IMSIYA', editingProductId ? 'Alaabta waa la cusboonaysiiyey.' : 'Alaabta waa lagu daray dukaanka.');
+      Alert.alert('IMSIYA', editingProductId ? tr('Alaabta waa la cusboonaysiiyey.', 'Product updated.') : tr('Alaabta waa lagu daray dukaanka.', 'Product added to your shop.'));
       await Promise.all([loadProducts(), loadMySellerProducts()]);
     } catch (e: any) {
-      Alert.alert('IMSIYA', e.message || 'Alaabta lama dari karin.');
+      Alert.alert('IMSIYA', e.message || tr('Alaabta lama dari karin.', 'Could not add the product.'));
     } finally {
       setAddingProduct(false);
       setProductImageUploading(false);
@@ -1240,11 +1240,11 @@ export default function App() {
         await Linking.openURL(data.checkout_url);
       } else {
         Alert.alert(
-          'Xaqiiji lacagta',
-          'Wadarta alaabta: KES ' + data.kes_amount + '\nLacagta PayPal: USD ' + data.usd_amount,
+          tr('Xaqiiji lacagta', 'Confirm payment'),
+          tr('Wadarta alaabta: KES ', 'Product total: KES ') + data.kes_amount + '\n' + tr('Lacagta PayPal: USD ', 'PayPal amount: USD ') + data.usd_amount,
           [
-            { text: 'Sii wad PayPal', onPress: () => Linking.openURL(data.checkout_url) },
-            { text: 'Jooji', style: 'cancel' },
+            { text: tr('Sii wad PayPal', 'Continue to PayPal'), onPress: () => Linking.openURL(data.checkout_url) },
+            { text: tr('Jooji', 'Cancel'), style: 'cancel' },
           ]
         );
       }
@@ -1935,12 +1935,12 @@ export default function App() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => setScreen('profile')}>
           <Text style={styles.navIcon}>👤</Text>
-          <Text style={styles.navText}>Profile</Text>
+          <Text style={styles.navText}>{tr('Profile', 'Profile')}</Text>
         </TouchableOpacity>
         {isAdmin && (
           <TouchableOpacity style={styles.navItem} onPress={() => { setScreen('admin'); loadAdminData(); }}>
             <Text style={styles.navIcon}>🛡️</Text>
-            <Text style={styles.navText}>Admin</Text>
+            <Text style={styles.navText}>{tr('Maamulka', 'Admin')}</Text>
           </TouchableOpacity>
         )}
       </View>
