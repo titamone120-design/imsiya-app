@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   Linking,
   Image,
+  Platform,
 } from 'react-native';
 
 import type { Session } from '@supabase/supabase-js';
@@ -479,6 +480,22 @@ export default function App() {
 
   const handleIncomingLink = async (url: string | null) => {
     if (!url) return;
+    // PayPal returns browsers to the website URL and native apps to the IMSIYA scheme.
+    try {
+      const returned = new URL(url);
+      const paymentResult = returned.searchParams.get('imsiya_payment');
+      if (paymentResult === 'order') {
+        url = 'imsiya://order-success?token=' + encodeURIComponent(returned.searchParams.get('token') || '');
+      } else if (paymentResult === 'subscription') {
+        url = 'imsiya://subscription-success';
+      } else if (paymentResult === 'order-cancel') {
+        url = 'imsiya://order-cancel';
+      } else if (paymentResult === 'subscription-cancel') {
+        url = 'imsiya://subscription-cancel';
+      }
+    } catch {
+      // Native deep links are not absolute web URLs; handle them below.
+    }
 
     if (url.startsWith('imsiya://subscription-success')) {
       Alert.alert(
@@ -840,7 +857,7 @@ export default function App() {
     try {
       const { data, error } = await supabase.functions.invoke(
         'create-paypal-subscription',
-        { body: { shop_id: myShop.id } }
+        { body: { shop_id: myShop.id, platform: Platform.OS === 'web' ? 'web' : 'native' } }
       );
 
       if (error) throw error;
@@ -1107,6 +1124,7 @@ export default function App() {
         'create-paypal-order',
         {
           body: {
+            platform: Platform.OS === 'web' ? 'web' : 'native',
             items: cart.map(item => ({
               product_id: item.id,
               quantity: item.quantity,
