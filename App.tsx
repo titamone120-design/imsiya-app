@@ -1248,7 +1248,8 @@ export default function App() {
         <Text style={styles.walletFieldLabel}>{tr("Email-ka PayPal", "PayPal email")}</Text>
         <TextInput style={[styles.input, styles.walletInput]} autoCapitalize="none" keyboardType="email-address" placeholder="name@example.com" value={payoutAccount} onChangeText={setPayoutAccount} />
         <View style={styles.walletComingSoon}>
-          <Text style={styles.walletComingTitle}>Coming Soon</Text>
+          <Text style={styles.walletComingTitle}>Bixinta PayPal</Text>
+          <Text style={styles.walletMuted}>Codsiga waxaa hubinaya maamulka IMSIYA. Lacagta waxaa la calaamadaynayaa marka PayPal si dhab ah loo diro.</Text>
         </View>
         <TouchableOpacity style={[styles.walletSubmitButton, payoutSubmitting && styles.disabledButton]} disabled={payoutSubmitting || walletLoading} onPress={requestSellerPayout}>
           {payoutSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.walletSubmitText}>{tr("Gudbi codsiga", "Submit request")}</Text>}
@@ -1266,7 +1267,7 @@ export default function App() {
         ) : payoutRequests.map(req => (
           <View key={req.id} style={styles.walletTransaction}>
             <View style={styles.walletTransactionInfo}>
-              <Text style={styles.walletTransactionTitle}>{money(Number(req.amount || 0))} · {req.payout_method === 'mpesa' ? 'M-Pesa' : 'PayPal'}</Text>
+              <Text style={styles.walletTransactionTitle}>{money(Number(req.amount || 0))} · PayPal</Text>
               <Text style={styles.walletMuted}>Xaalad: {req.status === 'paid' ? 'La bixiyey' : req.status === 'rejected' ? 'La diiday' : req.status === 'processing' ? 'La shaqaynayo' : 'Sugaya maamulka'}</Text>
               <Text style={styles.walletDate}>{req.created_at ? new Date(req.created_at).toLocaleString() : '—'}</Text>
             </View>
@@ -1560,7 +1561,7 @@ export default function App() {
       <Text style={styles.sectionTitle}>{tr("Codsiyada lacag-bixinta iibiyeyaasha", "Seller Payout Requests")}</Text>
       {adminPayoutRequests.length === 0 ? <Text style={styles.emptyText}>Weli codsi lacag-bixin ma jiro.</Text> : adminPayoutRequests.map(req => (
         <View key={req.id} style={styles.shopStatusCard}>
-          <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · {req.payout_method === 'mpesa' ? 'M-Pesa' : 'PayPal'}</Text>
+          <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · PayPal</Text>
           <Text style={styles.shopStatusText}>Seller ID: {req.seller_id}</Text>
           <Text style={styles.shopStatusText}>Akoonka lacagta: {req.payout_account || '—'}</Text>
           <Text style={styles.shopStatusText}>Xaalad: {req.status}</Text>
