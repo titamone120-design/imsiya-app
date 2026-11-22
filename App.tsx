@@ -1461,15 +1461,33 @@ export default function App() {
             <Text style={styles.totalAmount}>{money(cartTotal)}</Text>
           </View>
 
+          <View style={styles.checkoutPaymentCard}>
+            <Text style={styles.checkoutSectionTitle}>{tr("Habka lacag-bixinta", "Payment Method")}</Text>
+            <View style={styles.checkoutPaypalRow}>
+              <View style={styles.checkoutPaypalMark}><Text style={styles.checkoutPaypalP}>P</Text></View>
+              <View style={styles.checkoutPaypalInfo}>
+                <Text style={styles.checkoutPaypalTitle}>PayPal</Text>
+                <Text style={styles.checkoutPaypalSubtitle}>{tr("Lacag-bixin ammaan ah", "Secure Payment")}</Text>
+              </View>
+              <Text style={styles.checkoutSelected}>{'✓'}</Text>
+            </View>
+            <View style={styles.checkoutSecurityNote}>
+              <Text style={styles.checkoutShield}>✓</Text>
+              <Text style={styles.checkoutSecurityText}>{tr("Lacag-bixintaadu waa ammaan oo siraysan.", "Your payment is secure and encrypted.")}</Text>
+            </View>
+          </View>
           <TouchableOpacity
-            style={[styles.primaryButton, checkoutLoading && styles.disabledButton]}
+            style={[styles.checkoutPaypalButton, checkoutLoading && styles.disabledButton]}
             onPress={checkoutCart}
             disabled={checkoutLoading}
           >
             {checkoutLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>{tr("Ku bixi PayPal", "Pay with PayPal")}</Text>
+              <View style={styles.checkoutPaypalButtonContent}>
+                <Text style={styles.checkoutButtonP}>P</Text>
+                <Text style={styles.checkoutPaypalButtonText}>{tr("Ku bixi hadda PayPal", "Pay Now with PayPal")}</Text>
+              </View>
             )}
           </TouchableOpacity>
 
@@ -2350,6 +2368,22 @@ const styles = StyleSheet.create({
   walletSubmitButton: { backgroundColor: '#F09A2A', paddingVertical: 15, borderRadius: 15, alignItems: 'center', marginTop: 18 },
   walletSubmitText: { color: '#38204F', fontWeight: '900', fontSize: 14 },
   walletStatusDot: { color: '#F09A2A', fontSize: 15, marginLeft: 12 },
+  checkoutPaymentCard: { backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#E4D8EF', padding: 16, marginTop: 18, marginBottom: 12 },
+  checkoutSectionTitle: { color: '#241B2B', fontSize: 18, fontWeight: '900', marginBottom: 13 },
+  checkoutPaypalRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#D8C4EA', borderRadius: 15, padding: 12, backgroundColor: '#FFFFFF' },
+  checkoutPaypalMark: { width: 42, height: 42, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginRight: 12, backgroundColor: '#F2F7FF' },
+  checkoutPaypalP: { color: '#003087', fontSize: 31, fontWeight: '900', fontStyle: 'italic' },
+  checkoutPaypalInfo: { flex: 1 },
+  checkoutPaypalTitle: { color: '#24202A', fontSize: 16, fontWeight: '900' },
+  checkoutPaypalSubtitle: { color: '#766B80', fontSize: 12, marginTop: 3 },
+  checkoutSelected: { color: '#5B0AA8', fontSize: 22, fontWeight: '900', marginHorizontal: 5 },
+  checkoutSecurityNote: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0EDFF', borderRadius: 14, padding: 13, marginTop: 13 },
+  checkoutShield: { color: '#1689D5', fontSize: 24, fontWeight: '900', marginRight: 11 },
+  checkoutSecurityText: { color: '#31264A', fontSize: 13, fontWeight: '700', flex: 1, lineHeight: 19 },
+  checkoutPaypalButton: { backgroundColor: '#5B0AA8', borderRadius: 16, paddingVertical: 16, alignItems: 'center', justifyContent: 'center', marginTop: 7, marginBottom: 14, elevation: 3 },
+  checkoutPaypalButtonContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  checkoutButtonP: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', fontStyle: 'italic', marginRight: 11 },
+  checkoutPaypalButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
 
 });
 
