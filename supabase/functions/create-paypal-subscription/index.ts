@@ -7,7 +7,7 @@ async function token(base:string,id:string,secret:string){
 }
 async function pp(base:string,t:string,path:string,method="GET",body?:unknown){
  const r=await fetch(base+path,{method,headers:{Authorization:"Bearer "+t,"Content-Type":"application/json"},...(body?{body:JSON.stringify(body)}:{})});
- const j=await r.json(); if(!r.ok) {console.error("PayPal API error",j);throw new Error("PayPal subscription setup failed");} return j;
+ const j=await r.json(); if(!r.ok) {console.error("PayPal API error",j); if(j?.name==="RESOURCE_NOT_FOUND" || j?.details?.some((d:any)=>d.issue==="INVALID_RESOURCE_ID")) throw new Error("PAYPAL_SUBSCRIPTION_NOT_FOUND"); throw new Error("PayPal subscription setup failed");} return j;
 }
 async function saveConfig(admin:any,key:string,value:string){
  const {error}=await admin.from("paypal_billing_config").upsert({config_key:key,config_value:value,updated_at:new Date().toISOString()});
@@ -87,24 +87,34 @@ Deno.serve(async(req)=>{
     if(!pendingSubscription.paypal_subscription_id) {
       return out({error:"Your previous PayPal request needs support review before another subscription can be started.",pending:true},409);
     }
-    const existing=await pp(base,t,"/v1/billing/subscriptions/"+encodeURIComponent(pendingSubscription.paypal_subscription_id));
-    if(existing.status==="APPROVAL_PENDING") {
+    let existing:any;
+    try {
+      existing=await pp(base,t,"/v1/billing/subscriptions/"+encodeURIComponent(pendingSubscription.paypal_subscription_id));
+    } catch(existingError) {
+      if(!(existingError instanceof Error) || existingError.message!=="PAYPAL_SUBSCRIPTION_NOT_FOUND") throw existingError;
+      // The old pending ID no longer exists at PayPal. Close only this stale local row,
+      // then create a fresh approval request below; no payment is charged by this step.
+      const {error:staleError}=await admin.from("shop_subscriptions").update({status:"cancelled"})
+        .eq("id",pendingSubscription.id).eq("status","pending");
+      if(staleError) throw new Error("Could not safely close the expired PayPal request");
+    }
+    if(existing?.status==="APPROVAL_PENDING") {
       const existingApproval=(existing.links??[]).find((x:any)=>x.rel==="approve")?.href;
       if(existingApproval) {
         return out({success:true,approval_url:existingApproval,subscription_id:existing.id,amount:"20.00",currency:"USD",reused:true});
       }
       return out({error:"PayPal is still waiting for approval. Please try again shortly or contact IMSIYA support.",pending:true},409);
     }
-    if(existing.status==="APPROVED"||existing.status==="ACTIVE") {
+    if(existing?.status==="APPROVED"||existing?.status==="ACTIVE") {
       return out({error:"PayPal has received your approval. IMSIYA is waiting for payment confirmation; please do not start another subscription.",pending:true},409);
     }
-    if(existing.status==="CANCELLED"||existing.status==="EXPIRED") {
+    if(existing?.status==="CANCELLED"||existing?.status==="EXPIRED") {
       const {error:updatePendingError}=await admin.from("shop_subscriptions")
         .update({status:existing.status.toLowerCase()})
         .eq("id",pendingSubscription.id)
         .eq("status","pending");
       if(updatePendingError) throw new Error("Could not close the old PayPal request safely");
-    } else {
+    } else if(existing) {
       return out({error:"Your PayPal subscription is being checked. Please wait for confirmation before trying again.",pending:true},409);
     }
   }
