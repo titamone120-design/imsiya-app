@@ -247,7 +247,7 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [localDataReadyForUser, setLocalDataReadyForUser] = useState<string | null>(null);
 
-  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'seller-orders' | 'wallet' | 'product'>('home');
+  const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'seller-orders' | 'wallet' | 'product' | 'rewards'>('home');
   const [monthlyRewards, setMonthlyRewards] = useState<any[]>([]);
   const [rewardsLoading, setRewardsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -1365,35 +1365,6 @@ export default function App() {
         <View style={styles.promoOrb} />
       </View>
 
-      <View style={{ backgroundColor: '#38204F', borderRadius: 22, padding: 18, marginBottom: 22, borderWidth: 1, borderColor: '#F3A33B', elevation: 4 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
-          <Text style={{ color: '#F3A33B', fontSize: 11, fontWeight: '900', letterSpacing: 1.6 }}>🎁 IMSIYA REWARDS</Text>
-          <TouchableOpacity onPress={loadMonthlyRewards} disabled={rewardsLoading}>
-            {rewardsLoading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 12 }}>↻ {tr('Cusboonaysii', 'Refresh')}</Text>}
-          </TouchableOpacity>
-        </View>
-        <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', marginBottom: 5 }}>{tr('Iibso, dadaal, hadiyad ku guuleyso!', 'Shop, shine & win a surprise gift!')}</Text>
-        <Text style={{ color: '#E9DDF3', fontSize: 13, lineHeight: 19, marginBottom: 16 }}>{tr('Bil kasta waxaan abaalmarin siinnaa dukaanka ugu iibka fiican iyo macmiilka ugu wax iibsiga badan.', 'Every month, we reward the top-selling shop and the customer with the highest verified purchases.')}</Text>
-        {(['shop', 'customer'] as const).map((kind) => {
-          const rows = monthlyRewards.filter((item: any) => item.award_type === kind);
-          return (
-            <View key={kind} style={{ backgroundColor: '#FFFFFF', borderRadius: 15, padding: 13, marginBottom: kind === 'shop' ? 10 : 0 }}>
-              <Text style={{ color: '#4A286B', fontSize: 14, fontWeight: '900', marginBottom: 8 }}>{kind === 'shop' ? '🏪 ' + tr('Dukaamada ugu firfircoon', 'Top active shops') : '🛍️ ' + tr('Macaamiisha ugu iibsiga badan', 'Top customers')}</Text>
-              {rewardsLoading ? <ActivityIndicator color="#5B0AA8" /> : rows.length === 0 ? (
-                <Text style={{ color: '#756780', fontSize: 12, lineHeight: 18 }}>{tr('Weli ma jiraan iibsi la xaqiijiyey bishan. Tartanku wuxuu bilaabmayaa marka iibku dhaco.', 'No verified purchases yet this month. The leaderboard will appear as paid orders come in.')}</Text>
-              ) : rows.map((entry: any) => (
-                <View key={kind + '-' + entry.rank_position} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: entry.rank_position === rows.length ? 0 : 1, borderBottomColor: '#F0E8F6' }}>
-                  <Text style={{ color: '#F09A2A', fontWeight: '900', width: 28 }}>#{entry.rank_position}</Text>
-                  <Text style={{ color: '#38204F', fontWeight: '800', flex: 1, fontSize: 13 }}>{entry.display_name}</Text>
-                  <Text style={{ color: '#5B0AA8', fontWeight: '900', fontSize: 12 }}>{Number(entry.order_count || 0)} {tr('dalab', 'orders')}</Text>
-                </View>
-              ))}
-            </View>
-          );
-        })}
-        <Text style={{ color: '#E9DDF3', fontSize: 11, lineHeight: 16, marginTop: 12 }}>{tr('Iibsi lacagtiisa la xaqiijiyey oo keliya ayaa tartanka lagu daraa. Guuleystayaasha waxaa la hubiyaa ka hor inta aan hadiyadda la dirin.', 'Only verified paid orders count. Winners are checked before gifts are shipped.')}</Text>
-      </View>
-
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{tr("Qaybaha", "Categories")}</Text>
         <TouchableOpacity onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
@@ -1744,6 +1715,41 @@ export default function App() {
     </View>
   );
 
+  const renderRewards = () => (
+    <View>
+      <Text style={styles.sectionTitle}>{tr('IMSIYA Rewards', 'IMSIYA Rewards')}</Text>
+      <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>{tr('← Ku noqo Profile', '← Back to Profile')}</Text></TouchableOpacity>
+      <View style={{ backgroundColor: '#38204F', borderRadius: 22, padding: 18, marginBottom: 22, borderWidth: 1, borderColor: '#F3A33B', elevation: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+          <Text style={{ color: '#F3A33B', fontSize: 11, fontWeight: '900', letterSpacing: 1.6 }}>🎁 IMSIYA REWARDS</Text>
+          <TouchableOpacity onPress={loadMonthlyRewards} disabled={rewardsLoading}>
+            {rewardsLoading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 12 }}>↻ {tr('Cusboonaysii', 'Refresh')}</Text>}
+          </TouchableOpacity>
+        </View>
+        <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', marginBottom: 5 }}>{tr('Iibso, dadaal, hadiyad ku guuleyso!', 'Shop, shine & win a surprise gift!')}</Text>
+        <Text style={{ color: '#E9DDF3', fontSize: 13, lineHeight: 19, marginBottom: 16 }}>{tr('Bil kasta waxaan abaalmarin siinnaa dukaanka ugu iibka fiican iyo macmiilka ugu wax iibsiga badan.', 'Every month, we reward the top-selling shop and the customer with the highest verified purchases.')}</Text>
+        {(['shop', 'customer'] as const).map((kind) => {
+          const rows = monthlyRewards.filter((item: any) => item.award_type === kind);
+          return (
+            <View key={kind} style={{ backgroundColor: '#FFFFFF', borderRadius: 15, padding: 13, marginBottom: kind === 'shop' ? 10 : 0 }}>
+              <Text style={{ color: '#4A286B', fontSize: 14, fontWeight: '900', marginBottom: 8 }}>{kind === 'shop' ? '🏪 ' + tr('Dukaamada ugu firfircoon', 'Top active shops') : '🛍️ ' + tr('Macaamiisha ugu iibsiga badan', 'Top customers')}</Text>
+              {rewardsLoading ? <ActivityIndicator color="#5B0AA8" /> : rows.length === 0 ? (
+                <Text style={{ color: '#756780', fontSize: 12, lineHeight: 18 }}>{tr('Weli ma jiraan iibsi la xaqiijiyey bishan. Tartanku wuxuu bilaabmayaa marka iibku dhaco.', 'No verified purchases yet this month. The leaderboard will appear as paid orders come in.')}</Text>
+              ) : rows.map((entry: any) => (
+                <View key={kind + '-' + entry.rank_position} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: entry.rank_position === rows.length ? 0 : 1, borderBottomColor: '#F0E8F6' }}>
+                  <Text style={{ color: '#F09A2A', fontWeight: '900', width: 28 }}>#{entry.rank_position}</Text>
+                  <Text style={{ color: '#38204F', fontWeight: '800', flex: 1, fontSize: 13 }}>{entry.display_name}</Text>
+                  <Text style={{ color: '#5B0AA8', fontWeight: '900', fontSize: 12 }}>{Number(entry.order_count || 0)} {tr('dalab', 'orders')}</Text>
+                </View>
+              ))}
+            </View>
+          );
+        })}
+        <Text style={{ color: '#E9DDF3', fontSize: 11, lineHeight: 16, marginTop: 12 }}>{tr('Iibsi lacagtiisa la xaqiijiyey oo keliya ayaa tartanka lagu daraa. Guuleystayaasha waxaa la hubiyaa ka hor inta aan hadiyadda la dirin.', 'Only verified paid orders count. Winners are checked before gifts are shipped.')}</Text>
+      </View>
+    </View>
+  );
+
   const renderProfile = () => (
     <View>
       {passwordRecoveryMode ? (
@@ -1829,6 +1835,7 @@ export default function App() {
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  {tr("Dukaankayga iyo iibiyaha", "My Shop and Seller Account")}</Text></TouchableOpacity>
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  {tr("Dalabyadayda", "My Orders")}</Text></TouchableOpacity>
+          <TouchableOpacity style={[styles.profileAction, { borderColor: '#F3A33B', backgroundColor: '#FFF8E9' }]} onPress={() => { setScreen('rewards'); loadMonthlyRewards(); }}><Text style={[styles.profileActionText, { color: '#6B3B00' }]}>🎁  {tr('IMSIYA Rewards — Abaalmarin bille ah', 'IMSIYA Rewards — Monthly Gifts')}  ✨</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>🚚  {tr("Raadraaca dalabka", "Track My Order")}</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}><Text style={styles.profileActionText}>🛒  {tr("Cart-kayga", "My Cart")} ({cart.length})</Text></TouchableOpacity>
           {!isAdmin && <TouchableOpacity style={[styles.profileAction, { borderColor: '#F0C6C2', marginTop: 10 }]} onPress={requestAccountDeletion}><Text style={[styles.profileActionText, { color: '#B3261E' }]}>🗑️  {tr('Codso tirtirka akoonka', 'Request account deletion')}</Text></TouchableOpacity>}
@@ -2286,6 +2293,7 @@ export default function App() {
         {screen === 'seller-orders' && renderSellerOrders()}
         {screen === 'wallet' && renderSellerWallet()}
         {screen === 'product' && renderProductDetails()}
+        {screen === 'rewards' && renderRewards()}
       </ScrollView>
 
       <View style={styles.bottomNav}>
