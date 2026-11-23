@@ -913,23 +913,46 @@ export default function App() {
 
   const requestAccountDeletion = () => {
     if (!session?.user?.id || isAdmin) return;
+
+    const confirmation = tr(
+      'Codsigaaga waxaa dib u eegaya maamulka IMSIYA. Akoonkaagu wuu sii shaqaynayaa ilaa codsiga la dhammeeyo. Diiwaannada dalabyada iyo lacagaha waxaa laga yaabaa in loo hayo waajibaadka sharci iyo xisaab-celinta.',
+      'Your request will be reviewed by IMSIYA. Your account remains active until the request is completed. Order and payment records may be retained where required for legal and accounting purposes.'
+    );
+
+    const submitRequest = async () => {
+      try {
+        const { error } = await supabase.from('account_deletion_requests').insert({
+          requester_id: session.user.id,
+          requester_email: session.user.email || null,
+          status: 'pending',
+        });
+        if (error) {
+          if (error.code === '23505') throw new Error(tr('Codsi tirtirid oo hore ayuu u sugayaa.', 'You already have an open account deletion request.'));
+          throw error;
+        }
+        const successMessage = tr('Codsiga tirtirka waa la gudbiyey. Maamulka ayaa dib u eegaya.', 'Your account deletion request has been submitted for review.');
+        if (Platform.OS === 'web') window.alert(successMessage);
+        else Alert.alert('IMSIYA', successMessage);
+      } catch (e: any) {
+        const errorMessage = e.message || tr('Codsiga lama gudbin karin.', 'Could not submit your request.');
+        if (Platform.OS === 'web') window.alert(errorMessage);
+        else Alert.alert('IMSIYA', errorMessage);
+      }
+    };
+
+    // React Native Alert dialogs are not consistently displayed by web builds.
+    // Use the browser's native confirmation on the website.
+    if (Platform.OS === 'web') {
+      if (window.confirm(confirmation)) void submitRequest();
+      return;
+    }
+
     Alert.alert(
       tr('Codso tirtirka akoonka', 'Request account deletion'),
-      tr('Codsigaaga waxaa dib u eegaya maamulka IMSIYA. Akoonkaagu wuu sii shaqaynayaa ilaa codsiga la dhammeeyo. Diiwaannada dalabyada iyo lacagaha waxaa laga yaabaa in loo hayo waajibaadka sharci iyo xisaab-celinta.', 'Your request will be reviewed by IMSIYA. Your account remains active until the request is completed. Order and payment records may be retained where required for legal and accounting purposes.'),
+      confirmation,
       [
         { text: tr('Jooji', 'Cancel'), style: 'cancel' },
-        { text: tr('Gudbi codsiga', 'Submit request'), style: 'destructive', onPress: async () => {
-          try {
-            const { error } = await supabase.from('account_deletion_requests').insert({ requester_id: session.user.id, requester_email: session.user.email || null, status: 'pending' });
-            if (error) {
-              if (error.code === '23505') throw new Error(tr('Codsi tirtirid oo hore ayuu u sugayaa.', 'You already have an open account deletion request.'));
-              throw error;
-            }
-            Alert.alert('IMSIYA', tr('Codsiga tirtirka waa la gudbiyey. Maamulka ayaa dib u eegaya.', 'Your account deletion request has been submitted for review.'));
-          } catch (e: any) {
-            Alert.alert('IMSIYA', e.message || tr('Codsiga lama gudbin karin.', 'Could not submit your request.'));
-          }
-        } },
+        { text: tr('Gudbi codsiga', 'Submit request'), style: 'destructive', onPress: () => { void submitRequest(); } },
       ]
     );
   };
