@@ -67,26 +67,47 @@ Deno.serve(async(req)=>{
   if(sellerError) throw sellerError; if(!seller?.approved) return out({error:"Dukaanka waa inuu marka hore maamulka oggolaadaa."},403);
   const {data:active}=await admin.from("shop_subscriptions").select("id").eq("shop_id",shopId).eq("status","paid").gt("expires_at",new Date().toISOString()).limit(1);
   if(active?.length) return out({error:"Dukaankaagu hore ayuu u leeyahay subscription shaqaynaya."},409);
-  // Prevent repeated taps from creating multiple recurring PayPal subscriptions
-  // while an earlier approval is still pending for this same shop.
-  const {data:pendingSubscription,error:pendingError}=await admin.from("shop_subscriptions")
-    .select("id,paypal_subscription_id")
-    .eq("shop_id",shopId)
-    .eq("status","pending")
-    .limit(1)
-    .maybeSingle();
-  if(pendingError) throw new Error("Could not check for an existing pending subscription");
-  if(pendingSubscription) {
-    return out({
-      error:"A PayPal subscription approval is already pending for this shop. Do not start another subscription. Contact IMSIYA support to check the existing approval.",
-      pending:true
-    },409);
-  }
   const paypalEnv=(Deno.env.get("PAYPAL_ENV")??"").toLowerCase();
   if(paypalEnv!=="live") throw new Error("PayPal LIVE is not configured; sandbox payments are disabled for IMSIYA.");
   const sandbox=false;
   const base="https://api-m.paypal.com";
   const t=await token(base,id,secret);
+
+  // If the seller returns from PayPal without approving, reopen the same
+  // approval link instead of blocking them or creating a second recurring plan.
+  const {data:pendingSubscription,error:pendingError}=await admin.from("shop_subscriptions")
+    .select("id,paypal_subscription_id")
+    .eq("shop_id",shopId)
+    .eq("status","pending")
+    .order("created_at",{ascending:false})
+    .limit(1)
+    .maybeSingle();
+  if(pendingError) throw new Error("Could not check for an existing pending subscription");
+  if(pendingSubscription) {
+    if(!pendingSubscription.paypal_subscription_id) {
+      return out({error:"Your previous PayPal request needs support review before another subscription can be started.",pending:true},409);
+    }
+    const existing=await pp(base,t,"/v1/billing/subscriptions/"+encodeURIComponent(pendingSubscription.paypal_subscription_id));
+    if(existing.status==="APPROVAL_PENDING") {
+      const existingApproval=(existing.links??[]).find((x:any)=>x.rel==="approve")?.href;
+      if(existingApproval) {
+        return out({success:true,approval_url:existingApproval,subscription_id:existing.id,amount:"20.00",currency:"USD",reused:true});
+      }
+      return out({error:"PayPal is still waiting for approval. Please try again shortly or contact IMSIYA support.",pending:true},409);
+    }
+    if(existing.status==="APPROVED"||existing.status==="ACTIVE") {
+      return out({error:"PayPal has received your approval. IMSIYA is waiting for payment confirmation; please do not start another subscription.",pending:true},409);
+    }
+    if(existing.status==="CANCELLED"||existing.status==="EXPIRED") {
+      const {error:updatePendingError}=await admin.from("shop_subscriptions")
+        .update({status:existing.status.toLowerCase()})
+        .eq("id",pendingSubscription.id)
+        .eq("status","pending");
+      if(updatePendingError) throw new Error("Could not close the old PayPal request safely");
+    } else {
+      return out({error:"Your PayPal subscription is being checked. Please wait for confirmation before trying again.",pending:true},409);
+    }
+  }
   let planId=Deno.env.get("PAYPAL_SUBSCRIPTION_PLAN_ID")??"";
   if(!planId){
     const {data:cfg,error:cfgError}=await admin.from("paypal_billing_config").select("config_value").eq("config_key",sandbox?"sandbox_plan_id":"live_plan_id").maybeSingle();
