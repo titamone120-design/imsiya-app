@@ -27,5 +27,5 @@
     "@babel/core": "^7.25.2",
     "babel-preset-expo": "~54.0.0"
   },
-  "description": "IMSIYA sweets marketplace mobile app and web preview with Cloudflare Turnstile"
+  "description": "IMSIYA sweets marketplace mobile app and web preview"
 }
