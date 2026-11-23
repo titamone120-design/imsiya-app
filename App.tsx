@@ -47,6 +47,8 @@ type Category = {
   name: string;
 };
 
+const TURNSTILE_SITE_KEY = '0x4AAAAAAGPQNDVYfV6vff2R';
+
 const categories = [
   'Dhammaan',
   'Buskut',
@@ -231,7 +233,61 @@ export default function App() {
   const [fullName, setFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || session || passwordRecoveryMode) return;
+    setCaptchaToken(null);
+    const browserWindow = window as any;
+    const containerId = 'imsiya-turnstile-widget';
+    const renderWidget = () => {
+      const turnstile = browserWindow.turnstile;
+      const container = document.getElementById(containerId) as HTMLElement | null;
+      if (!turnstile || !container || container.dataset.widgetId) return;
+      const widgetId = turnstile.render(container, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token: string) => setCaptchaToken(token),
+        'expired-callback': () => setCaptchaToken(null),
+        'error-callback': () => setCaptchaToken(null),
+      });
+      container.dataset.widgetId = String(widgetId);
+    };
+    const scriptId = 'imsiya-turnstile-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    let addedLoadListener = false;
+    if (browserWindow.turnstile) {
+      renderWidget();
+    } else {
+      if (!script) {
+        script = document.createElement('script');
+        script.id = scriptId;
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+      script.addEventListener('load', renderWidget);
+      addedLoadListener = true;
+    }
+    return () => {
+      if (addedLoadListener && script) script.removeEventListener('load', renderWidget);
+      const container = document.getElementById(containerId) as HTMLElement | null;
+      if (container?.dataset.widgetId && browserWindow.turnstile) {
+        browserWindow.turnstile.remove(container.dataset.widgetId);
+        delete container.dataset.widgetId;
+      }
+    };
+  }, [authMode, passwordRecoveryMode, session?.user?.id]);
+
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    if (Platform.OS === 'web') {
+      const turnstile = (window as any).turnstile;
+      const container = document.getElementById('imsiya-turnstile-widget') as HTMLElement | null;
+      if (turnstile && container?.dataset.widgetId) turnstile.reset(container.dataset.widgetId);
+    }
+  };
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
@@ -825,6 +881,11 @@ export default function App() {
       return;
     }
 
+    if (Platform.OS === 'web' && !captchaToken) {
+      setAuthMessage(tr('Fadlan dhammee xaqiijinta CAPTCHA-ga.', 'Please complete the CAPTCHA check.'));
+      return;
+    }
+
     setAuthLoading(true);
 
     try {
@@ -837,6 +898,7 @@ export default function App() {
               full_name: fullName.trim(),
             },
             emailRedirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://',
+            ...(Platform.OS === 'web' && captchaToken ? { captchaToken } : {}),
           },
         });
 
@@ -854,7 +916,7 @@ export default function App() {
           setAuthMessage(tr('Akoonkaaga waa la sameeyey. Ku soo dhowow IMSIYA!', 'Your account has been created. Welcome to IMSIYA!'));
         }
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password, ...(Platform.OS === 'web' && captchaToken ? { options: { captchaToken } } : {}) });
         if (error) throw error;
         if (!data.session) throw new Error(tr('Gelitaanku ma dhammaan. Mar kale isku day.', 'Sign-in did not complete. Please try again.'));
         setSession(data.session);
@@ -877,6 +939,7 @@ export default function App() {
         setAuthMessage(message || tr('Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.', 'Sign-in failed. Check your details and try again.'));
       }
     } finally {
+      resetCaptcha();
       setAuthLoading(false);
     }
   };
@@ -1692,19 +1755,22 @@ export default function App() {
             {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8D8299" value={fullName} onChangeText={setFullName} /></View>}
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8D8299" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete={authMode === "signup" ? "new-password" : "current-password"} /><TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr("Qari password-ka", "Hide password") : tr("Muuji password-ka", "Show password")}><Text style={styles.authPasswordToggleText}>{showPassword ? "🙈" : "👁️"}</Text></TouchableOpacity></View>
+            {Platform.OS === 'web' && <View nativeID="imsiya-turnstile-widget" style={{ minHeight: 65, marginVertical: 12, alignItems: 'center', justifyContent: 'center' }} />}
             {authMode === 'login' && <TouchableOpacity style={styles.authForgot} onPress={async () => {
               const cleanEmail = email.trim().toLowerCase();
               setAuthMessage('');
               if (!cleanEmail) { setAuthMessage(tr("Marka hore geli email-kaaga.", "Enter your email address first.")); return; }
               if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) { setAuthMessage(tr("Email-ka aad gelisay sax ma aha. Hubi email-ka.", "The email address is invalid. Please check it.")); return; }
+              if (Platform.OS === 'web' && !captchaToken) { setAuthMessage(tr('Fadlan dhammee xaqiijinta CAPTCHA-ga.', 'Please complete the CAPTCHA check.')); return; }
               setAuthLoading(true);
               try {
-                const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://' });
+                const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://', ...(Platform.OS === 'web' && captchaToken ? { captchaToken } : {}) });
                 if (error) throw error;
                 setAuthMessage(tr("Haddii email-ku sax yahay, link dib-u-dejin ah ayaa laguugu soo diray.", "If the email is valid, a password reset link has been sent."));
               } catch (e: any) {
                 setAuthMessage(e?.message || tr("Link-ga dib-u-dejinta lama diri karin. Mar kale isku day.", "The password reset link could not be sent. Please try again."));
               } finally {
+                resetCaptcha();
                 setAuthLoading(false);
               }
             }}>
