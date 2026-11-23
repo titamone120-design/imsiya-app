@@ -219,6 +219,9 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [language, setLanguage] = useState<string>('en');
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
+  const [accountDeletionModalOpen, setAccountDeletionModalOpen] = useState(false);
+  const [accountDeletionSubmitting, setAccountDeletionSubmitting] = useState(false);
+  const [accountDeletionMessage, setAccountDeletionMessage] = useState('');
   const selectedLanguage = IMSIYA_LANGUAGES.find(item => item[0] === language) || IMSIYA_LANGUAGES[0];
   const tr = (somali: string, english: string) => language === 'so' ? (CORE_TRANSLATIONS.so?.[english] || SHOP_WALLET_TRANSLATIONS.so?.[english] || somali) : (CORE_TRANSLATIONS[language]?.[english] || SHOP_WALLET_TRANSLATIONS[language]?.[english] || english);
   useEffect(() => { AsyncStorage.getItem('imsiya:language').then(saved => { if (saved && IMSIYA_LANGUAGES.some(item => item[0] === saved)) setLanguage(saved); }).catch(error => console.log('Language preference restore failed:', error?.message || error)); }, []);
@@ -913,48 +916,29 @@ export default function App() {
 
   const requestAccountDeletion = () => {
     if (!session?.user?.id || isAdmin) return;
+    setAccountDeletionMessage('');
+    setAccountDeletionModalOpen(true);
+  };
 
-    const confirmation = tr(
-      'Codsigaaga waxaa dib u eegaya maamulka IMSIYA. Akoonkaagu wuu sii shaqaynayaa ilaa codsiga la dhammeeyo. Diiwaannada dalabyada iyo lacagaha waxaa laga yaabaa in loo hayo waajibaadka sharci iyo xisaab-celinta.',
-      'Your request will be reviewed by IMSIYA. Your account remains active until the request is completed. Order and payment records may be retained where required for legal and accounting purposes.'
-    );
-
-    const submitRequest = async () => {
-      try {
-        const { error } = await supabase.from('account_deletion_requests').insert({
-          requester_id: session.user.id,
-          requester_email: session.user.email || null,
-          status: 'pending',
-        });
-        if (error) {
-          if (error.code === '23505') throw new Error(tr('Codsi tirtirid oo hore ayuu u sugayaa.', 'You already have an open account deletion request.'));
-          throw error;
-        }
-        const successMessage = tr('Codsiga tirtirka waa la gudbiyey. Maamulka ayaa dib u eegaya.', 'Your account deletion request has been submitted for review.');
-        if (Platform.OS === 'web') window.alert(successMessage);
-        else Alert.alert('IMSIYA', successMessage);
-      } catch (e: any) {
-        const errorMessage = e.message || tr('Codsiga lama gudbin karin.', 'Could not submit your request.');
-        if (Platform.OS === 'web') window.alert(errorMessage);
-        else Alert.alert('IMSIYA', errorMessage);
+  const submitAccountDeletionRequest = async () => {
+    if (!session?.user?.id || isAdmin || accountDeletionSubmitting) return;
+    setAccountDeletionSubmitting(true);
+    try {
+      const { error } = await supabase.from('account_deletion_requests').insert({
+        requester_id: session.user.id,
+        requester_email: session.user.email || null,
+        status: 'pending',
+      });
+      if (error) {
+        if (error.code === '23505') throw new Error(tr('Codsi tirtirid oo hore ayuu u sugayaa.', 'You already have an open account deletion request.'));
+        throw error;
       }
-    };
-
-    // React Native Alert dialogs are not consistently displayed by web builds.
-    // Use the browser's native confirmation on the website.
-    if (Platform.OS === 'web') {
-      if (window.confirm(confirmation)) void submitRequest();
-      return;
+      setAccountDeletionMessage(tr('Codsiga tirtirka waa la gudbiyey. Maamulka ayaa dib u eegaya.', 'Your account deletion request has been submitted for review.'));
+    } catch (e: any) {
+      setAccountDeletionMessage(e?.message || tr('Codsiga lama gudbin karin.', 'Could not submit your request.'));
+    } finally {
+      setAccountDeletionSubmitting(false);
     }
-
-    Alert.alert(
-      tr('Codso tirtirka akoonka', 'Request account deletion'),
-      confirmation,
-      [
-        { text: tr('Jooji', 'Cancel'), style: 'cancel' },
-        { text: tr('Gudbi codsiga', 'Submit request'), style: 'destructive', onPress: () => { void submitRequest(); } },
-      ]
-    );
   };
 
   const updateAccountDeletionRequest = async (requestId: string, status: 'reviewing' | 'completed' | 'rejected') => {
@@ -2153,6 +2137,31 @@ export default function App() {
               <TouchableOpacity onPress={() => setLanguagePickerOpen(false)}><Text style={{ color: "#5B0AA8", fontSize: 22 }}>×</Text></TouchableOpacity>
             </View>
             <ScrollView>{IMSIYA_LANGUAGES.map(item => <TouchableOpacity key={item[0]} onPress={() => chooseLanguage(item[0])} style={{ flexDirection: "row", alignItems: "center", padding: 13, borderRadius: 12, marginBottom: 5, backgroundColor: language === item[0] ? "#F3E8FA" : "#FFFFFF", borderWidth: 1, borderColor: language === item[0] ? "#5B0AA8" : "#EEE7F3" }}><Text style={{ fontSize: 20, marginRight: 12 }}>{item[1]}</Text><Text style={{ flex: 1, color: "#38204F", fontSize: 15, fontWeight: "700" }}>{item[2]}</Text>{language === item[0] ? <Text style={{ color: "#5B0AA8" }}>✓</Text> : null}</TouchableOpacity>)}</ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={accountDeletionModalOpen} transparent animationType="fade" onRequestClose={() => { if (!accountDeletionSubmitting) setAccountDeletionModalOpen(false); }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(20,10,30,0.58)', justifyContent: 'center', padding: 22 }}>
+          <View style={{ backgroundColor: '#FFFFFF', borderRadius: 20, padding: 22 }}>
+            <Text style={{ color: '#38204F', fontSize: 19, fontWeight: '900', marginBottom: 10 }}>{tr('Codso tirtirka akoonka', 'Request account deletion')}</Text>
+            <Text style={{ color: '#5F536A', fontSize: 14, lineHeight: 21, marginBottom: 18 }}>
+              {accountDeletionMessage || tr('Codsigaaga waxaa dib u eegaya maamulka IMSIYA. Akoonkaagu wuu sii shaqaynayaa ilaa codsiga la dhammeeyo. Diiwaannada dalabyada iyo lacagaha waxaa laga yaabaa in loo hayo waajibaadka sharci iyo xisaab-celinta.', 'Your request will be reviewed by IMSIYA. Your account remains active until the request is completed. Order and payment records may be retained where required for legal and accounting purposes.')}
+            </Text>
+            {accountDeletionMessage ? (
+              <TouchableOpacity style={[styles.primaryButton, { marginTop: 4 }]} onPress={() => setAccountDeletionModalOpen(false)}>
+                <Text style={styles.buttonText}>{tr('Xir', 'Close')}</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+                <TouchableOpacity disabled={accountDeletionSubmitting} style={{ paddingVertical: 13, paddingHorizontal: 15 }} onPress={() => setAccountDeletionModalOpen(false)}>
+                  <Text style={{ color: '#6F6478', fontWeight: '800' }}>{tr('Jooji', 'Cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity disabled={accountDeletionSubmitting} style={[styles.primaryButton, { marginTop: 0, minWidth: 130, opacity: accountDeletionSubmitting ? 0.65 : 1 }]} onPress={submitAccountDeletionRequest}>
+                  {accountDeletionSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>{tr('Gudbi codsiga', 'Submit request')}</Text>}
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
