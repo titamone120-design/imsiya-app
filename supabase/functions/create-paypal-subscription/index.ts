@@ -67,6 +67,21 @@ Deno.serve(async(req)=>{
   if(sellerError) throw sellerError; if(!seller?.approved) return out({error:"Dukaanka waa inuu marka hore maamulka oggolaadaa."},403);
   const {data:active}=await admin.from("shop_subscriptions").select("id").eq("shop_id",shopId).eq("status","paid").gt("expires_at",new Date().toISOString()).limit(1);
   if(active?.length) return out({error:"Dukaankaagu hore ayuu u leeyahay subscription shaqaynaya."},409);
+  // Prevent repeated taps from creating multiple recurring PayPal subscriptions
+  // while an earlier approval is still pending for this same shop.
+  const {data:pendingSubscription,error:pendingError}=await admin.from("shop_subscriptions")
+    .select("id,paypal_subscription_id")
+    .eq("shop_id",shopId)
+    .eq("status","pending")
+    .limit(1)
+    .maybeSingle();
+  if(pendingError) throw new Error("Could not check for an existing pending subscription");
+  if(pendingSubscription) {
+    return out({
+      error:"A PayPal subscription approval is already pending for this shop. Do not start another subscription. Contact IMSIYA support to check the existing approval.",
+      pending:true
+    },409);
+  }
   const paypalEnv=(Deno.env.get("PAYPAL_ENV")??"").toLowerCase();
   if(paypalEnv!=="live") throw new Error("PayPal LIVE is not configured; sandbox payments are disabled for IMSIYA.");
   const sandbox=false;
