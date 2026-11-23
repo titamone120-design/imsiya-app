@@ -865,7 +865,9 @@ export default function App() {
       const errorCode = String(e?.code || '');
       const message = String(e?.message || '');
 
-      if (
+      if (authMode === 'signup' && errorCode === 'captcha_failed') {
+        setAuthMessage(tr('Diiwaangelinta waxaa xannibay CAPTCHA-ga Supabase. Maamuluhu waa inuu ku xiraa adeeg CAPTCHA ama damiyaa ilaalinta CAPTCHA ilaa app-ka lagu daro.', 'Sign-up was blocked by Supabase CAPTCHA. The administrator must configure a CAPTCHA provider or disable CAPTCHA protection until the app integration is added.'));
+      } else if (
         authMode === 'signup' &&
         (status >= 500 || errorCode === 'unexpected_failure' ||
           /smtp|email provider|sending email|mail server/i.test(message))
