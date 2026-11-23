@@ -1015,6 +1015,13 @@ export default function App() {
         throw new Error(tr('PayPal ma soo celin link-ga subscription-ka.', 'PayPal did not return a subscription link.'));
       }
 
+      if (Platform.OS === 'web') {
+        // Navigate the browser directly to PayPal; awaiting Linking.openURL can leave
+        // the web subscription button spinning while the popup/navigation is pending.
+        window.location.assign(data.approval_url);
+        return;
+      }
+
       await Linking.openURL(data.approval_url);
     } catch (e: any) {
       Alert.alert(
