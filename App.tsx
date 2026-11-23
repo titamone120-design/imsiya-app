@@ -491,7 +491,7 @@ export default function App() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, price, image_url, stock, description, categories(name)')
+        .select('id, name, price, image_url, image_urls, stock, description, categories(name)')
         .eq('seller_id', session.user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -500,6 +500,7 @@ export default function App() {
         name: item.name,
         price: Number(item.price || 0),
         image_url: item.image_url,
+        image_urls: Array.isArray(item.image_urls) && item.image_urls.length ? item.image_urls : (item.image_url ? [item.image_url] : []),
         stock: Number(item.stock || 0),
         description: item.description || '',
         category: Array.isArray(item.categories) ? item.categories[0]?.name || 'Macmacaan kale' : item.categories?.name || 'Macmacaan kale',
@@ -1220,6 +1221,7 @@ export default function App() {
     setAddingProduct(true);
 
     try {
+      if (productImages.length < 1) throw new Error(tr('Fadlan ku dar ugu yaraan hal sawir.', 'Please add at least one photo.'));
       if (productImages.length > 5) throw new Error(tr('Ugu badnaan 5 sawir ayaa la oggol yahay.', 'A maximum of 5 photos is allowed.'));
       setProductImageUploading(productImages.some(uri => !/^https?:\/\//i.test(uri)));
       const savedImageUrls: string[] = [];
