@@ -1658,6 +1658,32 @@ export default function App() {
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status, language)}</Text>
+          <Text style={[styles.shopStatusText, { fontWeight: '700', marginTop: 10 }]}>{tr('Raadraaca dalabka', 'Order tracking')}</Text>
+          {String(order.status || '').toLowerCase() === 'cancelled' || String(order.status || '').toLowerCase() === 'canceled' ? (
+            <Text style={[styles.shopStatusText, { color: '#B42318', fontWeight: '700' }]}>{tr('Dalabkan waa la joojiyey.', 'This order was cancelled.')}</Text>
+          ) : String(order.payment_status || '').toLowerCase() !== 'paid' ? (
+            <Text style={styles.shopStatusText}>{tr('Raadraacu wuxuu bilaabmayaa marka lacagta la xaqiijiyo.', 'Tracking starts after payment is verified.')}</Text>
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8, marginBottom: 8 }}>
+              {[
+                { key: 'pending', so: 'La helay', en: 'Received' },
+                { key: 'processing', so: 'Diyaarin', en: 'Preparing' },
+                { key: 'shipped', so: 'La diray', en: 'Shipped' },
+                { key: 'delivered', so: 'La gaarsiiyey', en: 'Delivered' },
+              ].map((step, index) => {
+                const current = ['pending', 'processing', 'shipped', 'delivered'].indexOf(String(order.status || '').toLowerCase());
+                const done = current >= index;
+                return (
+                  <View key={step.key} style={{ flex: 1, alignItems: 'center' }}>
+                    <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: done ? '#4A286B' : '#E8E2ED', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ color: done ? '#FFFFFF' : '#756A80', fontSize: 11, fontWeight: '700' }}>{done ? '✓' : String(index + 1)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 10, color: done ? '#4A286B' : '#756A80', textAlign: 'center', marginTop: 5, fontWeight: done ? '700' : '400' }}>{language === 'so' ? step.so : step.en}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
           <Text style={styles.shopStatusText}>{tr('Bixinta:', 'Payment:')} {String(order.payment_status || '—')}</Text>
           <Text style={styles.shopStatusText}>{tr('Habka:', 'Method:')} {order.payment_method || '—'}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
