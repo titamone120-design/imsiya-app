@@ -26,6 +26,7 @@ type Product = {
   name: string;
   price: number;
   image_url: string | null;
+  image_urls: string[];
   stock: number;
   category: string;
   description?: string;
@@ -280,8 +281,8 @@ export default function App() {
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [productStock, setProductStock] = useState('10');
-  const [productImage, setProductImage] = useState('');
-  const [productImageMimeType, setProductImageMimeType] = useState('');
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [productImageMimeTypes, setProductImageMimeTypes] = useState<string[]>([]);
   const [productImageUploading, setProductImageUploading] = useState(false);
   const [productCategory, setProductCategory] = useState('Buskut');
   const [addingProduct, setAddingProduct] = useState(false);
@@ -386,7 +387,7 @@ export default function App() {
       const from = page * pageSize;
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, price, image_url, stock, description, categories(name)')
+        .select('id, name, price, image_url, image_urls, stock, description, categories(name)')
         .eq('active', true)
         .order('created_at', { ascending: false })
         .range(from, from + pageSize - 1);
@@ -398,6 +399,7 @@ export default function App() {
         name: item.name,
         price: Number(item.price || 0),
         image_url: item.image_url,
+        image_urls: Array.isArray(item.image_urls) && item.image_urls.length ? item.image_urls : (item.image_url ? [item.image_url] : []),
         stock: Number(item.stock || 0),
         description: item.description || '',
         category: Array.isArray(item.categories)
@@ -510,6 +512,10 @@ export default function App() {
   };
 
   const pickProductImage = async () => {
+    if (productImages.length >= 5) {
+      Alert.alert('IMSIYA', tr('Waxaad ku dari kartaa ugu badnaan 5 sawir.', 'You can add up to 5 photos.'));
+      return;
+    }
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
@@ -523,8 +529,8 @@ export default function App() {
         quality: 0.8,
       });
       if (!result.canceled && result.assets?.[0]?.uri) {
-        setProductImage(result.assets[0].uri);
-        setProductImageMimeType(result.assets[0].mimeType || 'image/jpeg');
+        setProductImages(current => current.length < 5 ? [...current, result.assets[0].uri] : current);
+        setProductImageMimeTypes(current => current.length < 5 ? [...current, result.assets[0].mimeType || 'image/jpeg'] : current);
       }
     } catch (e: any) {
       Alert.alert('IMSIYA', e.message || tr('Sawirka lama dooran karin.', 'Could not select the image.'));
@@ -537,8 +543,8 @@ export default function App() {
     setProductDescription(product.description || '');
     setProductPrice(String(product.price));
     setProductStock(String(product.stock));
-    setProductImage(product.image_url || '');
-    setProductImageMimeType('');
+    setProductImages(product.image_urls?.length ? product.image_urls : (product.image_url ? [product.image_url] : []));
+    setProductImageMimeTypes([]);
     setProductCategory(product.category);
   };
 
@@ -1214,25 +1220,31 @@ export default function App() {
     setAddingProduct(true);
 
     try {
-      let savedImageUrl: string | null = productImage.trim() || null;
-      if (savedImageUrl && !/^https?:\/\//i.test(savedImageUrl)) {
-        setProductImageUploading(true);
-        const imageResponse = await fetch(savedImageUrl);
-        if (!imageResponse.ok) throw new Error(tr('Sawirka telefoonka lama akhrin karin.', 'Could not read the image from your phone.'));
-        const imageBuffer = await imageResponse.arrayBuffer();
-        const mimeType = String(productImageMimeType || imageResponse.headers.get('content-type') || 'image/jpeg').toLowerCase().split(';')[0];
-        const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : mimeType === 'image/jpeg' ? 'jpg' : '';
-        if (!extension) throw new Error('Sawirka waa inuu noqdaa JPG, PNG ama WEBP.');
-        if (imageBuffer.byteLength <= 0 || imageBuffer.byteLength > 5 * 1024 * 1024) throw new Error('Sawirka waa inuu ka yaraadaa 5 MB.');
-        const imagePath = session.user.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 9) + '.' + extension;
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(imagePath, imageBuffer, {
-          contentType: mimeType,
-          cacheControl: '3600',
-          upsert: false,
-        });
-        if (uploadError) throw uploadError;
-        savedImageUrl = supabase.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl;
+      if (productImages.length > 5) throw new Error(tr('Ugu badnaan 5 sawir ayaa la oggol yahay.', 'A maximum of 5 photos is allowed.'));
+      setProductImageUploading(productImages.some(uri => !/^https?:\/\//i.test(uri)));
+      const savedImageUrls: string[] = [];
+      for (let index = 0; index < productImages.length; index++) {
+        let imageUrl = productImages[index].trim();
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+          const imageResponse = await fetch(imageUrl);
+          if (!imageResponse.ok) throw new Error(tr('Sawirka telefoonka lama akhrin karin.', 'Could not read the image from your phone.'));
+          const imageBuffer = await imageResponse.arrayBuffer();
+          const mimeType = String(productImageMimeTypes[index] || imageResponse.headers.get('content-type') || 'image/jpeg').toLowerCase().split(';')[0];
+          const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : mimeType === 'image/jpeg' ? 'jpg' : '';
+          if (!extension) throw new Error('Sawir kasta waa inuu noqdaa JPG, PNG ama WEBP.');
+          if (imageBuffer.byteLength <= 0 || imageBuffer.byteLength > 5 * 1024 * 1024) throw new Error('Sawir kasta waa inuu ka yaraadaa 5 MB.');
+          const imagePath = session.user.id + '/' + Date.now() + '-' + index + '-' + Math.random().toString(36).slice(2, 9) + '.' + extension;
+          const { error: uploadError } = await supabase.storage.from('product-images').upload(imagePath, imageBuffer, {
+            contentType: mimeType,
+            cacheControl: '3600',
+            upsert: false,
+          });
+          if (uploadError) throw uploadError;
+          imageUrl = supabase.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl;
+        }
+        if (imageUrl) savedImageUrls.push(imageUrl);
       }
+      const savedImageUrl = savedImageUrls[0] || null;
       const productPayload = {
         seller_id: session.user.id,
         shop_id: myShop.id,
@@ -1241,6 +1253,7 @@ export default function App() {
         description: productDescription.trim(),
         price,
         image_url: savedImageUrl,
+        image_urls: savedImageUrls,
         stock,
       };
       const result = editingProductId
@@ -1253,8 +1266,8 @@ export default function App() {
       setProductDescription('');
       setProductPrice('');
       setProductStock('10');
-      setProductImage('');
-      setProductImageMimeType('');
+      setProductImages([]);
+      setProductImageMimeTypes([]);
 
       Alert.alert('IMSIYA', editingProductId ? tr('Alaabta waa la cusboonaysiiyey.', 'Product updated.') : tr('Alaabta waa lagu daray dukaanka.', 'Product added to your shop.'));
       await Promise.all([loadProducts(), loadMySellerProducts()]);
@@ -1280,9 +1293,9 @@ export default function App() {
 
   const renderProduct = (product: Product) => (
     <View key={product.id} style={styles.productCard}>
-      {product.image_url ? (
+      {(product.image_urls?.[0] || product.image_url) ? (
         <Image
-          source={{ uri: product.image_url }}
+          source={{ uri: product.image_urls?.[0] || product.image_url! }}
           style={styles.productImage}
         />
       ) : (
@@ -1761,7 +1774,7 @@ export default function App() {
     return (
       <View>
         <TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>{tr('← Ku noqo alaabta', '← Back to Products')}</Text></TouchableOpacity>
-        {selectedProduct.image_url ? <Image source={{ uri: selectedProduct.image_url }} style={{ width: '100%', height: 240, borderRadius: 18, marginVertical: 14 }} resizeMode="cover" /> : <View style={[styles.imagePlaceholder, { height: 220, marginVertical: 14 }]}><Text style={styles.placeholderText}>🍬</Text></View>}
+        {(selectedProduct.image_urls?.length ? selectedProduct.image_urls : (selectedProduct.image_url ? [selectedProduct.image_url] : [])).length > 0 ? <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 14 }}>{(selectedProduct.image_urls?.length ? selectedProduct.image_urls : [selectedProduct.image_url!]).map((uri, index) => <Image key={selectedProduct.id + '-image-' + index} source={{ uri }} style={{ width: 280, height: 240, borderRadius: 18, marginRight: 10 }} resizeMode="cover" />)}</ScrollView> : <View style={[styles.imagePlaceholder, { height: 220, marginVertical: 14 }]}><Text style={styles.placeholderText}>🍬</Text></View>}
         <Text style={styles.sectionTitle}>{translateSweetName(selectedProduct.name, language)}</Text>
         <Text style={styles.productCategory}>{translateSweetName(selectedProduct.category, language)}</Text>
         <Text style={[styles.productPrice, { fontSize: 22, marginVertical: 10 }]}>{money(selectedProduct.price)}</Text>
@@ -2093,7 +2106,7 @@ export default function App() {
                 <Text style={styles.myShopHint}>{tr("Geli faahfaahinta alaabtaada.", "Enter the details of your product.")}</Text>
               </View>
             </View>
-            {editingProductId && <TouchableOpacity style={styles.myShopCancelEdit} onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImage(''); setProductImageMimeType(''); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>{tr("Jooji tafatirka", "Cancel Editing")}</Text></TouchableOpacity>}
+            {editingProductId && <TouchableOpacity style={styles.myShopCancelEdit} onPress={() => { setEditingProductId(null); setProductName(''); setProductDescription(''); setProductPrice(''); setProductStock('10'); setProductImages([]); setProductImageMimeTypes([]); setProductCategory('Buskut'); }}><Text style={styles.refreshText}>{tr("Jooji tafatirka", "Cancel Editing")}</Text></TouchableOpacity>}
             <Text style={styles.label}>{tr("Magaca alaabta", "Product Name")}</Text>
             <TextInput style={styles.input} placeholder={tr("Magaca macmacaanka", "Sweet Name")} value={productName} onChangeText={setProductName} />
             <Text style={styles.label}>{tr("Sharaxaadda", "Description")}</Text>
@@ -2102,13 +2115,12 @@ export default function App() {
             <TextInput style={styles.input} placeholder="Tusaale: 500" value={productPrice} onChangeText={setProductPrice} keyboardType="numeric" />
             <Text style={styles.label}>{tr("Tirada kaydka", "Stock Quantity")}</Text>
             <TextInput style={styles.input} placeholder="10" value={productStock} onChangeText={setProductStock} keyboardType="numeric" />
-            <Text style={styles.label}>{tr("Sawirka alaabta", "Product Image")}</Text>
-            <TouchableOpacity style={styles.myShopOutlineButton} onPress={pickProductImage} disabled={productImageUploading}>
-              <Text style={styles.myShopOutlineButtonText}>{tr("＋  Ka dooro sawir telefoonka", "＋  Choose a Photo")}</Text>
+            <Text style={styles.label}>{tr("Sawirrada alaabta (ugu badnaan 5)", "Product Photos (up to 5)")}</Text>
+            <TouchableOpacity style={styles.myShopOutlineButton} onPress={pickProductImage} disabled={productImageUploading || productImages.length >= 5}>
+              <Text style={styles.myShopOutlineButtonText}>{tr("＋  Ku dar sawir", "＋  Add Photo")} ({productImages.length}/5)</Text>
             </TouchableOpacity>
-            {productImage ? <Image source={{ uri: productImage }} style={styles.myShopImagePreview} resizeMode="cover" /> : null}
-            <Text style={styles.myShopHint}>{tr("Sawirka JPG, PNG ama WEBP; ugu badnaan 5 MB.", "JPG, PNG or WEBP image; up to 5 MB.")}</Text>
-            <TextInput style={styles.input} placeholder={tr("Ama geli URL sawir (https://...)", "Or enter an image URL (https://...)")} value={productImage.startsWith('file://') || productImage.startsWith('content://') ? '' : productImage} onChangeText={value => { setProductImage(value); setProductImageMimeType(''); }} autoCapitalize="none" />
+            {productImages.length > 0 ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 10 }}>{productImages.map((uri, index) => <View key={'selected-product-image-' + index} style={{ position: 'relative' }}><Image source={{ uri }} style={{ width: 88, height: 88, borderRadius: 10 }} resizeMode="cover" /><TouchableOpacity onPress={() => { setProductImages(current => current.filter((_, i) => i !== index)); setProductImageMimeTypes(current => current.filter((_, i) => i !== index)); }} style={{ position: 'absolute', top: 3, right: 3, backgroundColor: '#8B1E2D', borderRadius: 12, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontWeight: '700' }}>×</Text></TouchableOpacity>{index === 0 ? <Text style={{ fontSize: 10, color: '#4A286B', fontWeight: '700', textAlign: 'center' }}>{tr("Sawirka koowaad", "Main photo")}</Text> : null}</View>)}</View> : null}
+            <Text style={styles.myShopHint}>{tr("Dooro 1 ilaa 5 sawir. JPG, PNG ama WEBP; mid kasta ugu badnaan 5 MB. Sawirka koowaad ayaa noqonaya kan weyn.", "Choose 1 to 5 photos. JPG, PNG or WEBP; up to 5 MB each. The first photo is the main image.")}</Text>
             <Text style={styles.label}>{tr("Qaybta alaabta", "Product Category")}</Text>
             <View style={styles.categoryChoices}>
               {Array.from(new Set([...categories.slice(1), ...categoryRows.map(item => item.name)])).map(item => (
