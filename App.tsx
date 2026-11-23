@@ -882,7 +882,7 @@ export default function App() {
       return;
     }
 
-    if (Platform.OS === 'web' && !captchaToken) {
+    if (!captchaToken) {
       setAuthMessage(tr('Fadlan dhammee xaqiijinta CAPTCHA-ga.', 'Please complete the CAPTCHA check.'));
       return;
     }
@@ -899,7 +899,7 @@ export default function App() {
               full_name: fullName.trim(),
             },
             emailRedirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://',
-            ...(Platform.OS === 'web' && captchaToken ? { captchaToken } : {}),
+            ...(captchaToken ? { captchaToken } : {}),
           },
         });
 
@@ -1762,10 +1762,10 @@ export default function App() {
               setAuthMessage('');
               if (!cleanEmail) { setAuthMessage(tr("Marka hore geli email-kaaga.", "Enter your email address first.")); return; }
               if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) { setAuthMessage(tr("Email-ka aad gelisay sax ma aha. Hubi email-ka.", "The email address is invalid. Please check it.")); return; }
-              if (Platform.OS === 'web' && !captchaToken) { setAuthMessage(tr('Fadlan dhammee xaqiijinta CAPTCHA-ga.', 'Please complete the CAPTCHA check.')); return; }
+              if (!captchaToken) { setAuthMessage(tr('Fadlan dhammee xaqiijinta CAPTCHA-ga.', 'Please complete the CAPTCHA check.')); return; }
               setAuthLoading(true);
               try {
-                const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://', ...(Platform.OS === 'web' && captchaToken ? { captchaToken } : {}) });
+                const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://', ...(captchaToken ? { captchaToken } : {}) });
                 if (error) throw error;
                 setAuthMessage(tr("Haddii email-ku sax yahay, link dib-u-dejin ah ayaa laguugu soo diray.", "If the email is valid, a password reset link has been sent."));
               } catch (e: any) {
