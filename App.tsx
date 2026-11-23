@@ -264,6 +264,7 @@ export default function App() {
 
   const [shopLoading, setShopLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const [productName, setProductName] = useState('');
@@ -1002,6 +1003,7 @@ export default function App() {
       return;
     }
 
+    setPaymentError('');
     setPaymentLoading(true);
 
     try {
@@ -1010,24 +1012,22 @@ export default function App() {
         { body: { shop_id: myShop.id, platform: Platform.OS === 'web' ? 'web' : 'native' } }
       );
 
-      if (error) throw error;
+      if (error) throw new Error(data?.error || error.message || 'PayPal request failed');
+      if (data?.error) throw new Error(data.error);
       if (!data?.approval_url) {
         throw new Error(tr('PayPal ma soo celin link-ga subscription-ka.', 'PayPal did not return a subscription link.'));
       }
 
       if (Platform.OS === 'web') {
-        // Navigate the browser directly to PayPal; awaiting Linking.openURL can leave
-        // the web subscription button spinning while the popup/navigation is pending.
         window.location.assign(data.approval_url);
         return;
       }
 
       await Linking.openURL(data.approval_url);
     } catch (e: any) {
-      Alert.alert(
-        'IMSIYA',
-        e.message || tr('Lacag-bixinta lama bilaabi karin.', 'Could not start payment.')
-      );
+      const message = e?.message || tr('Lacag-bixinta lama bilaabi karin.', 'Could not start payment.');
+      setPaymentError(message);
+      if (Platform.OS !== 'web') Alert.alert('IMSIYA', message);
     } finally {
       setPaymentLoading(false);
     }
@@ -1834,6 +1834,11 @@ export default function App() {
                 <TouchableOpacity style={styles.primaryButton} onPress={payShopSubscription} disabled={paymentLoading}>
                   {paymentLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{tr("Bixi $20 bishii — PayPal", "Pay $20 monthly — PayPal")}</Text>}
                 </TouchableOpacity>
+              )}
+              {!!paymentError && (
+                <Text style={{ color: '#B42318', marginTop: 10, fontSize: 13, lineHeight: 19 }}>
+                  {paymentError}
+                </Text>
               )}
             </View>
           )}
