@@ -224,7 +224,7 @@ export default function App() {
   useEffect(() => { AsyncStorage.getItem('imsiya:language').then(saved => { if (saved && IMSIYA_LANGUAGES.some(item => item[0] === saved)) setLanguage(saved); }).catch(error => console.log('Language preference restore failed:', error?.message || error)); }, []);
   const chooseLanguage = async (code: string) => { setLanguage(code); setLanguagePickerOpen(false); try { await AsyncStorage.setItem('imsiya:language', code); } catch (error: any) { console.log('Language preference save failed:', error?.message || error); } };
 
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -805,7 +805,7 @@ export default function App() {
       return;
     }
 
-    if (password.length < 8) {
+    if (authMode === 'signup' && password.length < 8) {
       setAuthMessage(tr('Password-ku waa inuu ahaadaa ugu yaraan 8 xaraf.', 'Password must be at least 8 characters.'));
       return;
     }
@@ -821,7 +821,7 @@ export default function App() {
             data: {
               full_name: fullName.trim(),
             },
-            emailRedirectTo: 'imsiya://',
+            emailRedirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://',
           },
         });
 
@@ -1632,11 +1632,22 @@ export default function App() {
             {!!authMessage && <Text style={styles.authMessage}>{authMessage}</Text>}
             {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8D8299" value={fullName} onChangeText={setFullName} /></View>}
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8D8299" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
-            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} /></View>
-            <TouchableOpacity style={styles.authForgot} onPress={async () => {
-              if (!email.trim()) { Alert.alert('IMSIYA', tr("Marka hore geli email-kaaga.", "Enter your email address first.")); return; }
-              const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-              Alert.alert('IMSIYA', error ? error.message : tr("Haddii email-ku sax yahay, link dib-u-dejin ah ayaa laguugu soo diray.", "If the email is valid, a password reset link has been sent."));
+            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete={authMode === "signup" ? "new-password" : "current-password"} /><TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr("Qari password-ka", "Hide password") : tr("Muuji password-ka", "Show password")}><Text style={styles.authPasswordToggleText}>{showPassword ? "🙈" : "👁️"}</Text></TouchableOpacity></View>
+            {authMode === 'login' && <TouchableOpacity style={styles.authForgot} onPress={async () => {
+              const cleanEmail = email.trim().toLowerCase();
+              setAuthMessage('');
+              if (!cleanEmail) { setAuthMessage(tr("Marka hore geli email-kaaga.", "Enter your email address first.")); return; }
+              if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail)) { setAuthMessage(tr("Email-ka aad gelisay sax ma aha. Hubi email-ka.", "The email address is invalid. Please check it.")); return; }
+              setAuthLoading(true);
+              try {
+                const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://' });
+                if (error) throw error;
+                setAuthMessage(tr("Haddii email-ku sax yahay, link dib-u-dejin ah ayaa laguugu soo diray.", "If the email is valid, a password reset link has been sent."));
+              } catch (e: any) {
+                setAuthMessage(e?.message || tr("Link-ga dib-u-dejinta lama diri karin. Mar kale isku day.", "The password reset link could not be sent. Please try again."));
+              } finally {
+                setAuthLoading(false);
+              }
             }}>
               <Text style={styles.authForgotText}>{tr("Password ma illowday?", "Forgot Password?")}</Text>
             </TouchableOpacity>
@@ -2215,6 +2226,8 @@ const styles = StyleSheet.create({
   authInputWrap: { minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E4D9ED', borderRadius: 15, paddingHorizontal: 13, marginBottom: 13 },
   authInputIcon: { width: 27, color: '#5B0AA8', fontSize: 17, textAlign: 'center', marginRight: 8 },
   authInput: { flex: 1, minHeight: 50, color: '#2E203B', fontSize: 15, paddingVertical: 8 },
+  authPasswordToggle: { minWidth: 40, minHeight: 42, alignItems: 'center', justifyContent: 'center', marginLeft: 5 },
+  authPasswordToggleText: { color: '#5B0AA8', fontSize: 19 },
   authForgot: { alignSelf: 'flex-end', paddingVertical: 5, paddingHorizontal: 2 },
   authForgotText: { color: '#5B0AA8', fontWeight: '800', fontSize: 12 },
   authSubmit: { backgroundColor: '#5B0AA8', minHeight: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 13, marginBottom: 14, elevation: 2 },
