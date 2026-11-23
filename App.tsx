@@ -1019,7 +1019,9 @@ export default function App() {
         { body: { shop_id: myShop.id, platform: Platform.OS === 'web' ? 'web' : 'native' } }
       );
 
-      if (error) throw new Error(data?.error || error.message || 'PayPal request failed');
+      // Preserve the FunctionsHttpError so the catch block can read context.status
+      // and display the correct message for an existing pending subscription (HTTP 409).
+      if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (!data?.approval_url) {
         throw new Error(tr('PayPal ma soo celin link-ga subscription-ka.', 'PayPal did not return a subscription link.'));
