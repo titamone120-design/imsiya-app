@@ -9,8 +9,23 @@ const reply = (data: unknown, status = 200) => new Response(JSON.stringify(data)
   status, headers: { ...cors, "Content-Type": "application/json" },
 });
 
+// Bound PayPal API calls to prevent stalled upstream requests from holding
+// this webhook until the Supabase worker is terminated (504/546).
+async function paypalFetch(input: string | URL, init: RequestInit = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12_000);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error("PayPal API request timed out after 12000ms");
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getToken(base: string, id: string, secret: string) {
-  const response = await fetch(base + "/v1/oauth2/token", {
+  const response = await paypalFetch(base + "/v1/oauth2/token", {
     method: "POST",
     headers: {
       Authorization: "Basic " + btoa(id + ":" + secret),
@@ -55,7 +70,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const token = await getToken(base, clientId, secret);
-    const verification = await fetch(base + "/v1/notifications/verify-webhook-signature", {
+    const verification = await paypalFetch(base + "/v1/notifications/verify-webhook-signature", {
       method: "POST",
       headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
       body: JSON.stringify({ ...headers, webhook_id: webhookId, webhook_event: event }),
@@ -83,7 +98,7 @@ Deno.serve(async (req: Request) => {
       if (!order) throw new Error("IMSIYA order not found yet; PayPal should retry this webhook");
       if (order.payment_status === "paid") return reply({ received: true, already_paid: true });
 
-      const inspectedResponse = await fetch(base + "/v2/checkout/orders/" + encodeURIComponent(paypalOrderId), {
+      const inspectedResponse = await paypalFetch(base + "/v2/checkout/orders/" + encodeURIComponent(paypalOrderId), {
         headers: { Authorization: "Bearer " + token },
       });
       const inspected = await inspectedResponse.json();
@@ -102,7 +117,7 @@ Deno.serve(async (req: Request) => {
         if (inspected.status !== "APPROVED") {
           throw new Error("PayPal order is not approved and cannot be captured");
         }
-        const captureResponse = await fetch(base + "/v2/checkout/orders/" + encodeURIComponent(paypalOrderId) + "/capture", {
+        const captureResponse = await paypalFetch(base + "/v2/checkout/orders/" + encodeURIComponent(paypalOrderId) + "/capture", {
           method: "POST",
           headers: {
             Authorization: "Bearer " + token,
