@@ -48,6 +48,7 @@ type Category = {
   name: string;
 };
 
+// Public Cloudflare site key; the secret stays in Supabase Auth settings.
 const TURNSTILE_SITE_KEY = '0x4AAAAAAGPQNDVYfV6vff2R';
 
 const categories = [
