@@ -1032,7 +1032,26 @@ export default function App() {
 
       await Linking.openURL(data.approval_url);
     } catch (e: any) {
-      const message = e?.message || tr('Lacag-bixinta lama bilaabi karin.', 'Could not start payment.');
+      let message = e?.message || tr('Lacag-bixinta lama bilaabi karin.', 'Could not start payment.');
+
+      // Supabase FunctionsHttpError stores the Edge Function response in context.
+      // Show a clear pending-subscription message instead of the generic non-2xx error.
+      const status = e?.context?.status;
+      if (status === 409) {
+        message = tr(
+          'Codsi lacag-bixinta $20 bishii ayaa hore kuu sugaya. Ha samayn codsi kale. Sug xaqiijinta ama la xiriir maamulka IMSIYA.',
+          'A $20 monthly payment request is already pending. Do not create another request. Wait for verification or contact IMSIYA support.'
+        );
+      } else if (status) {
+        try {
+          const response = typeof e.context.clone === 'function' ? e.context.clone() : e.context;
+          const payload = await response.json();
+          if (payload?.error && typeof payload.error === 'string') message = payload.error;
+        } catch {
+          // Keep the friendly fallback message when the response has no readable JSON.
+        }
+      }
+
       setPaymentError(message);
       if (Platform.OS !== 'web') Alert.alert('IMSIYA', message);
     } finally {
