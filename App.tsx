@@ -1707,7 +1707,7 @@ export default function App() {
               }
             }}>
               <Text style={styles.authForgotText}>{tr("Password ma illowday?", "Forgot Password?")}</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>}
             <TouchableOpacity style={[styles.authSubmit, authLoading && styles.disabledButton]} onPress={signInOrSignUp} disabled={authLoading}>
               {authLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{authMode === 'signup' ? tr("Samee akoon", "Register") : tr("Gal akoonka", "Login")}</Text>}
             </TouchableOpacity>
