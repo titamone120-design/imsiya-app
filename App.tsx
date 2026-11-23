@@ -884,9 +884,18 @@ export default function App() {
 
   const updateAccountDeletionRequest = async (requestId: string, status: 'reviewing' | 'completed' | 'rejected') => {
     try {
-      const { data, error } = await supabase.from('account_deletion_requests').update({ status, processed_at: status === 'reviewing' ? null : new Date().toISOString() }).eq('id', requestId).select('id').maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error(tr('Codsiga lama helin ama awood uma lihid.', 'Request not found or permission denied.'));
+      if (status === 'completed') {
+        const { data, error } = await supabase.functions.invoke('process-account-deletion', { body: { request_id: requestId } });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        Alert.alert('IMSIYA Admin', tr('Akoonka iyo xogtiisa gaarka ah waa la tirtiray; diiwaannada xisaab-celinta ee loo baahan yahay waa la hayey.', 'The account and personal profile were deleted; required transaction records were retained.'));
+      } else {
+        const { data, error } = await supabase.from('account_deletion_requests')
+          .update({ status, processed_at: status === 'reviewing' ? null : new Date().toISOString() })
+          .eq('id', requestId).select('id').maybeSingle();
+        if (error) throw error;
+        if (!data) throw new Error(tr('Codsiga lama helin ama awood uma lihid.', 'Request not found or permission denied.'));
+      }
       await loadAdminData();
     } catch (e: any) {
       Alert.alert('IMSIYA Admin', e.message || tr('Xaaladda codsiga lama beddeli karin.', 'Could not update request status.'));
@@ -1851,7 +1860,7 @@ export default function App() {
           <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {request.status} · {new Date(request.requested_at).toLocaleString()}</Text>
           {request.status === 'pending' || request.status === 'reviewing' ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
             {request.status === 'pending' && <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updateAccountDeletionRequest(request.id, 'reviewing')}><Text style={styles.secondaryButtonText}>{tr('Bilow dib-u-eegista', 'Start review')}</Text></TouchableOpacity>}
-            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updateAccountDeletionRequest(request.id, 'completed')}><Text style={styles.secondaryButtonText}>{tr('Calaamadee dhammaaday', 'Mark completed')}</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updateAccountDeletionRequest(request.id, 'completed')}><Text style={styles.secondaryButtonText}>{tr('Tirtir akoonka oo dhammee', 'Delete account & complete')}</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updateAccountDeletionRequest(request.id, 'rejected')}><Text style={styles.secondaryButtonText}>{tr('Diid codsiga', 'Reject request')}</Text></TouchableOpacity>
           </View> : <Text style={styles.shopStatusText}>{request.processed_at ? new Date(request.processed_at).toLocaleString() : ''}</Text>}
         </View>
