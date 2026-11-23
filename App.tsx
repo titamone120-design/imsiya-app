@@ -290,6 +290,7 @@ export default function App() {
   const [payoutAccount, setPayoutAccount] = useState('');
   const [payoutSubmitting, setPayoutSubmitting] = useState(false);
   const [adminPayoutRequests, setAdminPayoutRequests] = useState<any[]>([]);
+  const [adminDeletionRequests, setAdminDeletionRequests] = useState<any[]>([]);
 
   const [categoryRows, setCategoryRows] = useState<Category[]>([]);
 
@@ -399,23 +400,26 @@ export default function App() {
     if (!isAdmin) return;
     setAdminLoading(true);
     try {
-      const [sellersResult, ordersResult, subscriptionsResult, walletResult, payoutsResult] = await Promise.all([
+      const [sellersResult, ordersResult, subscriptionsResult, walletResult, payoutsResult, deletionRequestsResult] = await Promise.all([
         supabase.from('seller_profiles').select('id, shop_name, description, approved, created_at').eq('approved', false).order('created_at', { ascending: false }).limit(50),
         supabase.from('orders').select('id, customer_id, total_amount, currency, usd_total_amount, status, payment_status, payment_method, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('shop_subscriptions').select('id, shop_id, amount, currency, status, started_at, expires_at, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('wallet_transactions').select('id, seller_id, amount, transaction_type, description, order_id, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('payout_requests').select('id, seller_id, amount, status, payout_method, payout_account, created_at, processed_at, admin_note').order('created_at', { ascending: false }).limit(100),
+        supabase.from('account_deletion_requests').select('id, requester_id, requester_email, status, requested_at, processed_at, admin_note').order('requested_at', { ascending: false }).limit(100),
       ]);
       if (sellersResult.error) throw sellersResult.error;
       if (ordersResult.error) throw ordersResult.error;
       if (subscriptionsResult.error) throw subscriptionsResult.error;
       if (walletResult.error) throw walletResult.error;
       if (payoutsResult.error) throw payoutsResult.error;
+      if (deletionRequestsResult.error) throw deletionRequestsResult.error;
       setPendingSellers(sellersResult.data || []);
       setAdminOrders(ordersResult.data || []);
       setAdminSubscriptions(subscriptionsResult.data || []);
       setAdminWallet(walletResult.data || []);
       setAdminPayoutRequests(payoutsResult.data || []);
+      setAdminDeletionRequests(deletionRequestsResult.data || []);
     } catch (e: any) {
       Alert.alert('IMSIYA Admin', e.message || tr('Codsiyada lama soo qaadi karin.', 'Could not load applications.'));
     } finally {
@@ -853,6 +857,40 @@ export default function App() {
     }
 
     setScreen('home');
+  };
+
+  const requestAccountDeletion = () => {
+    if (!session?.user?.id || isAdmin) return;
+    Alert.alert(
+      tr('Codso tirtirka akoonka', 'Request account deletion'),
+      tr('Codsigaaga waxaa dib u eegaya maamulka IMSIYA. Akoonkaagu wuu sii shaqaynayaa ilaa codsiga la dhammeeyo. Diiwaannada dalabyada iyo lacagaha waxaa laga yaabaa in loo hayo waajibaadka sharci iyo xisaab-celinta.', 'Your request will be reviewed by IMSIYA. Your account remains active until the request is completed. Order and payment records may be retained where required for legal and accounting purposes.'),
+      [
+        { text: tr('Jooji', 'Cancel'), style: 'cancel' },
+        { text: tr('Gudbi codsiga', 'Submit request'), style: 'destructive', onPress: async () => {
+          try {
+            const { error } = await supabase.from('account_deletion_requests').insert({ requester_id: session.user.id, requester_email: session.user.email || null, status: 'pending' });
+            if (error) {
+              if (error.code === '23505') throw new Error(tr('Codsi tirtirid oo hore ayuu u sugayaa.', 'You already have an open account deletion request.'));
+              throw error;
+            }
+            Alert.alert('IMSIYA', tr('Codsiga tirtirka waa la gudbiyey. Maamulka ayaa dib u eegaya.', 'Your account deletion request has been submitted for review.'));
+          } catch (e: any) {
+            Alert.alert('IMSIYA', e.message || tr('Codsiga lama gudbin karin.', 'Could not submit your request.'));
+          }
+        } },
+      ]
+    );
+  };
+
+  const updateAccountDeletionRequest = async (requestId: string, status: 'reviewing' | 'completed' | 'rejected') => {
+    try {
+      const { data, error } = await supabase.from('account_deletion_requests').update({ status, processed_at: status === 'reviewing' ? null : new Date().toISOString() }).eq('id', requestId).select('id').maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error(tr('Codsiga lama helin ama awood uma lihid.', 'Request not found or permission denied.'));
+      await loadAdminData();
+    } catch (e: any) {
+      Alert.alert('IMSIYA Admin', e.message || tr('Xaaladda codsiga lama beddeli karin.', 'Could not update request status.'));
+    }
   };
 
   const addToCart = (product: Product) => {
@@ -1588,6 +1626,7 @@ export default function App() {
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  {tr("Dalabyadayda", "My Orders")}</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}><Text style={styles.profileActionText}>🛒  {tr("Cart-kayga", "My Cart")} ({cart.length})</Text></TouchableOpacity>
+          {!isAdmin && <TouchableOpacity style={[styles.profileAction, { borderColor: '#F0C6C2', marginTop: 10 }]} onPress={requestAccountDeletion}><Text style={[styles.profileActionText, { color: '#B3261E' }]}>🗑️  {tr('Codso tirtirka akoonka', 'Request account deletion')}</Text></TouchableOpacity>}
           <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>{tr("Ka bax akoonka", "Sign Out")}</Text></TouchableOpacity>
         </>
       )}
@@ -1801,6 +1840,20 @@ export default function App() {
             <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'paid')}><Text style={styles.secondaryButtonText}>{tr('Xaqiiji: PayPal waa la diray', 'Confirm: PayPal transfer sent')}</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'rejected')}><Text style={styles.secondaryButtonText}>{tr('Diid codsiga', 'Reject request')}</Text></TouchableOpacity>
           </View> : null}
+        </View>
+      ))}
+
+      <Text style={styles.sectionTitle}>{tr('Codsiyada tirtirka akoonka', 'Account deletion requests')} ({adminDeletionRequests.filter(item => item.status === 'pending' || item.status === 'reviewing').length})</Text>
+      {adminDeletionRequests.length === 0 ? <Text style={styles.emptyText}>{tr('Codsi tirtirid ma jiro.', 'No account deletion requests.')}</Text> : adminDeletionRequests.map(request => (
+        <View key={request.id} style={styles.shopStatusCard}>
+          <Text style={styles.shopStatusTitle}>{request.requester_email || request.requester_id}</Text>
+          <Text style={styles.shopStatusText}>User ID: {request.requester_id}</Text>
+          <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {request.status} · {new Date(request.requested_at).toLocaleString()}</Text>
+          {request.status === 'pending' || request.status === 'reviewing' ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+            {request.status === 'pending' && <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updateAccountDeletionRequest(request.id, 'reviewing')}><Text style={styles.secondaryButtonText}>{tr('Bilow dib-u-eegista', 'Start review')}</Text></TouchableOpacity>}
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updateAccountDeletionRequest(request.id, 'completed')}><Text style={styles.secondaryButtonText}>{tr('Calaamadee dhammaaday', 'Mark completed')}</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updateAccountDeletionRequest(request.id, 'rejected')}><Text style={styles.secondaryButtonText}>{tr('Diid codsiga', 'Reject request')}</Text></TouchableOpacity>
+          </View> : <Text style={styles.shopStatusText}>{request.processed_at ? new Date(request.processed_at).toLocaleString() : ''}</Text>}
         </View>
       ))}
 
