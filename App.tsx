@@ -147,7 +147,38 @@ const orderStatusLabel = (status: unknown, paymentStatus: unknown, language = 'e
   return state ? `Order status: ${state}` : (translated?.unknown || 'No status available');
 };
 
-const IMSIYA_LANGUAGES = [["en","🇬🇧","English"],["so","🇸🇴","Somali"],["ar","🇸🇦","العربية"],["sw","🇰🇪","Kiswahili"]] as const;
+const IMSIYA_LANGUAGES = [
+  ["en","🇬🇧","English"],
+  ["so","🇸🇴","Somali"],
+  ["ar","🇸🇦","العربية"],
+  ["sw","🇰🇪","Kiswahili"],
+  ["fr","🇫🇷","Français"],
+  ["es","🇪🇸","Español"],
+  ["de","🇩🇪","Deutsch"],
+  ["it","🇮🇹","Italiano"],
+  ["pt","🇵🇹","Português"],
+  ["tr","🇹🇷","Türkçe"],
+  ["id","🇮🇩","Bahasa Indonesia"],
+  ["nl","🇳🇱","Nederlands"],
+  ["zh","🇨🇳","中文"],
+  ["ja","🇯🇵","日本語"],
+  ["ko","🇰🇷","한국어"],
+  ["hi","🇮🇳","हिन्दी"],
+  ["ru","🇷🇺","Русский"],
+  ["ur","🇵🇰","اردو"],
+  ["fa","🇮🇷","فارسی"],
+  ["ms","🇲🇾","Bahasa Melayu"],
+  ["bn","🇧🇩","বাংলা"],
+  ["am","🇪🇹","አማርኛ"],
+  ["ha","🇳🇬","Hausa"],
+  ["yo","🇳🇬","Yorùbá"],
+  ["th","🇹🇭","ไทย"],
+  ["vi","🇻🇳","Tiếng Việt"],
+  ["pl","🇵🇱","Polski"],
+  ["uk","🇺🇦","Українська"],
+  ["el","🇬🇷","Ελληνικά"],
+  ["sv","🇸🇪","Svenska"],
+] as const;
 
 
 // Core IMSIYA interface translations. Keys are kept in English so product data is not altered.
