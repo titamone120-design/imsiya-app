@@ -234,6 +234,9 @@ export default function App() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [productsLoadingMore, setProductsLoadingMore] = useState(false);
+  const [productsPage, setProductsPage] = useState(0);
+  const [productsHasMore, setProductsHasMore] = useState(true);
   const [productError, setProductError] = useState('');
 
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -363,16 +366,26 @@ export default function App() {
     );
   };
 
-  const loadProducts = async () => {
-    setProductsLoading(true);
-    setProductError('');
+  const loadProducts = async (reset = true) => {
+    const pageSize = 40;
+    if (reset) {
+      setProductsLoading(true);
+      setProductsLoadingMore(false);
+      setProductError('');
+    } else {
+      if (productsLoading || productsLoadingMore || !productsHasMore) return;
+      setProductsLoadingMore(true);
+    }
 
     try {
+      const page = reset ? 0 : productsPage;
+      const from = page * pageSize;
       const { data, error } = await supabase
         .from('products')
         .select('id, name, price, image_url, stock, description, categories(name)')
         .eq('active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, from + pageSize - 1);
 
       if (error) throw error;
 
@@ -388,11 +401,14 @@ export default function App() {
           : item.categories?.name || 'Macmacaan kale',
       }));
 
-      setProducts(formatted);
+      setProducts(current => reset ? formatted : [...current, ...formatted]);
+      setProductsPage(page + 1);
+      setProductsHasMore(formatted.length === pageSize);
     } catch (e: any) {
       setProductError(e.message || tr('Alaabta lama soo qaadi karin.', 'Could not load products.'));
     } finally {
-      setProductsLoading(false);
+      if (reset) setProductsLoading(false);
+      else setProductsLoadingMore(false);
     }
   };
 
@@ -1336,6 +1352,18 @@ export default function App() {
         <Text style={styles.emptyText}>{tr("Weli alaab lama helin.", "No products found yet.")}</Text>
       ) : (
         <View style={styles.productGrid}>{filteredProducts.map(renderProduct)}</View>
+      )}
+
+      {productsHasMore && !productsLoading && (
+        <TouchableOpacity
+          style={[styles.secondaryButton, { marginTop: 8, marginBottom: 18 }]}
+          onPress={() => loadProducts(false)}
+          disabled={productsLoadingMore}
+        >
+          {productsLoadingMore
+            ? <ActivityIndicator size="small" color="#4A286B" />
+            : <Text style={styles.secondaryButtonText}>{tr('Soo rar badeecooyin dheeraad ah', 'Load more products')}</Text>}
+        </TouchableOpacity>
       )}
     </>
   );
