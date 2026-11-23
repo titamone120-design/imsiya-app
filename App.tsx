@@ -1637,7 +1637,7 @@ export default function App() {
               const cleanEmail = email.trim().toLowerCase();
               setAuthMessage('');
               if (!cleanEmail) { setAuthMessage(tr("Marka hore geli email-kaaga.", "Enter your email address first.")); return; }
-              if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail)) { setAuthMessage(tr("Email-ka aad gelisay sax ma aha. Hubi email-ka.", "The email address is invalid. Please check it.")); return; }
+              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) { setAuthMessage(tr("Email-ka aad gelisay sax ma aha. Hubi email-ka.", "The email address is invalid. Please check it.")); return; }
               setAuthLoading(true);
               try {
                 const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href.split('#')[0] : 'imsiya://' });
