@@ -20,6 +20,7 @@ import {
 
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
+import TurnstileNative from './TurnstileNative';
 
 type Product = {
   id: string;
@@ -1755,7 +1756,7 @@ export default function App() {
             {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8D8299" value={fullName} onChangeText={setFullName} /></View>}
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8D8299" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete={authMode === "signup" ? "new-password" : "current-password"} /><TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr("Qari password-ka", "Hide password") : tr("Muuji password-ka", "Show password")}><Text style={styles.authPasswordToggleText}>{showPassword ? "🙈" : "👁️"}</Text></TouchableOpacity></View>
-            {Platform.OS === 'web' && <View nativeID="imsiya-turnstile-widget" style={{ minHeight: 65, marginVertical: 12, alignItems: 'center', justifyContent: 'center' }} />}
+            {Platform.OS === 'web' ? <View nativeID="imsiya-turnstile-widget" style={{ minHeight: 65, marginVertical: 12, alignItems: 'center', justifyContent: 'center' }} /> : <TurnstileNative onToken={setCaptchaToken} />}
             {authMode === 'login' && <TouchableOpacity style={styles.authForgot} onPress={async () => {
               const cleanEmail = email.trim().toLowerCase();
               setAuthMessage('');
