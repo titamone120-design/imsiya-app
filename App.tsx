@@ -231,6 +231,7 @@ export default function App() {
   const [fullName, setFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
+  const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
@@ -719,10 +720,17 @@ export default function App() {
       const code = parsed.searchParams.get('code');
 
       if (code) {
-        const { error } =
-          await supabase.auth.exchangeCodeForSession(code);
-
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) throw error;
+        const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ''));
+        const authType = parsed.searchParams.get('type') || hashParams.get('type');
+        if (authType === 'recovery') {
+          setPasswordRecoveryMode(true);
+          setAuthMode('login');
+          setPassword('');
+          setAuthMessage(tr('Geli password cusub oo ugu yaraan 8 xaraf ah.', 'Enter a new password with at least 8 characters.'));
+          setScreen('profile');
+        }
       }
     } catch (e: any) {
       Alert.alert('IMSIYA', e.message || tr('Link-ga lama xaqiijin karin.', 'Could not verify the link.'));
@@ -738,8 +746,15 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    } = supabase.auth.onAuthStateChange((event, currentSession) => {
       setSession(currentSession);
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecoveryMode(true);
+        setAuthMode('login');
+        setPassword('');
+        setAuthMessage(tr('Geli password cusub oo ugu yaraan 8 xaraf ah.', 'Enter a new password with at least 8 characters.'));
+        setScreen('profile');
+      }
     });
 
     Linking.getInitialURL().then(handleIncomingLink);
@@ -859,6 +874,27 @@ export default function App() {
       } else {
         setAuthMessage(message || tr('Gelitaanka wuu fashilmay. Hubi xogtaada oo mar kale isku day.', 'Sign-in failed. Check your details and try again.'));
       }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const saveRecoveredPassword = async () => {
+    if (password.length < 8) {
+      setAuthMessage(tr('Password-ku waa inuu ahaadaa ugu yaraan 8 xaraf.', 'Password must be at least 8 characters.'));
+      return;
+    }
+    setAuthLoading(true);
+    setAuthMessage('');
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      setPasswordRecoveryMode(false);
+      setPassword('');
+      setAuthMessage(tr('Password-kaaga cusub waa la kaydiyey.', 'Your new password has been saved.'));
+      setScreen('home');
+    } catch (e: any) {
+      setAuthMessage(e?.message || tr('Password-ka lama beddeli karin. Mar kale isku day.', 'The password could not be changed. Please try again.'));
     } finally {
       setAuthLoading(false);
     }
@@ -1611,7 +1647,28 @@ export default function App() {
 
   const renderProfile = () => (
     <View>
-      {!session ? (
+      {passwordRecoveryMode ? (
+        <View style={styles.authPage}>
+          <View style={styles.authBrand}>
+            <Text style={styles.authBrandIcon}>🛍️</Text>
+            <Text style={styles.authBrandName}>IMSIYA</Text>
+            <Text style={styles.authBrandTagline}>Sweetness for Everyone</Text>
+          </View>
+          <View style={styles.authCard}>
+            <Text style={styles.authHeading}>{tr('Samee password cusub', 'Set a new password')}</Text>
+            <Text style={styles.authDescription}>{tr('Dooro password cusub oo ammaan ah.', 'Choose a new secure password.')}</Text>
+            {!!authMessage && <Text style={styles.authMessage}>{authMessage}</Text>}
+            <View style={styles.authInputWrap}>
+              <Text style={styles.authInputIcon}>🔒</Text>
+              <TextInput style={styles.authInput} placeholder={tr('Password cusub', 'New password')} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete="new-password" />
+              <TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr('Qari password-ka', 'Hide password') : tr('Muuji password-ka', 'Show password')}><Text style={styles.authPasswordToggleText}>{showPassword ? '🙈' : '👁️'}</Text></TouchableOpacity>
+            </View>
+            <TouchableOpacity style={[styles.authSubmit, authLoading && styles.disabledButton]} onPress={saveRecoveredPassword} disabled={authLoading}>
+              {authLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{tr('Kaydi password-ka cusub', 'Save new password')}</Text>}
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : !session ? (
         <View style={styles.authPage}>
           <View style={styles.authBrand}>
             <Text style={styles.authBrandIcon}>🛍️</Text>
