@@ -248,6 +248,8 @@ export default function App() {
   const [sellerOrdersLoading, setSellerOrdersLoading] = useState(false);
   const [profileRole, setProfileRole] = useState('');
   const [planSetupLoading, setPlanSetupLoading] = useState(false);
+  const [planSetupMessage, setPlanSetupMessage] = useState('');
+  const [planSetupError, setPlanSetupError] = useState(false);
   const isAdmin = ['admin', 'super_admin'].includes(profileRole);
   const [pendingSellers, setPendingSellers] = useState<any[]>([]);
   const [adminOrders, setAdminOrders] = useState<any[]>([]);
@@ -972,21 +974,26 @@ export default function App() {
 
   const setupPayPalPlan = async () => {
     if (profileRole !== 'super_admin') {
-      Alert.alert('IMSIYA Admin', tr('Kaliya Super Admin ayaa diyaarin kara PayPal plan-ka.', 'Only the Super Admin can set up the PayPal plan.'));
+      setPlanSetupError(true);
+      setPlanSetupMessage(tr('Kaliya Super Admin ayaa diyaarin kara PayPal plan-ka.', 'Only the Super Admin can set up the PayPal plan.'));
       return;
     }
+    setPlanSetupMessage('');
+    setPlanSetupError(false);
     setPlanSetupLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-paypal-subscription', {
         body: { action: 'setup_plan_only' },
       });
-      if (error) throw error;
+      if (error) throw new Error(data?.error || error.message || 'PayPal plan setup request failed');
       if (!data?.success || data?.status !== 'ACTIVE') {
         throw new Error(data?.error || tr('PayPal LIVE plan-ka lama xaqiijin.', 'PayPal LIVE plan could not be verified.'));
       }
-      Alert.alert('IMSIYA Admin', tr('PayPal LIVE plan-ka $20 bishii waa la diyaariyey lana xaqiijiyey. Wax subscription ama lacag-bixin ah lama samayn.', 'PayPal LIVE plan for $20/month has been set up and verified. No subscription was started and no payment was charged.'));
+      setPlanSetupError(false);
+      setPlanSetupMessage(tr('PayPal LIVE plan-ka $20 bishii waa la diyaariyey lana xaqiijiyey. Wax subscription ama lacag-bixin ah lama samayn.', 'PayPal LIVE plan for $20/month has been set up and verified. No subscription was started and no payment was charged.'));
     } catch (e: any) {
-      Alert.alert('IMSIYA Admin', e.message || tr('PayPal plan setup wuu fashilmay.', 'PayPal plan setup failed.'));
+      setPlanSetupError(true);
+      setPlanSetupMessage(e?.message || tr('PayPal plan setup wuu fashilmay.', 'PayPal plan setup failed.'));
     } finally {
       setPlanSetupLoading(false);
     }
@@ -1697,6 +1704,11 @@ export default function App() {
           <TouchableOpacity style={[styles.primaryButton, planSetupLoading && styles.disabledButton]} onPress={setupPayPalPlan} disabled={planSetupLoading}>
             {planSetupLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{tr('Diyaari PayPal LIVE Plan', 'Set up PayPal LIVE Plan')}</Text>}
           </TouchableOpacity>
+          {!!planSetupMessage && (
+            <Text style={[styles.shopStatusText, { color: planSetupError ? '#b42318' : '#18794e', marginTop: 10 }]}>
+              {planSetupMessage}
+            </Text>
+          )}
         </View>
       )}
       <View style={styles.shopStatusCard}>
