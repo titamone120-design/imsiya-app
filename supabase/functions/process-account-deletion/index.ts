@@ -49,6 +49,16 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Administrator accounts cannot be deleted through customer requests" }, 403);
     }
 
+    const { data: customerOpenOrders, error: customerOrdersError } = await admin.from("orders").select("id")
+      .eq("customer_id", targetId).eq("payment_status", "paid")
+      .neq("status", "delivered").neq("status", "cancelled").limit(1);
+    if (customerOrdersError) throw customerOrdersError;
+    if (customerOpenOrders?.length) return json({ error: "This customer has a paid order still in progress. Complete or resolve it before deleting the account." }, 409);
+    const { data: pendingCustomerPayments, error: pendingCustomerPaymentsError } = await admin.from("orders").select("id")
+      .eq("customer_id", targetId).eq("payment_status", "unpaid").not("paypal_order_id", "is", null).limit(1);
+    if (pendingCustomerPaymentsError) throw pendingCustomerPaymentsError;
+    if (pendingCustomerPayments?.length) return json({ error: "This customer has a PayPal checkout in progress. Wait for it to finish or expire before deleting the account." }, 409);
+
     const { data: seller, error: sellerError } = await admin.from("seller_profiles").select("id").eq("id", targetId).maybeSingle();
     if (sellerError) throw sellerError;
     if (seller) {
