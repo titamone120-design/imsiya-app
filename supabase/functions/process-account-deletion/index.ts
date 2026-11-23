@@ -96,7 +96,7 @@ Deno.serve(async (req: Request) => {
     const { error: deleteError } = await admin.auth.admin.deleteUser(targetId);
     if (deleteError) throw deleteError;
     const { error: completeError } = await admin.from("account_deletion_requests")
-      .update({ status: "completed", processed_at: new Date().toISOString(), admin_note: "Account and personal profile deleted. Required marketplace transaction records retained without account identifiers." })
+      .update({ requester_id: crypto.randomUUID(), requester_email: null, status: "completed", processed_at: new Date().toISOString(), admin_note: "Account and personal profile deleted. Required marketplace transaction records retained without account identifiers." })
       .eq("id", requestId);
     if (completeError) throw completeError;
     return json({ success: true, deleted_user_id: targetId, retained_transaction_records: true });
