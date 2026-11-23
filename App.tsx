@@ -235,6 +235,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
 
   useEffect(() => {
@@ -283,6 +284,7 @@ export default function App() {
 
   const resetCaptcha = () => {
     setCaptchaToken(null);
+    setCaptchaResetKey(current => current + 1);
     if (Platform.OS === 'web') {
       const turnstile = (window as any).turnstile;
       const container = document.getElementById('imsiya-turnstile-widget') as HTMLElement | null;
@@ -917,7 +919,7 @@ export default function App() {
           setAuthMessage(tr('Akoonkaaga waa la sameeyey. Ku soo dhowow IMSIYA!', 'Your account has been created. Welcome to IMSIYA!'));
         }
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password, ...(Platform.OS === 'web' && captchaToken ? { options: { captchaToken } } : {}) });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password, ...(captchaToken ? { options: { captchaToken } } : {}) });
         if (error) throw error;
         if (!data.session) throw new Error(tr('Gelitaanku ma dhammaan. Mar kale isku day.', 'Sign-in did not complete. Please try again.'));
         setSession(data.session);
@@ -1756,7 +1758,7 @@ export default function App() {
             {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8D8299" value={fullName} onChangeText={setFullName} /></View>}
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8D8299" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
             <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete={authMode === "signup" ? "new-password" : "current-password"} /><TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr("Qari password-ka", "Hide password") : tr("Muuji password-ka", "Show password")}><Text style={styles.authPasswordToggleText}>{showPassword ? "🙈" : "👁️"}</Text></TouchableOpacity></View>
-            {Platform.OS === 'web' ? <View nativeID="imsiya-turnstile-widget" style={{ minHeight: 65, marginVertical: 12, alignItems: 'center', justifyContent: 'center' }} /> : <TurnstileNative onToken={setCaptchaToken} />}
+            {Platform.OS === 'web' ? <View nativeID="imsiya-turnstile-widget" style={{ minHeight: 65, marginVertical: 12, alignItems: 'center', justifyContent: 'center' }} /> : <TurnstileNative key={captchaResetKey} onToken={setCaptchaToken} />}
             {authMode === 'login' && <TouchableOpacity style={styles.authForgot} onPress={async () => {
               const cleanEmail = email.trim().toLowerCase();
               setAuthMessage('');
