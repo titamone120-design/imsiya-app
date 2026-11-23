@@ -188,6 +188,20 @@ Deno.serve(async (req: Request) => {
       "BILLING.SUBSCRIPTION.PAYMENT.FAILED",
     ];
     if (subscriptionEvents.includes(type) && typeof subscriptionId === "string" && subscriptionId) {
+      // A signed sale event is not sufficient by itself: verify the actual
+      // subscription charge amount and currency before granting shop access.
+      if (type === "PAYMENT.SALE.COMPLETED") {
+        const saleAmount = resource.amount?.total ?? resource.amount?.value;
+        const saleCurrency = resource.amount?.currency;
+        if (saleCurrency !== "USD" || Number(saleAmount).toFixed(2) !== "20.00") {
+          console.error("PayPal subscription sale amount rejected", {
+            eventId: event.id,
+            currency: saleCurrency,
+            amount: saleAmount,
+          });
+          return reply({ error: "PayPal subscription payment amount does not match IMSIYA plan" }, 400);
+        }
+      }
       const { error } = await admin.rpc("process_paypal_shop_event", {
         p_event_id: event.id,
         p_event_type: type,
