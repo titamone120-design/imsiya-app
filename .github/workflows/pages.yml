@@ -52,3 +52,5 @@ jobs:
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Fresh workflow run avoids duplicate artifacts left by a rerun of a failed deployment attempt.
