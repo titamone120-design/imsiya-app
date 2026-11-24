@@ -2321,7 +2321,14 @@ function AppContent() {
           activeOpacity={0.75}
         >
           <View style={styles.navCartIconWrap}>
-            <Text style={[styles.navIcon, screen === 'cart' && styles.navIconActive]}>🛒</Text>
+            <View style={styles.navCartGlyph}>
+              <View style={styles.navCartHandle} />
+              <View style={styles.navCartBasket} />
+              <View style={styles.navCartWheels}>
+                <View style={styles.navCartWheel} />
+                <View style={styles.navCartWheel} />
+              </View>
+            </View>
             {cart.reduce((sum, item) => sum + item.quantity, 0) > 0 && (
               <View style={styles.navCartBadge}>
                 <Text style={styles.navCartBadgeText}>
@@ -2840,6 +2847,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 30,
+    height: 30,
+  },
+  navCartGlyph: {
+    width: 27,
+    height: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navCartHandle: {
+    position: 'absolute',
+    width: 7,
+    height: 2,
+    backgroundColor: '#7E22CE',
+    left: 0,
+    top: 5,
+    transform: [{ rotate: '55deg' }],
+  },
+  navCartBasket: {
+    width: 19,
+    height: 11,
+    borderWidth: 2,
+    borderColor: '#7E22CE',
+    borderTopWidth: 1.5,
+    borderRadius: 2,
+    transform: [{ skewX: '-10deg' }],
+    marginTop: 1,
+  },
+  navCartWheels: {
+    flexDirection: 'row',
+    width: 15,
+    justifyContent: 'space-between',
+    marginLeft: 3,
+    marginTop: 2,
+  },
+  navCartWheel: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#7E22CE',
   },
   navCartBadge: {
     position: 'absolute',
