@@ -2347,8 +2347,8 @@ export default function App() {
       style={{
         flex: 1,
         backgroundColor: '#F8F5FC',
-        // React Native's built-in SafeAreaView does not apply Android
-        // navigation-bar insets. Keep app content above the system buttons.
+        // Keep the app below Android's status bar and above its navigation buttons.
+        paddingTop: Platform.OS === 'android' ? 32 : 0,
         paddingBottom: Platform.OS === 'android' ? 36 : 0,
       }}
     >
