@@ -17,12 +17,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: android-debug-apk
+  group: android-release-apk
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Build installable Android test APK
+    name: Build standalone Android APK
     runs-on: ubuntu-latest
     timeout-minutes: 35
 
@@ -54,14 +54,22 @@ jobs:
       - name: Generate native Android project
         run: npx expo prebuild --platform android --non-interactive
 
-      - name: Build debug APK
+      - name: Build standalone release APK with embedded JavaScript bundle
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
-      - name: Upload installable test APK
+      - name: Verify JavaScript bundle is packaged in APK
+        working-directory: android
+        run: |
+          APK="app/build/outputs/apk/release/app-release.apk"
+          test -s "$APK"
+          unzip -l "$APK" | grep -E 'assets/index\.android\.bundle|assets/index\.android\.bundle\.hbc'
+          echo "Standalone JavaScript bundle is present."
+
+      - name: Upload standalone installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: IMSIYA-Android-Test-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: IMSIYA-Android-Standalone-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
