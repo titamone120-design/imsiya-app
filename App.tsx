@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -216,7 +217,7 @@ const CORE_TRANSLATIONS: Record<string, Record<string, string>> = {
   sv: {"Home":"Hem","Login":"Logga in","Register":"Registrera","Categories":"Kategorier","See All":"Visa alla","Refresh":"Uppdatera","Add to cart":"Lägg i kundvagn","Your Cart":"Min kundvagn","Your cart is empty.":"Din kundvagn är tom.","Total":"Totalt","My Account":"Mitt konto","My Shop":"Min butik","My Orders":"Mina beställningar","My Favorites":"Mina favoriter","Search sweets...":"Sök sötsaker...","Password":"Lösenord","Email address":"E-postadress","Full name":"Fullständigt namn","Seller":"Säljare","Customer":"Kund","Edit":"Redigera","Delete":"Ta bort","Save Changes":"Spara ändringar","Cancel Editing":"Avbryt redigering","Description":"Beskrivning","Stock":"Lager","Payment Method":"Betalningsmetod","Secure Payment":"Säker betalning","Shop Status":"Butiksstatus","Sweet Deals":"Söta erbjudanden","Discover sweets you will love":"Upptäck godsaker du kommer att älska","Shop Now":"Handla nu","Popular Products":"Populära produkter","No products found yet.":"Inga produkter hittades ännu.","Welcome back":"Välkommen tillbaka","Create your account":"Skapa ditt konto","Already have an account?":"Har du redan ett konto?"},
 };
 // Other languages in the 30-language selector currently use the English fallback until their full phrase sets are added.
-export default function App() {
+function AppContent() {
   const [session, setSession] = useState<Session | null>(null);
   const [language, setLanguage] = useState<string>('en');
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
@@ -2337,6 +2338,16 @@ export default function App() {
         )}
       </View>
     </View>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F8F5FC' }} edges={['top', 'right', 'bottom', 'left']}>
+        <AppContent />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
