@@ -2302,38 +2302,38 @@ function AppContent() {
 
       <View style={styles.bottomNav}>
         <TouchableOpacity
-          style={styles.navItem}
+          style={[styles.navItem, screen === 'home' && styles.navItemActive]}
           onPress={() => setScreen('home')}
         >
           <Text style={styles.navIcon}>🏠</Text>
-          <Text style={styles.navText}>{tr("Hoyga", "Home")}</Text>
+          <Text style={[styles.navText, screen === 'home' && styles.navTextActive]}>{tr("Hoyga", "Home")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.navItem}
+          style={[styles.navItem, screen === 'cart' && styles.navItemActive]}
           onPress={() => setScreen('cart')}
         >
           <Text style={styles.navIcon}>🛒</Text>
-          <Text style={styles.navText}>
+          <Text style={[styles.navText, screen === 'cart' && styles.navTextActive]}>
             Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.navItem}
+          style={[styles.navItem, screen === 'shop' && styles.navItemActive]}
           onPress={() => setScreen('shop')}
         >
           <Text style={styles.navIcon}>🏪</Text>
-          <Text style={styles.navText}>{tr("Dukaankayga", "My Shop")}</Text>
+          <Text style={[styles.navText, screen === 'shop' && styles.navTextActive]}>{tr("Dukaankayga", "My Shop")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => setScreen('profile')}>
+        <TouchableOpacity style={[styles.navItem, screen === 'profile' && styles.navItemActive]} onPress={() => setScreen('profile')}>
           <Text style={styles.navIcon}>👤</Text>
-          <Text style={styles.navText}>{tr('My Account', 'My Account')}</Text>
+          <Text style={[styles.navText, screen === 'profile' && styles.navTextActive]}>{tr('My Account', 'My Account')}</Text>
         </TouchableOpacity>
         {isAdmin && (
-          <TouchableOpacity style={styles.navItem} onPress={() => { setScreen('admin'); loadAdminData(); }}>
+          <TouchableOpacity style={[styles.navItem, screen === 'admin' && styles.navItemActive]} onPress={() => { setScreen('admin'); loadAdminData(); }}>
             <Text style={styles.navIcon}>🛡️</Text>
-            <Text style={styles.navText}>{tr('Maamulka', 'Admin')}</Text>
+            <Text style={[styles.navText, screen === 'admin' && styles.navTextActive]}>{tr('Maamulka', 'Admin')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -2776,16 +2776,30 @@ const styles = StyleSheet.create({
   },
   navItem: {
     alignItems: 'center',
+    justifyContent: 'center',
     minWidth: 75,
+    minHeight: 54,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  navItemActive: {
+    backgroundColor: '#F3E8FA',
+    borderWidth: 1,
+    borderColor: '#DCC7EE',
   },
   navIcon: {
     fontSize: 21,
   },
   navText: {
-    color: '#624678',
+    color: '#806B91',
     fontSize: 12,
     fontWeight: '700',
     marginTop: 4,
+  },
+  navTextActive: {
+    color: '#5B0AA8',
+    fontWeight: '900',
   },
 
   headerMenuButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
