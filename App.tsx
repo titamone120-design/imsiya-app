@@ -2198,7 +2198,7 @@ export default function App() {
             <Text style={styles.label}>{tr("Sharaxaadda", "Description")}</Text>
             <TextInput style={styles.input} placeholder={tr("Sharax alaabta", "Describe the product")} value={productDescription} onChangeText={setProductDescription} />
             <Text style={styles.label}>{tr("Qiimaha (KSh)", "Price (KSh)")}</Text>
-            <TextInput style={styles.input} placeholder="Tusaale: 500" value={productPrice} onChangeText={setProductPrice} keyboardType="numeric" />
+            <TextInput style={styles.input} placeholder={language === 'so' ? 'Tusaale: 500' : language === 'ar' ? 'مثال: 500' : language === 'sw' ? 'Mfano: 500' : 'Example: 500'} value={productPrice} onChangeText={setProductPrice} keyboardType="numeric" />
             <Text style={styles.label}>{tr("Tirada kaydka", "Stock Quantity")}</Text>
             <TextInput style={styles.input} placeholder="10" value={productStock} onChangeText={setProductStock} keyboardType="numeric" />
             <Text style={styles.label}>{tr("Sawirrada alaabta (ugu badnaan 5)", "Product Photos (up to 5)")}</Text>
