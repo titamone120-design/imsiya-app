@@ -17,6 +17,7 @@ import {
   Image,
   Platform,
   Modal,
+  LayoutAnimation,
 } from 'react-native';
 
 import type { Session } from '@supabase/supabase-js';
@@ -1550,7 +1551,7 @@ function AppContent() {
           <Text style={styles.walletEyebrow}>{tr("IMSIYA IIBIYE", "IMSIYA SELLER")}</Text>
           <Text style={styles.sectionTitle}>{tr("Wallet-kayga", "My Wallet")}</Text>
         </View>
-        <TouchableOpacity style={styles.walletBackButton} onPress={() => setScreen('shop')}>
+        <TouchableOpacity style={styles.walletBackButton} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setScreen('shop'); }}>
           <Text style={styles.walletBackText}>{tr("← Dukaankayga", "← My Shop")}</Text>
         </TouchableOpacity>
       </View>
@@ -1676,7 +1677,7 @@ function AppContent() {
   const renderOrderHistory = () => (
     <View>
       <Text style={styles.sectionTitle}>{tr("Dalabyadayda", "My Orders")}</Text>
-      <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>{tr('← Ku noqo Profile', '← Back to Profile')}</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setScreen('profile'); }}><Text style={styles.refreshText}>{tr('← Ku noqo Profile', '← Back to Profile')}</Text></TouchableOpacity>
       <TouchableOpacity style={styles.refreshWideButton} onPress={loadMyOrders} disabled={ordersLoading}>
         {ordersLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
         <Text style={styles.refreshButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
@@ -1841,7 +1842,7 @@ function AppContent() {
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  {tr("Dalabyadayda", "My Orders")}</Text></TouchableOpacity>
           <TouchableOpacity style={[styles.profileAction, { borderColor: '#F3A33B', backgroundColor: '#FFF8E9' }]} onPress={() => { setScreen('rewards'); loadMonthlyRewards(); }}><Text style={[styles.profileActionText, { color: '#6B3B00' }]}>🎁  {tr('IMSIYA Rewards — Abaalmarin bille ah', 'IMSIYA Rewards — Monthly Gifts')}  ✨</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('cart')}><Text style={styles.profileActionText}>🛒  {tr("Cart-kayga", "My Cart")} ({cart.length})</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.profileAction} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setScreen('cart'); }}><Text style={styles.profileActionText}>🛒  {tr("Cart-kayga", "My Cart")} ({cart.length})</Text></TouchableOpacity>
           {!isAdmin && <TouchableOpacity style={[styles.profileAction, { borderColor: '#F0C6C2', marginTop: 10 }]} onPress={requestAccountDeletion}><Text style={[styles.profileActionText, { color: '#B3261E' }]}>🗑️  {tr('Codso tirtirka akoonka', 'Request account deletion')}</Text></TouchableOpacity>}
           <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>{tr("Ka bax akoonka", "Sign Out")}</Text></TouchableOpacity>
         </>
@@ -1861,7 +1862,7 @@ function AppContent() {
   };
 
   const renderProductDetails = () => {
-    if (!selectedProduct) return <View><Text style={styles.emptyText}>{tr('Alaabta lama helin.', 'Product not found.')}</Text><TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>{tr('← Ku noqo Hoyga', '← Back to Home')}</Text></TouchableOpacity></View>;
+    if (!selectedProduct) return <View><Text style={styles.emptyText}>{tr('Alaabta lama helin.', 'Product not found.')}</Text><TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setScreen('home'); }}><Text style={styles.refreshText}>{tr('← Ku noqo Hoyga', '← Back to Home')}</Text></TouchableOpacity></View>;
     return (
       <View>
         <TouchableOpacity onPress={() => setScreen('home')}><Text style={styles.refreshText}>{tr('← Ku noqo alaabta', '← Back to Products')}</Text></TouchableOpacity>
