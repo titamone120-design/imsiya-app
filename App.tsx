@@ -2782,23 +2782,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 16,
+    backgroundColor: '#8B00FF',
   },
   navItemActive: {
-    backgroundColor: '#F3E8FA',
+    backgroundColor: '#6A0DAD',
     borderWidth: 1,
-    borderColor: '#DCC7EE',
+    borderColor: '#5B0796',
   },
   navIcon: {
     fontSize: 21,
   },
   navText: {
-    color: '#806B91',
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
     marginTop: 4,
   },
   navTextActive: {
-    color: '#5B0AA8',
+    color: '#FFFFFF',
     fontWeight: '900',
   },
 
