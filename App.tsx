@@ -976,24 +976,28 @@ export default function App() {
       return;
     }
 
-    const existingItem = cart.find(item => item.id === product.id);
-    if (existingItem && existingItem.quantity >= product.stock) {
-      Alert.alert('IMSIYA', tr('Tirada alaabta intaas kama badnaan karto.', 'The quantity cannot exceed the available stock.'));
-      return;
-    }
-
+    // Check stock against the latest cart state, not a possibly stale render.
+    let stockLimitReached = false;
     setCart(current => {
       const existing = current.find(item => item.id === product.id);
       if (existing) {
+        if (existing.quantity >= product.stock) {
+          stockLimitReached = true;
+          return current;
+        }
         return current.map(item =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + 1, stock: product.stock }
             : item
         );
       }
       return [...current, { ...product, quantity: 1 }];
     });
 
+    if (stockLimitReached) {
+      Alert.alert('IMSIYA', tr('Tirada alaabta intaas kama badnaan karto.', 'The quantity cannot exceed the available stock.'));
+      return;
+    }
     Alert.alert('IMSIYA', tr('Alaabta waxaa lagu daray cart-ka.', 'Product added to cart.'));
   };
 
@@ -1002,7 +1006,7 @@ export default function App() {
       current
         .map(item =>
           item.id === id
-            ? { ...item, quantity: item.quantity + amount }
+            ? { ...item, quantity: Math.min(item.stock, item.quantity + amount) }
             : item
         )
         .filter(item => item.quantity > 0)
