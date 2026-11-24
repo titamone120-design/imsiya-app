@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
+  SafeAreaView,
   Text,
   ScrollView,
   StyleSheet,
@@ -2343,11 +2343,9 @@ function AppContent() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F8F5FC' }} edges={['top', 'right', 'bottom', 'left']}>
-        <AppContent />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F8F5FC' }}>
+      <AppContent />
+    </SafeAreaView>
   );
 }
 
