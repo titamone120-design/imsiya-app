@@ -1345,7 +1345,7 @@ function AppContent() {
         <TextInput
           style={[styles.searchInput, styles.homeSearchInput]}
           placeholder={tr("Raadi macmacaan...", "Search sweets...")}
-          placeholderTextColor="#8D8299"
+          placeholderTextColor="#8A8193"
           value={search}
           onChangeText={setSearch}
         />
@@ -1395,7 +1395,7 @@ function AppContent() {
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{tr("Alaabta caanka ah", "Popular Products")}</Text>
         <TouchableOpacity style={styles.refreshButton} onPress={() => { loadProducts(); loadCategories(); }} disabled={productsLoading} accessibilityLabel={tr("Cusboonaysii", "Refresh")}>
-          {productsLoading ? <ActivityIndicator size="small" color="#5B12A8" /> : <Text style={styles.refreshIcon}>↻</Text>}
+          {productsLoading ? <ActivityIndicator size="small" color="#6B4AA0" /> : <Text style={styles.refreshIcon}>↻</Text>}
           <Text style={styles.refreshButtonText}>{tr("Cusboonaysii", "Refresh")}</Text>
         </TouchableOpacity>
       </View>
@@ -1411,7 +1411,7 @@ function AppContent() {
       </View>
 
       {productsLoading ? (
-        <ActivityIndicator size="large" color="#5B12A8" />
+        <ActivityIndicator size="large" color="#6B4AA0" />
       ) : productError ? (
         <Text style={styles.errorText}>{productError}</Text>
       ) : filteredProducts.length === 0 ? (
@@ -1427,7 +1427,7 @@ function AppContent() {
           disabled={productsLoadingMore}
         >
           {productsLoadingMore
-            ? <ActivityIndicator size="small" color="#4A286B" />
+            ? <ActivityIndicator size="small" color="#4D376B" />
             : <Text style={styles.secondaryButtonText}>{tr('Soo rar badeecooyin dheeraad ah', 'Load more products')}</Text>}
         </TouchableOpacity>
       )}
@@ -1569,7 +1569,7 @@ function AppContent() {
           </>
         )}
         <TouchableOpacity style={styles.walletRefreshButton} onPress={loadSellerWallet} disabled={walletLoading}>
-          {walletLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.walletRefreshIcon}>↻</Text>}
+          {walletLoading ? <ActivityIndicator size="small" color="#4D376B" /> : <Text style={styles.walletRefreshIcon}>↻</Text>}
           <Text style={styles.walletRefreshText}>{tr("Cusboonaysii wallet-ka", "Refresh wallet")}</Text>
         </TouchableOpacity>
       </View>
@@ -1579,7 +1579,7 @@ function AppContent() {
           <Text style={styles.walletSectionTitle}>{tr("Dhaqdhaqaaqa", "Activity")}</Text>
           <Text style={styles.walletSectionCaption}>{tr("Taariikhda lacagta", "Transaction history")}</Text>
         </View>
-        {walletLoading ? <ActivityIndicator color="#4A286B" /> : sellerWalletTransactions.length === 0 ? (
+        {walletLoading ? <ActivityIndicator color="#4D376B" /> : sellerWalletTransactions.length === 0 ? (
           <View style={styles.walletEmptyCard}>
             <Text style={styles.walletEmptyIcon}>↗</Text>
             <Text style={styles.walletEmptyTitle}>{tr("Weli dhaqdhaqaaq ma jiro", "No activity yet")}</Text>
@@ -1651,10 +1651,10 @@ function AppContent() {
       <Text style={styles.sectionTitle}>{tr("Dalabyada dukaankayga", "My Shop Orders")}</Text>
       <TouchableOpacity onPress={() => setScreen('shop')}><Text style={styles.refreshText}>{tr("← Ku noqo dukaanka", "← Back to Shop")}</Text></TouchableOpacity>
       <TouchableOpacity style={styles.refreshWideButton} onPress={loadMySellerOrders} disabled={sellerOrdersLoading}>
-        {sellerOrdersLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
+        {sellerOrdersLoading ? <ActivityIndicator size="small" color="#4D376B" /> : <Text style={styles.refreshIcon}>↻</Text>}
         <Text style={styles.refreshButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
       </TouchableOpacity>
-      {sellerOrdersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : sellerOrders.length === 0 ? (
+      {sellerOrdersLoading ? <ActivityIndicator size="large" color="#4D376B" /> : sellerOrders.length === 0 ? (
         <Text style={styles.emptyText}>{tr("Weli dalab alaabta dukaankaaga ah ma jiro.", "No shop product orders yet.")}</Text>
       ) : sellerOrders.map((item: any) => {
         const order = item.orders;
@@ -1679,10 +1679,10 @@ function AppContent() {
       <Text style={styles.sectionTitle}>{tr("Dalabyadayda", "My Orders")}</Text>
       <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setScreen('profile'); }}><Text style={styles.refreshText}>{tr('← Ku noqo Profile', '← Back to Profile')}</Text></TouchableOpacity>
       <TouchableOpacity style={styles.refreshWideButton} onPress={loadMyOrders} disabled={ordersLoading}>
-        {ordersLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.refreshIcon}>↻</Text>}
+        {ordersLoading ? <ActivityIndicator size="small" color="#4D376B" /> : <Text style={styles.refreshIcon}>↻</Text>}
         <Text style={styles.refreshButtonText}>{tr("Cusboonaysii dalabyada", "Refresh orders")}</Text>
       </TouchableOpacity>
-      {ordersLoading ? <ActivityIndicator size="large" color="#4A286B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>{tr("Weli dalab kuma jiro akoonkaaga.", "You have no orders yet.")}</Text> : myOrders.map(order => (
+      {ordersLoading ? <ActivityIndicator size="large" color="#4D376B" /> : myOrders.length === 0 ? <Text style={styles.emptyText}>{tr("Weli dalab kuma jiro akoonkaaga.", "You have no orders yet.")}</Text> : myOrders.map(order => (
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status, language)}</Text>
@@ -1703,10 +1703,10 @@ function AppContent() {
                 const done = current >= index;
                 return (
                   <View key={step.key} style={{ flex: 1, alignItems: 'center' }}>
-                    <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: done ? '#4A286B' : '#E8E2ED', alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={{ color: done ? '#FFFFFF' : '#756A80', fontSize: 11, fontWeight: '700' }}>{done ? '✓' : String(index + 1)}</Text>
+                    <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: done ? '#4D376B' : '#E8E2ED', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ color: done ? '#FFFFFF' : '#756B80', fontSize: 11, fontWeight: '700' }}>{done ? '✓' : String(index + 1)}</Text>
                     </View>
-                    <Text style={{ fontSize: 10, color: done ? '#4A286B' : '#756A80', textAlign: 'center', marginTop: 5, fontWeight: done ? '700' : '400' }}>{language === 'so' ? step.so : step.en}</Text>
+                    <Text style={{ fontSize: 10, color: done ? '#4D376B' : '#756B80', textAlign: 'center', marginTop: 5, fontWeight: done ? '700' : '400' }}>{language === 'so' ? step.so : step.en}</Text>
                   </View>
                 );
               })}
@@ -1725,33 +1725,33 @@ function AppContent() {
     <View>
       <Text style={styles.sectionTitle}>{tr('IMSIYA Rewards', 'IMSIYA Rewards')}</Text>
       <TouchableOpacity onPress={() => setScreen('profile')}><Text style={styles.refreshText}>{tr('← Ku noqo Profile', '← Back to Profile')}</Text></TouchableOpacity>
-      <View style={{ backgroundColor: '#38204F', borderRadius: 22, padding: 18, marginBottom: 22, borderWidth: 1, borderColor: '#F3A33B', elevation: 4 }}>
+      <View style={{ backgroundColor: '#3D2D52', borderRadius: 22, padding: 18, marginBottom: 22, borderWidth: 1, borderColor: '#D5A65B', elevation: 4 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
-          <Text style={{ color: '#F3A33B', fontSize: 11, fontWeight: '900', letterSpacing: 1.6 }}>🎁 IMSIYA REWARDS</Text>
+          <Text style={{ color: '#D5A65B', fontSize: 11, fontWeight: '900', letterSpacing: 1.6 }}>🎁 IMSIYA REWARDS</Text>
           <TouchableOpacity onPress={loadMonthlyRewards} disabled={rewardsLoading}>
             {rewardsLoading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 12 }}>↻ {tr('Cusboonaysii', 'Refresh')}</Text>}
           </TouchableOpacity>
         </View>
         <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', marginBottom: 5 }}>{tr('Iibso, dadaal, hadiyad ku guuleyso!', 'Shop, shine & win a surprise gift!')}</Text>
-        <Text style={{ color: '#E9DDF3', fontSize: 13, lineHeight: 19, marginBottom: 16 }}>{tr('Bil kasta waxaan abaalmarin siinnaa dukaanka ugu iibka fiican iyo macmiilka ugu wax iibsiga badan.', 'Every month, we reward the top-selling shop and the customer with the highest verified purchases.')}</Text>
+        <Text style={{ color: '#E8DFF0', fontSize: 13, lineHeight: 19, marginBottom: 16 }}>{tr('Bil kasta waxaan abaalmarin siinnaa dukaanka ugu iibka fiican iyo macmiilka ugu wax iibsiga badan.', 'Every month, we reward the top-selling shop and the customer with the highest verified purchases.')}</Text>
         {(['shop', 'customer'] as const).map((kind) => {
           const rows = monthlyRewards.filter((item: any) => item.award_type === kind);
           return (
             <View key={kind} style={{ backgroundColor: '#FFFFFF', borderRadius: 15, padding: 13, marginBottom: kind === 'shop' ? 10 : 0 }}>
-              <Text style={{ color: '#4A286B', fontSize: 14, fontWeight: '900', marginBottom: 8 }}>{kind === 'shop' ? '🏪 ' + tr('Dukaamada ugu firfircoon', 'Top active shops') : '🛍️ ' + tr('Macaamiisha ugu iibsiga badan', 'Top customers')}</Text>
-              {rewardsLoading ? <ActivityIndicator color="#5B0AA8" /> : rows.length === 0 ? (
-                <Text style={{ color: '#756780', fontSize: 12, lineHeight: 18 }}>{tr('Weli ma jiraan iibsi la xaqiijiyey bishan. Tartanku wuxuu bilaabmayaa marka iibku dhaco.', 'No verified purchases yet this month. The leaderboard will appear as paid orders come in.')}</Text>
+              <Text style={{ color: '#4D376B', fontSize: 14, fontWeight: '900', marginBottom: 8 }}>{kind === 'shop' ? '🏪 ' + tr('Dukaamada ugu firfircoon', 'Top active shops') : '🛍️ ' + tr('Macaamiisha ugu iibsiga badan', 'Top customers')}</Text>
+              {rewardsLoading ? <ActivityIndicator color="#6B4AA0" /> : rows.length === 0 ? (
+                <Text style={{ color: '#756B80', fontSize: 12, lineHeight: 18 }}>{tr('Weli ma jiraan iibsi la xaqiijiyey bishan. Tartanku wuxuu bilaabmayaa marka iibku dhaco.', 'No verified purchases yet this month. The leaderboard will appear as paid orders come in.')}</Text>
               ) : rows.map((entry: any) => (
-                <View key={kind + '-' + entry.rank_position} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: entry.rank_position === rows.length ? 0 : 1, borderBottomColor: '#F0E8F6' }}>
-                  <Text style={{ color: '#F09A2A', fontWeight: '900', width: 28 }}>#{entry.rank_position}</Text>
-                  <Text style={{ color: '#38204F', fontWeight: '800', flex: 1, fontSize: 13 }}>{entry.display_name}</Text>
-                  <Text style={{ color: '#5B0AA8', fontWeight: '900', fontSize: 12 }}>{Number(entry.order_count || 0)} {tr('dalab', 'orders')}</Text>
+                <View key={kind + '-' + entry.rank_position} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: entry.rank_position === rows.length ? 0 : 1, borderBottomColor: '#EEE7F4' }}>
+                  <Text style={{ color: '#D5A65B', fontWeight: '900', width: 28 }}>#{entry.rank_position}</Text>
+                  <Text style={{ color: '#3D2D52', fontWeight: '800', flex: 1, fontSize: 13 }}>{entry.display_name}</Text>
+                  <Text style={{ color: '#6B4AA0', fontWeight: '900', fontSize: 12 }}>{Number(entry.order_count || 0)} {tr('dalab', 'orders')}</Text>
                 </View>
               ))}
             </View>
           );
         })}
-        <Text style={{ color: '#E9DDF3', fontSize: 11, lineHeight: 16, marginTop: 12 }}>{tr('Iibsi lacagtiisa la xaqiijiyey oo keliya ayaa tartanka lagu daraa. Guuleystayaasha waxaa la hubiyaa ka hor inta aan hadiyadda la dirin.', 'Only verified paid orders count. Winners are checked before gifts are shipped.')}</Text>
+        <Text style={{ color: '#E8DFF0', fontSize: 11, lineHeight: 16, marginTop: 12 }}>{tr('Iibsi lacagtiisa la xaqiijiyey oo keliya ayaa tartanka lagu daraa. Guuleystayaasha waxaa la hubiyaa ka hor inta aan hadiyadda la dirin.', 'Only verified paid orders count. Winners are checked before gifts are shipped.')}</Text>
       </View>
     </View>
   );
@@ -1771,7 +1771,7 @@ function AppContent() {
             {!!authMessage && <Text style={styles.authMessage}>{authMessage}</Text>}
             <View style={styles.authInputWrap}>
               <Text style={styles.authInputIcon}>🔒</Text>
-              <TextInput style={styles.authInput} placeholder={tr('Password cusub', 'New password')} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete="new-password" />
+              <TextInput style={styles.authInput} placeholder={tr('Password cusub', 'New password')} placeholderTextColor="#8A8193" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete="new-password" />
               <TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr('Qari password-ka', 'Hide password') : tr('Muuji password-ka', 'Show password')}><Text style={styles.authPasswordToggleText}>{showPassword ? '🙈' : '👁️'}</Text></TouchableOpacity>
             </View>
             <TouchableOpacity style={[styles.authSubmit, authLoading && styles.disabledButton]} onPress={saveRecoveredPassword} disabled={authLoading}>
@@ -1798,9 +1798,9 @@ function AppContent() {
             <Text style={styles.authHeading}>{authMode === 'signup' ? tr("Ku soo biir IMSIYA", "Create your account") : tr("Ku soo dhowow", "Welcome back")}</Text>
             <Text style={styles.authDescription}>{authMode === 'signup' ? tr("Samee akoon si aad u iibsato ama u iibiso macmacaanka.", "Create an account to buy and sell sweets.") : tr("Gal akoonkaaga si aad u sii wadato.", "Sign in to continue shopping.")}</Text>
             {!!authMessage && <Text style={styles.authMessage}>{authMessage}</Text>}
-            {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8D8299" value={fullName} onChangeText={setFullName} /></View>}
-            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8D8299" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
-            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8D8299" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete={authMode === "signup" ? "new-password" : "current-password"} /><TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr("Qari password-ka", "Hide password") : tr("Muuji password-ka", "Show password")}><Text style={styles.authPasswordToggleText}>{showPassword ? "🙈" : "👁️"}</Text></TouchableOpacity></View>
+            {authMode === 'signup' && <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>👤</Text><TextInput style={styles.authInput} placeholder={tr("Magacaaga oo buuxa", "Full name")} placeholderTextColor="#8A8193" value={fullName} onChangeText={setFullName} /></View>}
+            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>✉</Text><TextInput style={styles.authInput} placeholder={tr("Email-kaaga", "Email address")} placeholderTextColor="#8A8193" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /></View>
+            <View style={styles.authInputWrap}><Text style={styles.authInputIcon}>🔒</Text><TextInput style={styles.authInput} placeholder={tr("Password", "Password")} placeholderTextColor="#8A8193" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" autoComplete={authMode === "signup" ? "new-password" : "current-password"} /><TouchableOpacity style={styles.authPasswordToggle} onPress={() => setShowPassword(current => !current)} accessibilityRole="button" accessibilityLabel={showPassword ? tr("Qari password-ka", "Hide password") : tr("Muuji password-ka", "Show password")}><Text style={styles.authPasswordToggleText}>{showPassword ? "🙈" : "👁️"}</Text></TouchableOpacity></View>
             {authMode === 'login' && <TouchableOpacity style={styles.authForgot} onPress={async () => {
               const cleanEmail = email.trim().toLowerCase();
               setAuthMessage('');
@@ -1841,7 +1841,7 @@ function AppContent() {
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  {tr("Dukaankayga iyo iibiyaha", "My Shop and Seller Account")}</Text></TouchableOpacity>
           {myShop ? <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('wallet'); loadSellerWallet(); }}><Text style={styles.profileActionText}>💰  {tr("Wallet-kayga iibka", "Seller Wallet")}</Text></TouchableOpacity> : null}
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  {tr("Dalabyadayda", "My Orders")}</Text></TouchableOpacity>
-          <TouchableOpacity style={[styles.profileAction, { borderColor: '#F3A33B', backgroundColor: '#FFF8E9' }]} onPress={() => { setScreen('rewards'); loadMonthlyRewards(); }}><Text style={[styles.profileActionText, { color: '#6B3B00' }]}>🎁  {tr('IMSIYA Rewards — Abaalmarin bille ah', 'IMSIYA Rewards — Monthly Gifts')}  ✨</Text></TouchableOpacity>
+          <TouchableOpacity style={[styles.profileAction, { borderColor: '#D5A65B', backgroundColor: '#FFF8E9' }]} onPress={() => { setScreen('rewards'); loadMonthlyRewards(); }}><Text style={[styles.profileActionText, { color: '#6B3B00' }]}>🎁  {tr('IMSIYA Rewards — Abaalmarin bille ah', 'IMSIYA Rewards — Monthly Gifts')}  ✨</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setScreen('cart'); }}><Text style={styles.profileActionText}>🛒  {tr("Cart-kayga", "My Cart")} ({cart.length})</Text></TouchableOpacity>
           {!isAdmin && <TouchableOpacity style={[styles.profileAction, { borderColor: '#F0C6C2', marginTop: 10 }]} onPress={requestAccountDeletion}><Text style={[styles.profileActionText, { color: '#B3261E' }]}>🗑️  {tr('Codso tirtirka akoonka', 'Request account deletion')}</Text></TouchableOpacity>}
           <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>{tr("Ka bax akoonka", "Sign Out")}</Text></TouchableOpacity>
@@ -1995,7 +1995,7 @@ function AppContent() {
           <Text style={styles.buttonText}>{tr("Cusboonaysii", "Refresh")}</Text>
         </TouchableOpacity>
       </View>
-      {adminLoading ? <ActivityIndicator size="large" color="#4A286B" /> : pendingSellers.length === 0 ? (
+      {adminLoading ? <ActivityIndicator size="large" color="#4D376B" /> : pendingSellers.length === 0 ? (
         <Text style={styles.emptyText}>{tr('Ma jiraan codsiyo sugaya ansixin.', 'There are no applications awaiting approval.')}</Text>
       ) : pendingSellers.map((seller) => (
         <View key={seller.id} style={styles.shopStatusCard}>
@@ -2097,7 +2097,7 @@ function AppContent() {
         </View>
       </View>
       {shopLoading ? (
-        <View style={styles.myShopLoading}><ActivityIndicator size="large" color="#4A286B" /><Text style={styles.myShopHint}>{tr("Dukaanka waa la soo rarayaa...", "Loading your shop...")}</Text></View>
+        <View style={styles.myShopLoading}><ActivityIndicator size="large" color="#4D376B" /><Text style={styles.myShopHint}>{tr("Dukaanka waa la soo rarayaa...", "Loading your shop...")}</Text></View>
       ) : (
         <>
           <View style={styles.myShopPanel}>
@@ -2167,9 +2167,9 @@ function AppContent() {
             <Text style={styles.myShopSectionIcon}>🍰</Text>
           </View>
           <TouchableOpacity style={styles.myShopOutlineButton} onPress={loadMySellerProducts} disabled={sellerProductsLoading}>
-            {sellerProductsLoading ? <ActivityIndicator size="small" color="#4A286B" /> : <Text style={styles.myShopOutlineButtonText}>↻  {tr("Cusboonaysii alaabta", "Refresh Products")}</Text>}
+            {sellerProductsLoading ? <ActivityIndicator size="small" color="#4D376B" /> : <Text style={styles.myShopOutlineButtonText}>↻  {tr("Cusboonaysii alaabta", "Refresh Products")}</Text>}
           </TouchableOpacity>
-          {sellerProductsLoading ? <ActivityIndicator color="#4A286B" /> : sellerProducts.length === 0 ? (
+          {sellerProductsLoading ? <ActivityIndicator color="#4D376B" /> : sellerProducts.length === 0 ? (
             <View style={styles.myShopEmpty}>
               <Text style={styles.myShopEmptyIcon}>🧁</Text>
               <Text style={styles.myShopEmptyTitle}>{tr("Weli alaab kuma jirto", "No products yet")}</Text>
@@ -2211,7 +2211,7 @@ function AppContent() {
             <TouchableOpacity style={styles.myShopOutlineButton} onPress={pickProductImage} disabled={productImageUploading || productImages.length >= 5}>
               <Text style={styles.myShopOutlineButtonText}>{tr("＋  Ku dar sawir", "＋  Add Photo")} ({productImages.length}/5)</Text>
             </TouchableOpacity>
-            {productImages.length > 0 ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 10 }}>{productImages.map((uri, index) => <View key={'selected-product-image-' + index} style={{ position: 'relative' }}><Image source={{ uri }} style={{ width: 88, height: 88, borderRadius: 10 }} resizeMode="cover" /><TouchableOpacity onPress={() => { setProductImages(current => current.filter((_, i) => i !== index)); setProductImageMimeTypes(current => current.filter((_, i) => i !== index)); }} style={{ position: 'absolute', top: 3, right: 3, backgroundColor: '#8B1E2D', borderRadius: 12, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontWeight: '700' }}>×</Text></TouchableOpacity>{index === 0 ? <Text style={{ fontSize: 10, color: '#4A286B', fontWeight: '700', textAlign: 'center' }}>{tr("Sawirka koowaad", "Main photo")}</Text> : null}</View>)}</View> : null}
+            {productImages.length > 0 ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 10 }}>{productImages.map((uri, index) => <View key={'selected-product-image-' + index} style={{ position: 'relative' }}><Image source={{ uri }} style={{ width: 88, height: 88, borderRadius: 10 }} resizeMode="cover" /><TouchableOpacity onPress={() => { setProductImages(current => current.filter((_, i) => i !== index)); setProductImageMimeTypes(current => current.filter((_, i) => i !== index)); }} style={{ position: 'absolute', top: 3, right: 3, backgroundColor: '#8B1E2D', borderRadius: 12, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontWeight: '700' }}>×</Text></TouchableOpacity>{index === 0 ? <Text style={{ fontSize: 10, color: '#4D376B', fontWeight: '700', textAlign: 'center' }}>{tr("Sawirka koowaad", "Main photo")}</Text> : null}</View>)}</View> : null}
             <Text style={styles.myShopHint}>{tr("Dooro 1 ilaa 5 sawir. JPG, PNG ama WEBP; mid kasta ugu badnaan 5 MB. Sawirka koowaad ayaa noqonaya kan weyn.", "Choose 1 to 5 photos. JPG, PNG or WEBP; up to 5 MB each. The first photo is the main image.")}</Text>
             <Text style={styles.label}>{tr("Qaybta alaabta", "Product Category")}</Text>
             <View style={styles.categoryChoices}>
@@ -2232,15 +2232,15 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FCFAFE" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FAF8FC" />
       <Modal visible={languagePickerOpen} transparent animationType="slide" onRequestClose={() => setLanguagePickerOpen(false)}>
         <View style={{ flex: 1, backgroundColor: "rgba(20,10,30,0.55)", justifyContent: "flex-end" }}>
           <View style={{ backgroundColor: "#FFFFFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: "78%" }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <Text style={{ color: "#38204F", fontSize: 20, fontWeight: "900" }}>Choose language / Dooro luqadda</Text>
-              <TouchableOpacity onPress={() => setLanguagePickerOpen(false)}><Text style={{ color: "#5B0AA8", fontSize: 22 }}>×</Text></TouchableOpacity>
+              <Text style={{ color: "#3D2D52", fontSize: 20, fontWeight: "900" }}>Choose language / Dooro luqadda</Text>
+              <TouchableOpacity onPress={() => setLanguagePickerOpen(false)}><Text style={{ color: "#6B4AA0", fontSize: 22 }}>×</Text></TouchableOpacity>
             </View>
-            <ScrollView>{IMSIYA_LANGUAGES.map(item => <TouchableOpacity key={item[0]} onPress={() => chooseLanguage(item[0])} style={{ flexDirection: "row", alignItems: "center", padding: 13, borderRadius: 12, marginBottom: 5, backgroundColor: language === item[0] ? "#F3E8FA" : "#FFFFFF", borderWidth: 1, borderColor: language === item[0] ? "#5B0AA8" : "#EEE7F3" }}><Text style={{ fontSize: 20, marginRight: 12 }}>{item[1]}</Text><Text style={{ flex: 1, color: "#38204F", fontSize: 15, fontWeight: "700" }}>{item[2]}</Text>{language === item[0] ? <Text style={{ color: "#5B0AA8" }}>✓</Text> : null}</TouchableOpacity>)}</ScrollView>
+            <ScrollView>{IMSIYA_LANGUAGES.map(item => <TouchableOpacity key={item[0]} onPress={() => chooseLanguage(item[0])} style={{ flexDirection: "row", alignItems: "center", padding: 13, borderRadius: 12, marginBottom: 5, backgroundColor: language === item[0] ? "#F1EAF8" : "#FFFFFF", borderWidth: 1, borderColor: language === item[0] ? "#6B4AA0" : "#EEE7F3" }}><Text style={{ fontSize: 20, marginRight: 12 }}>{item[1]}</Text><Text style={{ flex: 1, color: "#3D2D52", fontSize: 15, fontWeight: "700" }}>{item[2]}</Text>{language === item[0] ? <Text style={{ color: "#6B4AA0" }}>✓</Text> : null}</TouchableOpacity>)}</ScrollView>
           </View>
         </View>
       </Modal>
@@ -2248,7 +2248,7 @@ function AppContent() {
       <Modal visible={accountDeletionModalOpen} transparent animationType="fade" onRequestClose={() => { if (!accountDeletionSubmitting) setAccountDeletionModalOpen(false); }}>
         <View style={{ flex: 1, backgroundColor: 'rgba(20,10,30,0.58)', justifyContent: 'center', padding: 22 }}>
           <View style={{ backgroundColor: '#FFFFFF', borderRadius: 20, padding: 22 }}>
-            <Text style={{ color: '#38204F', fontSize: 19, fontWeight: '900', marginBottom: 10 }}>{tr('Codso tirtirka akoonka', 'Request account deletion')}</Text>
+            <Text style={{ color: '#3D2D52', fontSize: 19, fontWeight: '900', marginBottom: 10 }}>{tr('Codso tirtirka akoonka', 'Request account deletion')}</Text>
             <Text style={{ color: '#5F536A', fontSize: 14, lineHeight: 21, marginBottom: 18 }}>
               {accountDeletionMessage || tr('Codsigaaga waxaa dib u eegaya maamulka IMSIYA. Akoonkaagu wuu sii shaqaynayaa ilaa codsiga la dhammeeyo. Diiwaannada dalabyada iyo lacagaha waxaa laga yaabaa in loo hayo waajibaadka sharci iyo xisaab-celinta.', 'Your request will be reviewed by IMSIYA. Your account remains active until the request is completed. Order and payment records may be retained where required for legal and accounting purposes.')}
             </Text>
@@ -2259,7 +2259,7 @@ function AppContent() {
             ) : (
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
                 <TouchableOpacity disabled={accountDeletionSubmitting} style={{ paddingVertical: 13, paddingHorizontal: 15 }} onPress={() => setAccountDeletionModalOpen(false)}>
-                  <Text style={{ color: '#6F6478', fontWeight: '800' }}>{tr('Jooji', 'Cancel')}</Text>
+                  <Text style={{ color: '#766D82', fontWeight: '800' }}>{tr('Jooji', 'Cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity disabled={accountDeletionSubmitting} style={[styles.primaryButton, { marginTop: 0, minWidth: 130, opacity: accountDeletionSubmitting ? 0.65 : 1 }]} onPress={submitAccountDeletionRequest}>
                   {accountDeletionSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>{tr('Gudbi codsiga', 'Submit request')}</Text>}
@@ -2371,7 +2371,7 @@ export default function App() {
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: '#F8F5FC',
+        backgroundColor: '#F8F6FB',
         // Keep the app below Android's status bar and above its navigation buttons.
         paddingTop: Platform.OS === 'android' ? 32 : 0,
         paddingBottom: Platform.OS === 'android' ? 36 : 0,
@@ -2385,37 +2385,37 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F5FC',
+    backgroundColor: '#F8F6FB',
   },
   authContainer: {
     flex: 1,
-    backgroundColor: '#FCFAFE',
+    backgroundColor: '#FAF8FC',
     justifyContent: 'center',
     padding: 24,
   },
   logo: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#4A286B',
+    color: '#4D376B',
     textAlign: 'center',
     marginBottom: 8,
   },
   authSubtitle: {
     textAlign: 'center',
-    color: '#6F6478',
+    color: '#766D82',
     marginBottom: 30,
     fontSize: 15,
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#DED2E8',
+    borderColor: '#E4DCEB',
     borderRadius: 14,
     paddingVertical: 16,
     paddingHorizontal: 15,
     minHeight: 52,
     marginBottom: 15,
-    color: '#2E203B',
+    color: '#30283A',
     fontSize: 16,
   },
   multilineInput: {
@@ -2423,7 +2423,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primaryButton: {
-    backgroundColor: '#5B0AA8',
+    backgroundColor: '#6B4AA0',
     paddingVertical: 17,
     paddingHorizontal: 18,
     minHeight: 54,
@@ -2446,42 +2446,42 @@ const styles = StyleSheet.create({
   authPage: { paddingTop: 12, paddingBottom: 26 },
   authBrand: { alignItems: 'center', paddingVertical: 24 },
   authBrandIcon: { fontSize: 54, marginBottom: 2 },
-  authBrandName: { color: '#4B078B', fontSize: 36, fontWeight: '900', letterSpacing: 1.2 },
-  authBrandTagline: { color: '#E99500', fontSize: 14, fontWeight: '800', fontStyle: 'italic', marginTop: 1 },
-  authCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, borderWidth: 1, borderColor: '#E9E0F1', elevation: 3 },
-  authTabs: { flexDirection: 'row', backgroundColor: '#F2EAF9', borderRadius: 18, padding: 4, marginBottom: 22 },
+  authBrandName: { color: '#4D376B', fontSize: 36, fontWeight: '900', letterSpacing: 1.2 },
+  authBrandTagline: { color: '#D5A65B', fontSize: 14, fontWeight: '800', fontStyle: 'italic', marginTop: 1 },
+  authCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, borderWidth: 1, borderColor: '#E9E2F1', elevation: 3 },
+  authTabs: { flexDirection: 'row', backgroundColor: '#F1EAF8', borderRadius: 18, padding: 4, marginBottom: 22 },
   authTab: { flex: 1, minHeight: 43, alignItems: 'center', justifyContent: 'center', borderRadius: 14 },
-  authTabActive: { backgroundColor: '#5B0AA8', elevation: 2 },
-  authTabText: { color: '#35243F', fontSize: 14, fontWeight: '800' },
+  authTabActive: { backgroundColor: '#6B4AA0', elevation: 2 },
+  authTabText: { color: '#3D2D52', fontSize: 14, fontWeight: '800' },
   authTabTextActive: { color: '#FFFFFF' },
-  authHeading: { color: '#35104F', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 5 },
-  authDescription: { color: '#786B82', fontSize: 13, textAlign: 'center', marginBottom: 20 },
+  authHeading: { color: '#3D2D52', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 5 },
+  authDescription: { color: '#81778C', fontSize: 13, textAlign: 'center', marginBottom: 20 },
   authMessage: { color: '#B3261E', backgroundColor: '#FFF0EF', borderRadius: 12, padding: 11, marginBottom: 12, fontSize: 13, lineHeight: 19 },
-  authInputWrap: { minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E4D9ED', borderRadius: 15, paddingHorizontal: 13, marginBottom: 13 },
-  authInputIcon: { width: 27, color: '#5B0AA8', fontSize: 17, textAlign: 'center', marginRight: 8 },
-  authInput: { flex: 1, minHeight: 50, color: '#2E203B', fontSize: 15, paddingVertical: 8 },
+  authInputWrap: { minHeight: 52, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E4DCEC', borderRadius: 15, paddingHorizontal: 13, marginBottom: 13 },
+  authInputIcon: { width: 27, color: '#6B4AA0', fontSize: 17, textAlign: 'center', marginRight: 8 },
+  authInput: { flex: 1, minHeight: 50, color: '#30283A', fontSize: 15, paddingVertical: 8 },
   authPasswordToggle: { minWidth: 40, minHeight: 42, alignItems: 'center', justifyContent: 'center', marginLeft: 5 },
-  authPasswordToggleText: { color: '#5B0AA8', fontSize: 19 },
+  authPasswordToggleText: { color: '#6B4AA0', fontSize: 19 },
   authForgot: { alignSelf: 'flex-end', paddingVertical: 5, paddingHorizontal: 2 },
-  authForgotText: { color: '#5B0AA8', fontWeight: '800', fontSize: 12 },
-  authSubmit: { backgroundColor: '#5B0AA8', minHeight: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 13, marginBottom: 14, elevation: 2 },
-  authBottomText: { color: '#6F6478', textAlign: 'center', fontSize: 13, marginTop: 3 },
-  authBottomLink: { color: '#5B0AA8', fontWeight: '900' },
+  authForgotText: { color: '#6B4AA0', fontWeight: '800', fontSize: 12 },
+  authSubmit: { backgroundColor: '#6B4AA0', minHeight: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 13, marginBottom: 14, elevation: 2 },
+  authBottomText: { color: '#766D82', textAlign: 'center', fontSize: 13, marginTop: 3 },
+  authBottomLink: { color: '#6B4AA0', fontWeight: '900' },
   authSwitch: {
     padding: 12,
     alignItems: 'center',
   },
   authSwitchText: {
-    color: '#4A286B',
+    color: '#4D376B',
     fontWeight: '600',
   },
   header: {
-    backgroundColor: '#F2EAFE',
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    minHeight: 66,
+    backgroundColor: '#F7F3FB',
+    paddingHorizontal: 18,
+    paddingVertical: 15,
+    minHeight: 72,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5D7F7',
+    borderBottomColor: '#E5DCEC',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -2490,18 +2490,18 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '900',
     letterSpacing: 1.4,
-    color: '#54218A',
+    color: '#4D376B',
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#8B63B5',
+    color: '#8A75A5',
     fontWeight: '700',
     fontStyle: 'italic',
     letterSpacing: 0.25,
     textAlign: 'center',
   },
   logoutText: {
-    color: '#F09A2A',
+    color: '#D5A65B',
     fontWeight: 'bold',
   },
   content: {
@@ -2512,22 +2512,22 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   hero: {
-    backgroundColor: '#EEE4FB',
+    backgroundColor: '#EEE7F7',
     borderRadius: 22,
     padding: 22,
     marginBottom: 20,
     borderLeftWidth: 5,
-    borderLeftColor: '#A77AD7',
+    borderLeftColor: '#B59ACF',
     elevation: 3,
   },
   heroTitle: {
     fontSize: 22,
-    color: '#54218A',
+    color: '#4D376B',
     fontWeight: 'bold',
     marginBottom: 8,
   },
   heroText: {
-    color: '#71558D',
+    color: '#75658B',
     fontSize: 14,
     lineHeight: 21,
   },
@@ -2536,15 +2536,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E7DDF0',
+    borderColor: '#E9E2F1',
     marginBottom: 14,
-    color: '#2E203B',
+    color: '#30283A',
   },
   categoryScroll: {
     marginBottom: 18,
   },
   categoryButton: {
-    backgroundColor: '#F3E8FA',
+    backgroundColor: '#F1EAF8',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
@@ -2552,10 +2552,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categorySelected: {
-    backgroundColor: '#5B0AA8',
+    backgroundColor: '#6B4AA0',
   },
   categoryText: {
-    color: '#624678',
+    color: '#75658B',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -2569,23 +2569,23 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    color: '#38204F',
+    color: '#3D2D52',
     fontWeight: '800',
     fontSize: 23,
     letterSpacing: 0.1,
     marginBottom: 15,
   },
   refreshText: {
-    color: '#4A286B',
+    color: '#4D376B',
     fontWeight: 'bold',
   },
   refreshButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3E8FA',
+    backgroundColor: '#F1EAF8',
     borderWidth: 1,
-    borderColor: '#E3D4EF',
+    borderColor: '#E4DCEC',
     borderRadius: 18,
     paddingHorizontal: 13,
     paddingVertical: 9,
@@ -2596,9 +2596,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F7F2FA',
+    backgroundColor: '#F7F4FA',
     borderWidth: 1,
-    borderColor: '#E3D4EF',
+    borderColor: '#E4DCEC',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 15,
@@ -2606,13 +2606,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   refreshIcon: {
-    color: '#4A286B',
+    color: '#4D376B',
     fontSize: 20,
     fontWeight: '800',
     lineHeight: 21,
   },
   refreshButtonText: {
-    color: '#4A286B',
+    color: '#4D376B',
     fontWeight: '800',
     fontSize: 13,
   },
@@ -2622,29 +2622,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   favoriteToggle: { alignSelf: 'flex-end', paddingHorizontal: 5, paddingVertical: 1 },
-  favoriteToggleText: { color: '#F09A2A', fontSize: 22, fontWeight: 'bold' },
-  profileAction: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7DDF0', borderRadius: 15, padding: 16, marginBottom: 10 },
-  profileActionText: { color: '#4A286B', fontWeight: '800', fontSize: 16 },
+  favoriteToggleText: { color: '#D5A65B', fontSize: 22, fontWeight: 'bold' },
+  profileAction: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E9E2F1', borderRadius: 18, padding: 16, marginBottom: 10 },
+  profileActionText: { color: '#4D376B', fontWeight: '800', fontSize: 16 },
   productCard: {
     width: '48%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 21,
     padding: 10,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E7DDF0',
+    borderColor: '#E9E2F1',
     elevation: 2,
   },
   productImage: {
     width: '100%',
-    height: 115,
-    borderRadius: 10,
-    backgroundColor: '#F2EAF8',
+    height: 132,
+    borderRadius: 14,
+    backgroundColor: '#F3EDF8',
   },
   imagePlaceholder: {
-    height: 115,
-    borderRadius: 10,
-    backgroundColor: '#F2EAF8',
+    height: 132,
+    borderRadius: 14,
+    backgroundColor: '#F3EDF8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2652,32 +2652,32 @@ const styles = StyleSheet.create({
     fontSize: 42,
   },
   productName: {
-    color: '#2E203B',
+    color: '#30283A',
     fontWeight: '800',
     fontSize: 16,
     lineHeight: 22,
     marginTop: 10,
   },
   productCategory: {
-    color: '#756780',
+    color: '#756B80',
     fontSize: 13,
     fontWeight: '500',
     marginTop: 5,
   },
   productPrice: {
-    color: '#4A286B',
+    color: '#4D376B',
     fontWeight: '800',
     fontSize: 17,
     marginTop: 7,
   },
   stockText: {
-    color: '#6F6478',
+    color: '#766D82',
     fontSize: 12,
     lineHeight: 17,
     marginTop: 5,
   },
   emptyText: {
-    color: '#6F6478',
+    color: '#766D82',
     textAlign: 'center',
     padding: 25,
   },
@@ -2687,11 +2687,11 @@ const styles = StyleSheet.create({
   },
   cartItem: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E7DDF0',
+    borderColor: '#E9E2F1',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -2705,7 +2705,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   quantityButton: {
-    backgroundColor: '#F3E8FA',
+    backgroundColor: '#F1EAF8',
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -2713,12 +2713,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButtonText: {
-    color: '#38204F',
+    color: '#3D2D52',
     fontSize: 20,
     fontWeight: 'bold',
   },
   quantityText: {
-    color: '#2E203B',
+    color: '#30283A',
     fontWeight: 'bold',
     paddingHorizontal: 12,
   },
@@ -2730,17 +2730,17 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#38204F',
+    color: '#3D2D52',
   },
   totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4A286B',
+    color: '#4D376B',
   },
   secondaryButton: {
-    backgroundColor: '#F7F2FA',
+    backgroundColor: '#F7F4FA',
     borderWidth: 1,
-    borderColor: '#DCCCE9',
+    borderColor: '#E4DCEC',
     paddingVertical: 15,
     paddingHorizontal: 16,
     minHeight: 50,
@@ -2749,13 +2749,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryButtonText: {
-    color: '#4A286B',
+    color: '#4D376B',
     fontWeight: '800',
     fontSize: 15,
     letterSpacing: 0.1,
   },
   label: {
-    color: '#38204F',
+    color: '#3D2D52',
     fontWeight: '700',
     fontSize: 15,
     marginBottom: 8,
@@ -2767,23 +2767,23 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginTop: 15,
     borderWidth: 1,
-    borderColor: '#E7DDF0',
+    borderColor: '#E9E2F1',
   },
   shopStatusTitle: {
     fontSize: 19,
     fontWeight: '800',
-    color: '#38204F',
+    color: '#3D2D52',
     marginBottom: 9,
   },
   shopStatusText: {
-    color: '#6F6478',
+    color: '#766D82',
     fontSize: 14,
     lineHeight: 21,
     marginBottom: 7,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E7DDF0',
+    backgroundColor: '#E9E2F1',
     marginVertical: 24,
   },
   categoryChoices: {
@@ -2797,13 +2797,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E9DDF5',
+    borderTopColor: '#E9E2F1',
     borderBottomLeftRadius: 18,
     borderBottomRightRadius: 18,
     paddingTop: 8,
     paddingBottom: Platform.OS === 'android' ? 8 : 10,
     paddingHorizontal: 5,
-    shadowColor: '#6A0DAD',
+    shadowColor: '#65458F',
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.12,
     shadowRadius: 9,
@@ -2821,26 +2821,26 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   navItemActive: {
-    backgroundColor: '#EDE2FA',
+    backgroundColor: '#EEE7F7',
   },
   navIcon: {
-    color: '#7E22CE',
+    color: '#7655A8',
     fontSize: 25,
     lineHeight: 29,
     fontWeight: '700',
     textAlign: 'center',
   },
   navIconActive: {
-    color: '#6A0DAD',
+    color: '#65458F',
   },
   navText: {
-    color: '#7E22CE',
+    color: '#7655A8',
     fontSize: 11,
     fontWeight: '700',
     marginTop: 2,
   },
   navTextActive: {
-    color: '#5B0796',
+    color: '#4D376B',
     fontWeight: '900',
   },
   navCartIconWrap: {
@@ -2860,7 +2860,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 7,
     height: 2,
-    backgroundColor: '#7E22CE',
+    backgroundColor: '#7655A8',
     left: 0,
     top: 5,
     transform: [{ rotate: '55deg' }],
@@ -2869,7 +2869,7 @@ const styles = StyleSheet.create({
     width: 19,
     height: 11,
     borderWidth: 2,
-    borderColor: '#7E22CE',
+    borderColor: '#7655A8',
     borderTopWidth: 1.5,
     borderRadius: 2,
     transform: [{ skewX: '-10deg' }],
@@ -2886,7 +2886,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#7E22CE',
+    backgroundColor: '#7655A8',
   },
   navCartBadge: {
     position: 'absolute',
@@ -2910,53 +2910,53 @@ const styles = StyleSheet.create({
   },
 
   headerMenuButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
-  headerMenuIcon: { color: '#6B3A9B', fontSize: 25, fontWeight: '700' },
+  headerMenuIcon: { color: '#65458F', fontSize: 25, fontWeight: '700' },
   headerBrand: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   headerCartButton: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  headerCartIcon: { color: '#6B3A9B', fontSize: 23 },
+  headerCartIcon: { color: '#65458F', fontSize: 23 },
   cartBadge: { position: 'absolute', top: 0, right: 0, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: '#FF8A00', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   cartBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
-  homeSearchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1, borderColor: '#E9E0F1', paddingHorizontal: 14, paddingVertical: 8, marginTop: 12, marginBottom: 18, minHeight: 72, elevation: 1 },
+  homeSearchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1, borderColor: '#E9E2F1', paddingHorizontal: 14, paddingVertical: 8, marginTop: 12, marginBottom: 18, minHeight: 72, elevation: 1 },
   homeSearchInput: { flex: 1, minHeight: 54, paddingVertical: 13, marginBottom: 0 },
 
-  searchGlyph: { color: '#5B12A8', fontSize: 25, marginRight: 8 },
-  searchFilter: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#F3EAFB', alignItems: 'center', justifyContent: 'center' },
-  searchFilterText: { color: '#5B12A8', fontSize: 22, fontWeight: '800' },
-  promoBanner: { minHeight: 166, borderRadius: 23, backgroundColor: '#EDE2FA', padding: 18, marginBottom: 22, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 2, borderWidth: 1, borderColor: '#DCC8F2' },
+  searchGlyph: { color: '#6B4AA0', fontSize: 25, marginRight: 8 },
+  searchFilter: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#F1EAF8', alignItems: 'center', justifyContent: 'center' },
+  searchFilterText: { color: '#6B4AA0', fontSize: 22, fontWeight: '800' },
+  promoBanner: { minHeight: 166, borderRadius: 23, backgroundColor: '#EEE7F7', padding: 18, marginBottom: 22, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 2, borderWidth: 1, borderColor: '#E5DCEC' },
   promoCopy: { flex: 1, zIndex: 2 },
-  promoEyebrow: { color: '#8B63B5', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 7 },
-  promoTitle: { color: '#54218A', fontSize: 23, lineHeight: 27, fontWeight: '900', marginBottom: 4 },
-  promoSubtitle: { color: '#71558D', fontSize: 14, fontWeight: '700', marginBottom: 12 },
-  promoButton: { alignSelf: 'flex-start', backgroundColor: '#7542A8', borderRadius: 18, paddingVertical: 9, paddingHorizontal: 13 },
+  promoEyebrow: { color: '#8A75A5', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 7 },
+  promoTitle: { color: '#4D376B', fontSize: 23, lineHeight: 27, fontWeight: '900', marginBottom: 4 },
+  promoSubtitle: { color: '#75658B', fontSize: 14, fontWeight: '700', marginBottom: 12 },
+  promoButton: { alignSelf: 'flex-start', backgroundColor: '#6B4AA0', borderRadius: 18, paddingVertical: 9, paddingHorizontal: 13 },
   promoButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
   promoArt: { width: 116, height: 116, borderRadius: 58, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginLeft: 8, zIndex: 1, overflow: 'hidden' },
   promoImage: { width: '100%', height: '100%' },
   promoEmoji: { fontSize: 64 },
-  promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#D8C1F0', right: -70, top: -92, opacity: 0.95 },
-  seeAllText: { color: '#5B0AA8', fontSize: 12, fontWeight: '900' },
+  promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#E1D5EF', right: -70, top: -92, opacity: 0.95 },
+  seeAllText: { color: '#6B4AA0', fontSize: 12, fontWeight: '900' },
   homeCategoryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 23, gap: 8 },
-  homeCategoryCard: { flex: 1, minHeight: 94, borderRadius: 17, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0E8F6', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, elevation: 1 },
-  homeCategoryActive: { borderColor: '#5B0AA8', backgroundColor: '#F4EAFE' },
+  homeCategoryCard: { flex: 1, minHeight: 94, borderRadius: 17, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEE7F4', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, elevation: 1 },
+  homeCategoryActive: { borderColor: '#6B4AA0', backgroundColor: '#F1EAF8' },
   homeCategoryIcon: { fontSize: 29, marginBottom: 7 },
-  homeCategoryName: { color: '#33243D', fontSize: 11, fontWeight: '800', textAlign: 'center' },
-  homeCategoryNameActive: { color: '#5B0AA8' },
+  homeCategoryName: { color: '#30283A', fontSize: 11, fontWeight: '800', textAlign: 'center' },
+  homeCategoryNameActive: { color: '#6B4AA0' },
   productSectionTools: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
 
   myShopScreen: { paddingBottom: 24 },
-  myShopHeader: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#4A286B', borderRadius: 22, padding: 18, marginBottom: 18, borderLeftWidth: 5, borderLeftColor: '#F3A33B', elevation: 3 },
+  myShopHeader: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#4D376B', borderRadius: 22, padding: 18, marginBottom: 18, borderLeftWidth: 5, borderLeftColor: '#D5A65B', elevation: 3 },
   myShopHeaderIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginRight: 13 },
   myShopHeaderEmoji: { fontSize: 28 },
   myShopHeaderCopy: { flex: 1 },
-  myShopEyebrow: { color: '#F3A33B', fontSize: 13, fontWeight: '900', letterSpacing: 1.5, marginBottom: 4 },
+  myShopEyebrow: { color: '#D5A65B', fontSize: 13, fontWeight: '900', letterSpacing: 1.5, marginBottom: 4 },
   myShopTitle: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', marginBottom: 4 },
-  myShopSubtitle: { color: '#F4EAFB', fontSize: 16, lineHeight: 24 },
-  myShopPanel: { backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#E7DDF0', padding: 16, marginBottom: 18, elevation: 1 },
+  myShopSubtitle: { color: '#F1EAF8', fontSize: 16, lineHeight: 24 },
+  myShopPanel: { backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#E9E2F1', padding: 16, marginBottom: 18, elevation: 1 },
   myShopSectionHeading: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  myShopSectionIcon: { fontSize: 23, marginRight: 11, color: '#F09A2A' },
-  myShopSectionTitle: { color: '#38204F', fontSize: 21, fontWeight: '900', marginBottom: 3 },
-  myShopHint: { color: '#81738B', fontSize: 15, lineHeight: 22 },
+  myShopSectionIcon: { fontSize: 23, marginRight: 11, color: '#D5A65B' },
+  myShopSectionTitle: { color: '#3D2D52', fontSize: 21, fontWeight: '900', marginBottom: 3 },
+  myShopHint: { color: '#81778C', fontSize: 15, lineHeight: 22 },
   myShopLoading: { alignItems: 'center', padding: 28 },
-  myShopStatusPanel: { backgroundColor: '#38204F', borderRadius: 21, padding: 18, marginBottom: 22, elevation: 3 },
+  myShopStatusPanel: { backgroundColor: '#3D2D52', borderRadius: 21, padding: 18, marginBottom: 22, elevation: 3 },
   myShopStatusTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
   myShopStatusName: { color: '#FFFFFF', fontSize: 23, fontWeight: '900', marginTop: 2 },
   myShopStatusPill: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, marginLeft: 8 },
@@ -2966,75 +2966,75 @@ const styles = StyleSheet.create({
   myShopStatusOpenText: { color: '#167343' },
   myShopStatusPendingText: { color: '#9A5A13' },
   myShopSubscription: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', marginTop: 4, marginBottom: 8 },
-  myShopSubscriptionPeriod: { color: '#E9DDF3', fontSize: 16, fontWeight: '600' },
-  myShopOutlineButton: { backgroundColor: '#F5F0F9', borderWidth: 1, borderColor: '#DED2E8', borderRadius: 14, paddingVertical: 13, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 8, minHeight: 48 },
-  myShopOutlineButtonText: { color: '#4A286B', fontSize: 16, fontWeight: '800' },
+  myShopSubscriptionPeriod: { color: '#E8DFF0', fontSize: 16, fontWeight: '600' },
+  myShopOutlineButton: { backgroundColor: '#F5F1F9', borderWidth: 1, borderColor: '#E4DCEB', borderRadius: 14, paddingVertical: 13, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 8, minHeight: 48 },
+  myShopOutlineButtonText: { color: '#4D376B', fontSize: 16, fontWeight: '800' },
   myShopSectionBar: { flexDirection: 'row', alignItems: 'center', marginTop: 9, marginBottom: 11, paddingHorizontal: 2 },
-  myShopActionButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E7DDF0', padding: 15, marginBottom: 20 },
+  myShopActionButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E9E2F1', padding: 15, marginBottom: 20 },
   myShopActionIcon: { fontSize: 22, marginRight: 12 },
-  myShopActionText: { color: '#4A286B', fontSize: 18, fontWeight: '800', flex: 1 },
-  myShopActionArrow: { color: '#F09A2A', fontSize: 27, fontWeight: '700' },
-  myShopEmpty: { alignItems: 'center', backgroundColor: '#F7F2FA', borderWidth: 1, borderColor: '#E7DDF0', borderRadius: 18, padding: 23, marginBottom: 18 },
+  myShopActionText: { color: '#4D376B', fontSize: 18, fontWeight: '800', flex: 1 },
+  myShopActionArrow: { color: '#D5A65B', fontSize: 27, fontWeight: '700' },
+  myShopEmpty: { alignItems: 'center', backgroundColor: '#F7F4FA', borderWidth: 1, borderColor: '#E9E2F1', borderRadius: 18, padding: 23, marginBottom: 18 },
   myShopEmptyIcon: { fontSize: 34, marginBottom: 8 },
-  myShopEmptyTitle: { color: '#38204F', fontSize: 19, fontWeight: '900', marginBottom: 5 },
-  myShopProductCard: { flexDirection: 'row', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7DDF0', borderRadius: 17, padding: 11, marginBottom: 11, elevation: 1 },
-  myShopProductImage: { width: 104, height: 112, borderRadius: 12, backgroundColor: '#F2EAF8', marginRight: 12 },
-  myShopProductPlaceholder: { width: 104, height: 112, borderRadius: 12, backgroundColor: '#F2EAF8', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  myShopEmptyTitle: { color: '#3D2D52', fontSize: 19, fontWeight: '900', marginBottom: 5 },
+  myShopProductCard: { flexDirection: 'row', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E9E2F1', borderRadius: 17, padding: 11, marginBottom: 11, elevation: 1 },
+  myShopProductImage: { width: 104, height: 112, borderRadius: 12, backgroundColor: '#F3EDF8', marginRight: 12 },
+  myShopProductPlaceholder: { width: 104, height: 112, borderRadius: 12, backgroundColor: '#F3EDF8', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   myShopProductInfo: { flex: 1, justifyContent: 'center' },
-  myShopProductName: { color: '#2E203B', fontSize: 18, fontWeight: '900', marginBottom: 4 },
-  myShopProductPrice: { color: '#4A286B', fontSize: 19, fontWeight: '900', marginBottom: 3 },
+  myShopProductName: { color: '#30283A', fontSize: 18, fontWeight: '900', marginBottom: 4 },
+  myShopProductPrice: { color: '#4D376B', fontSize: 19, fontWeight: '900', marginBottom: 3 },
   myShopProductActions: { flexDirection: 'row', gap: 8, marginTop: 9 },
-  myShopEditButton: { flex: 1, backgroundColor: '#F3E8FA', borderRadius: 10, paddingVertical: 9, alignItems: 'center' },
-  myShopEditText: { color: '#4A286B', fontSize: 15, fontWeight: '900' },
+  myShopEditButton: { flex: 1, backgroundColor: '#F1EAF8', borderRadius: 10, paddingVertical: 9, alignItems: 'center' },
+  myShopEditText: { color: '#4D376B', fontSize: 15, fontWeight: '900' },
   myShopDeleteButton: { flex: 1, backgroundColor: '#FFF1F0', borderRadius: 10, paddingVertical: 9, alignItems: 'center' },
   myShopDeleteText: { color: '#B3261E', fontSize: 15, fontWeight: '900' },
-  myShopCancelEdit: { alignSelf: 'flex-start', backgroundColor: '#F5F0F9', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 5 },
-  myShopImagePreview: { width: '100%', height: 185, borderRadius: 14, marginVertical: 10, backgroundColor: '#F2EAF8' },
+  myShopCancelEdit: { alignSelf: 'flex-start', backgroundColor: '#F5F1F9', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 5 },
+  myShopImagePreview: { width: '100%', height: 185, borderRadius: 14, marginVertical: 10, backgroundColor: '#F3EDF8' },
   walletScreen: { paddingBottom: 28 },
   walletTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  walletEyebrow: { color: '#F09A2A', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
-  walletBackButton: { backgroundColor: '#F3E8FA', paddingHorizontal: 12, paddingVertical: 9, borderRadius: 18 },
-  walletBackText: { color: '#4A286B', fontSize: 12, fontWeight: '700' },
-  walletHero: { backgroundColor: '#38204F', borderRadius: 24, padding: 21, marginBottom: 24, elevation: 5 },
+  walletEyebrow: { color: '#D5A65B', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
+  walletBackButton: { backgroundColor: '#F1EAF8', paddingHorizontal: 12, paddingVertical: 9, borderRadius: 18 },
+  walletBackText: { color: '#4D376B', fontSize: 12, fontWeight: '700' },
+  walletHero: { backgroundColor: '#3D2D52', borderRadius: 24, padding: 21, marginBottom: 24, elevation: 5 },
   walletHeroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  walletHeroLabel: { color: '#E9DDF3', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
-  walletCoin: { color: '#F3A33B', fontSize: 24, fontWeight: 'bold' },
+  walletHeroLabel: { color: '#E8DFF0', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
+  walletCoin: { color: '#D5A65B', fontSize: 24, fontWeight: 'bold' },
   walletBalance: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', marginTop: 13, marginBottom: 6 },
-  walletHeroNote: { color: '#F5EDF9', fontSize: 13, marginBottom: 5 },
-  walletUpdated: { color: '#CDBDDA', fontSize: 10, marginTop: 7 },
-  walletRefreshButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7DDF0', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 18, marginTop: 17, elevation: 1 },
-  walletRefreshIcon: { color: '#F09A2A', fontSize: 19, fontWeight: '900' },
-  walletRefreshText: { color: '#4A286B', fontWeight: '800', fontSize: 12 },
+  walletHeroNote: { color: '#F1EAF8', fontSize: 13, marginBottom: 5 },
+  walletUpdated: { color: '#B8ADC5', fontSize: 10, marginTop: 7 },
+  walletRefreshButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E9E2F1', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 18, marginTop: 17, elevation: 1 },
+  walletRefreshIcon: { color: '#D5A65B', fontSize: 19, fontWeight: '900' },
+  walletRefreshText: { color: '#4D376B', fontWeight: '800', fontSize: 12 },
   walletSection: { marginBottom: 22 },
   walletSectionHeading: { marginBottom: 12 },
-  walletSectionTitle: { color: '#38204F', fontWeight: '800', fontSize: 18, marginBottom: 5 },
-  walletSectionCaption: { color: '#81738B', fontSize: 12 },
-  walletEmptyCard: { backgroundColor: '#F5F0F9', borderRadius: 18, padding: 22, alignItems: 'center', borderWidth: 1, borderColor: '#E7DDF0' },
-  walletEmptyIcon: { color: '#F09A2A', fontSize: 27, marginBottom: 8 },
-  walletEmptyTitle: { color: '#38204F', fontSize: 14, fontWeight: '800', marginBottom: 5 },
-  walletMuted: { color: '#81738B', fontSize: 12, lineHeight: 18 },
-  walletTransaction: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E7DDF0', padding: 14, marginBottom: 9, flexDirection: 'row', alignItems: 'center' },
-  walletTransactionIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#F3E8FA', alignItems: 'center', justifyContent: 'center', marginRight: 11 },
-  walletTransactionIconText: { color: '#4A286B', fontSize: 20, fontWeight: '800' },
+  walletSectionTitle: { color: '#3D2D52', fontWeight: '800', fontSize: 18, marginBottom: 5 },
+  walletSectionCaption: { color: '#81778C', fontSize: 12 },
+  walletEmptyCard: { backgroundColor: '#F5F1F9', borderRadius: 18, padding: 22, alignItems: 'center', borderWidth: 1, borderColor: '#E9E2F1' },
+  walletEmptyIcon: { color: '#D5A65B', fontSize: 27, marginBottom: 8 },
+  walletEmptyTitle: { color: '#3D2D52', fontSize: 14, fontWeight: '800', marginBottom: 5 },
+  walletMuted: { color: '#81778C', fontSize: 12, lineHeight: 18 },
+  walletTransaction: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E9E2F1', padding: 14, marginBottom: 9, flexDirection: 'row', alignItems: 'center' },
+  walletTransactionIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#F1EAF8', alignItems: 'center', justifyContent: 'center', marginRight: 11 },
+  walletTransactionIconText: { color: '#4D376B', fontSize: 20, fontWeight: '800' },
   walletTransactionInfo: { flex: 1 },
-  walletTransactionTitle: { color: '#38204F', fontSize: 13, fontWeight: '800', marginBottom: 3 },
-  walletDate: { color: '#A095AA', fontSize: 10, marginTop: 5 },
-  walletTransactionAmount: { color: '#4A286B', fontSize: 13, fontWeight: '800', marginLeft: 8 },
-  walletPayoutCard: { backgroundColor: '#FFFFFF', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: '#E7DDF0', marginBottom: 23, elevation: 2 },
-  walletFieldLabel: { color: '#38204F', fontSize: 12, fontWeight: '800', marginTop: 15, marginBottom: 7 },
-  walletInput: { borderColor: '#E3D8EC', borderRadius: 13, marginBottom: 2, backgroundColor: '#FCFAFE' },
-  walletMethodSelected: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#F5F0F9', borderRadius: 15, borderWidth: 1, borderColor: '#D9C9E8' },
-  walletMethodIcon: { width: 35, height: 35, borderRadius: 18, backgroundColor: '#4A286B', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  walletTransactionTitle: { color: '#3D2D52', fontSize: 13, fontWeight: '800', marginBottom: 3 },
+  walletDate: { color: '#91869B', fontSize: 10, marginTop: 5 },
+  walletTransactionAmount: { color: '#4D376B', fontSize: 13, fontWeight: '800', marginLeft: 8 },
+  walletPayoutCard: { backgroundColor: '#FFFFFF', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: '#E9E2F1', marginBottom: 23, elevation: 2 },
+  walletFieldLabel: { color: '#3D2D52', fontSize: 12, fontWeight: '800', marginTop: 15, marginBottom: 7 },
+  walletInput: { borderColor: '#E4DCEC', borderRadius: 13, marginBottom: 2, backgroundColor: '#FAF8FC' },
+  walletMethodSelected: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#F5F1F9', borderRadius: 15, borderWidth: 1, borderColor: '#E4DCEC' },
+  walletMethodIcon: { width: 35, height: 35, borderRadius: 18, backgroundColor: '#4D376B', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
   walletMethodIconText: { color: '#FFFFFF', fontWeight: '900', fontSize: 16 },
   walletMethodInfo: { flex: 1 },
-  walletMethodTitle: { color: '#38204F', fontWeight: '800', fontSize: 13, marginBottom: 2 },
-  walletMethodCheck: { color: '#F09A2A', fontSize: 18, fontWeight: '900', marginLeft: 8 },
-  walletComingSoon: { backgroundColor: '#FFF8EE', borderColor: '#F5D8B2', borderWidth: 1, borderRadius: 14, padding: 12, marginTop: 15 },
+  walletMethodTitle: { color: '#3D2D52', fontWeight: '800', fontSize: 13, marginBottom: 2 },
+  walletMethodCheck: { color: '#D5A65B', fontSize: 18, fontWeight: '900', marginLeft: 8 },
+  walletComingSoon: { backgroundColor: '#FFF9F1', borderColor: '#EEDFC8', borderWidth: 1, borderRadius: 14, padding: 12, marginTop: 15 },
   walletComingTitle: { color: '#9A5A13', fontWeight: '800', fontSize: 12, marginBottom: 4 },
-  walletSubmitButton: { backgroundColor: '#F09A2A', paddingVertical: 15, borderRadius: 15, alignItems: 'center', marginTop: 18 },
-  walletSubmitText: { color: '#38204F', fontWeight: '900', fontSize: 14 },
-  walletStatusDot: { color: '#F09A2A', fontSize: 15, marginLeft: 12 },
-  checkoutPaymentCard: { backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#E4D8EF', padding: 16, marginTop: 18, marginBottom: 12 },
+  walletSubmitButton: { backgroundColor: '#D5A65B', paddingVertical: 15, borderRadius: 15, alignItems: 'center', marginTop: 18 },
+  walletSubmitText: { color: '#3D2D52', fontWeight: '900', fontSize: 14 },
+  walletStatusDot: { color: '#D5A65B', fontSize: 15, marginLeft: 12 },
+  checkoutPaymentCard: { backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#E9E2F1', padding: 16, marginTop: 18, marginBottom: 12 },
   checkoutSectionTitle: { color: '#241B2B', fontSize: 18, fontWeight: '900', marginBottom: 13 },
   checkoutPaypalRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#D8C4EA', borderRadius: 15, padding: 12, backgroundColor: '#FFFFFF' },
   checkoutPaypalMark: { width: 42, height: 42, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginRight: 12, backgroundColor: '#F2F7FF' },
@@ -3042,11 +3042,11 @@ const styles = StyleSheet.create({
   checkoutPaypalInfo: { flex: 1 },
   checkoutPaypalTitle: { color: '#24202A', fontSize: 16, fontWeight: '900' },
   checkoutPaypalSubtitle: { color: '#766B80', fontSize: 12, marginTop: 3 },
-  checkoutSelected: { color: '#5B0AA8', fontSize: 22, fontWeight: '900', marginHorizontal: 5 },
+  checkoutSelected: { color: '#6B4AA0', fontSize: 22, fontWeight: '900', marginHorizontal: 5 },
   checkoutSecurityNote: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0EDFF', borderRadius: 14, padding: 13, marginTop: 13 },
   checkoutShield: { color: '#1689D5', fontSize: 24, fontWeight: '900', marginRight: 11 },
   checkoutSecurityText: { color: '#31264A', fontSize: 13, fontWeight: '700', flex: 1, lineHeight: 19 },
-  checkoutPaypalButton: { backgroundColor: '#5B0AA8', borderRadius: 16, paddingVertical: 16, alignItems: 'center', justifyContent: 'center', marginTop: 7, marginBottom: 14, elevation: 3 },
+  checkoutPaypalButton: { backgroundColor: '#6B4AA0', borderRadius: 16, paddingVertical: 16, alignItems: 'center', justifyContent: 'center', marginTop: 7, marginBottom: 14, elevation: 3 },
   checkoutPaypalButtonContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   checkoutButtonP: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', fontStyle: 'italic', marginRight: 11 },
   checkoutPaypalButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
