@@ -2343,7 +2343,15 @@ function AppContent() {
 
 export default function App() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F8F5FC' }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: '#F8F5FC',
+        // React Native's built-in SafeAreaView does not apply Android
+        // navigation-bar insets. Keep app content above the system buttons.
+        paddingBottom: Platform.OS === 'android' ? 36 : 0,
+      }}
+    >
       <AppContent />
     </SafeAreaView>
   );
