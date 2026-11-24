@@ -2795,7 +2795,7 @@ const styles = StyleSheet.create({
   headerCartIcon: { color: '#FFFFFF', fontSize: 23 },
   cartBadge: { position: 'absolute', top: 0, right: 0, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: '#FF8A00', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   cartBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
-  homeSearchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 17, borderWidth: 1, borderColor: '#E9E0F1', paddingHorizontal: 12, marginBottom: 16, minHeight: 49, elevation: 1 },
+  homeSearchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 17, borderWidth: 1, borderColor: '#E9E0F1', paddingHorizontal: 12, marginTop: 12, marginBottom: 18, minHeight: 52, elevation: 1 },
   searchGlyph: { color: '#5B12A8', fontSize: 25, marginRight: 8 },
   searchFilter: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#F3EAFB', alignItems: 'center', justifyContent: 'center' },
   searchFilterText: { color: '#5B12A8', fontSize: 22, fontWeight: '800' },
