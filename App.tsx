@@ -2302,40 +2302,57 @@ function AppContent() {
 
       <View style={styles.bottomNav}>
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Home"
           style={[styles.navItem, screen === 'home' && styles.navItemActive]}
           onPress={() => setScreen('home')}
+          activeOpacity={0.75}
         >
-          <Text style={styles.navIcon}>🏠</Text>
-          <Text style={[styles.navText, screen === 'home' && styles.navTextActive]}>{tr("Hoyga", "Home")}</Text>
+          <Text style={[styles.navIcon, screen === 'home' && styles.navIconActive]}>⌂</Text>
+          <Text style={[styles.navText, screen === 'home' && styles.navTextActive]}>Home</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Cart"
           style={[styles.navItem, screen === 'cart' && styles.navItemActive]}
           onPress={() => setScreen('cart')}
+          activeOpacity={0.75}
         >
-          <Text style={styles.navIcon}>🛒</Text>
-          <Text style={[styles.navText, screen === 'cart' && styles.navTextActive]}>
-            Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
-          </Text>
+          <View style={styles.navCartIconWrap}>
+            <Text style={[styles.navIcon, screen === 'cart' && styles.navIconActive]}>🛒</Text>
+            {cart.reduce((sum, item) => sum + item.quantity, 0) > 0 && (
+              <View style={styles.navCartBadge}>
+                <Text style={styles.navCartBadgeText}>
+                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={[styles.navText, screen === 'cart' && styles.navTextActive]}>Cart</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Shops"
           style={[styles.navItem, screen === 'shop' && styles.navItemActive]}
           onPress={() => setScreen('shop')}
+          activeOpacity={0.75}
         >
-          <Text style={styles.navIcon}>🏪</Text>
-          <Text style={[styles.navText, screen === 'shop' && styles.navTextActive]}>{tr("Dukaankayga", "My Shop")}</Text>
+          <Text style={[styles.navIcon, screen === 'shop' && styles.navIconActive]}>▤</Text>
+          <Text style={[styles.navText, screen === 'shop' && styles.navTextActive]}>Shops</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItem, screen === 'profile' && styles.navItemActive]} onPress={() => setScreen('profile')}>
-          <Text style={styles.navIcon}>👤</Text>
-          <Text style={[styles.navText, screen === 'profile' && styles.navTextActive]}>{tr('My Account', 'My Account')}</Text>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Profile"
+          style={[styles.navItem, screen === 'profile' && styles.navItemActive]}
+          onPress={() => setScreen('profile')}
+          activeOpacity={0.75}
+        >
+          <Text style={[styles.navIcon, screen === 'profile' && styles.navIconActive]}>◉</Text>
+          <Text style={[styles.navText, screen === 'profile' && styles.navTextActive]}>Profile</Text>
         </TouchableOpacity>
-        {isAdmin && (
-          <TouchableOpacity style={[styles.navItem, screen === 'admin' && styles.navItemActive]} onPress={() => { setScreen('admin'); loadAdminData(); }}>
-            <Text style={styles.navIcon}>🛡️</Text>
-            <Text style={[styles.navText, screen === 'admin' && styles.navTextActive]}>{tr('Maamulka', 'Admin')}</Text>
-          </TouchableOpacity>
-        )}
       </View>
     </View>
   );
@@ -2767,40 +2784,81 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E9E0F1',
-    paddingVertical: 9,
-    elevation: 8,
-    justifyContent: 'space-around',
+    borderTopColor: '#E9DDF5',
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'android' ? 8 : 10,
+    paddingHorizontal: 5,
+    shadowColor: '#6A0DAD',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 9,
+    elevation: 12,
+    width: '100%',
   },
   navItem: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 75,
-    minHeight: 54,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#8B00FF',
+    minWidth: 0,
+    minHeight: 58,
+    paddingHorizontal: 4,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   navItemActive: {
-    backgroundColor: '#6A0DAD',
-    borderWidth: 1,
-    borderColor: '#5B0796',
+    backgroundColor: '#F3E8FF',
   },
   navIcon: {
-    fontSize: 21,
+    color: '#7E22CE',
+    fontSize: 25,
+    lineHeight: 29,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  navIconActive: {
+    color: '#6A0DAD',
   },
   navText: {
-    color: '#FFFFFF',
-    fontSize: 12,
+    color: '#7E22CE',
+    fontSize: 11,
     fontWeight: '700',
-    marginTop: 4,
+    marginTop: 2,
   },
   navTextActive: {
-    color: '#FFFFFF',
+    color: '#5B0796',
     fontWeight: '900',
+  },
+  navCartIconWrap: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 30,
+  },
+  navCartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -10,
+    minWidth: 17,
+    height: 17,
+    borderRadius: 9,
+    backgroundColor: '#E53935',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+  },
+  navCartBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    lineHeight: 12,
   },
 
   headerMenuButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
