@@ -5,15 +5,29 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "App.tsx"
+      - "app.json"
+      - "package.json"
+      - "package-lock.json"
+      - "supabase.ts"
+      - ".github/workflows/build-android.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-debug-apk
+  cancel-in-progress: true
 
 jobs:
   build:
-    name: Build Android APK
-    if: github.event_name == 'workflow_dispatch'
+    name: Build installable Android test APK
     runs-on: ubuntu-latest
+    timeout-minutes: 35
 
     steps:
-      - name: Get source code
+      - name: Check out source
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -22,37 +36,29 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install locked dependencies
         run: npm ci
 
-      - name: Build APK with Expo EAS
-        run: npx eas-cli@latest build --platform android --profile preview --non-interactive --wait --json > eas-build.json
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --non-interactive
 
-      - name: Download generated APK
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const result = JSON.parse(fs.readFileSync('eas-build.json', 'utf8'));
-          const build = Array.isArray(result) ? result[0] : result;
-          const url = build?.artifacts?.buildUrl || build?.artifacts?.applicationArchiveUrl;
-          if (!url) {
-            console.error('EAS did not return an APK download URL. Build response:', JSON.stringify(result, null, 2));
-            process.exit(1);
-          }
-          (async () => {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`APK download failed: HTTP ${response.status}`);
-            fs.writeFileSync('IMSIYA.apk', Buffer.from(await response.arrayBuffer()));
-            console.log('Downloaded IMSIYA.apk');
-          })().catch(error => { console.error(error); process.exit(1); });
-          NODE
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK for download
+      - name: Upload installable test APK
         uses: actions/upload-artifact@v4
         with:
-          name: IMSIYA-Android-APK
-          path: IMSIYA.apk
+          name: IMSIYA-Android-Test-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
