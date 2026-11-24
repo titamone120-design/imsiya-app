@@ -926,13 +926,13 @@ function AppContent() {
   };
 
   const requestAccountDeletion = () => {
-    if (!session?.user?.id || isAdmin) return;
+    if (!session?.user?.id) return;
     setAccountDeletionMessage('');
     setAccountDeletionModalOpen(true);
   };
 
   const submitAccountDeletionRequest = async () => {
-    if (!session?.user?.id || isAdmin || accountDeletionSubmitting) return;
+    if (!session?.user?.id || accountDeletionSubmitting) return;
     setAccountDeletionSubmitting(true);
     try {
       const { error } = await supabase.from('account_deletion_requests').insert({
@@ -1836,6 +1836,7 @@ function AppContent() {
             <Text style={styles.shopStatusText}>{tr("Iimayl:", "Email:")} {session.user.email || '—'}</Text>
             <Text style={styles.shopStatusText}>{tr("Nooca akoonka: ", "Account type: ")}{myShop ? tr("Iibiye", "Seller") : profileRole === 'admin' || profileRole === 'super_admin' ? 'Admin' : tr("Macmiil", "Customer")}</Text>
           </View>
+          {isAdmin && <TouchableOpacity style={[styles.profileAction, { borderColor: '#D5A65B', backgroundColor: '#FFF8E9' }]} onPress={() => { setScreen('admin'); loadAdminData(); }}><Text style={[styles.profileActionText, { color: '#6B3B00' }]}>🛡️  {tr('Maamulka IMSIYA', 'IMSIYA Admin Dashboard')}</Text></TouchableOpacity>}
           <TouchableOpacity style={styles.profileAction} onPress={() => setLanguagePickerOpen(true)}><Text style={styles.profileActionText}>🌐  {tr('Luqadda', 'Language')}: {selectedLanguage[1]} {selectedLanguage[2]}</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('favorites')}><Text style={styles.profileActionText}>♥  {tr("Alaabta aan jeclahay", "My Favorites")} ({favoriteIds.length})</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => setScreen('shop')}><Text style={styles.profileActionText}>🏪  {tr("Dukaankayga iyo iibiyaha", "My Shop and Seller Account")}</Text></TouchableOpacity>
@@ -1843,7 +1844,7 @@ function AppContent() {
           <TouchableOpacity style={styles.profileAction} onPress={() => { setScreen('orders'); loadMyOrders(); }}><Text style={styles.profileActionText}>📦  {tr("Dalabyadayda", "My Orders")}</Text></TouchableOpacity>
           <TouchableOpacity style={[styles.profileAction, { borderColor: '#D5A65B', backgroundColor: '#FFF8E9' }]} onPress={() => { setScreen('rewards'); loadMonthlyRewards(); }}><Text style={[styles.profileActionText, { color: '#6B3B00' }]}>🎁  {tr('IMSIYA Rewards — Abaalmarin bille ah', 'IMSIYA Rewards — Monthly Gifts')}  ✨</Text></TouchableOpacity>
           <TouchableOpacity style={styles.profileAction} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setScreen('cart'); }}><Text style={styles.profileActionText}>🛒  {tr("Cart-kayga", "My Cart")} ({cart.length})</Text></TouchableOpacity>
-          {!isAdmin && <TouchableOpacity style={[styles.profileAction, { borderColor: '#F0C6C2', marginTop: 10 }]} onPress={requestAccountDeletion}><Text style={[styles.profileActionText, { color: '#B3261E' }]}>🗑️  {tr('Codso tirtirka akoonka', 'Request account deletion')}</Text></TouchableOpacity>}
+          <TouchableOpacity style={[styles.profileAction, { borderColor: '#F0C6C2', marginTop: 10 }]} onPress={requestAccountDeletion}><Text style={[styles.profileActionText, { color: '#B3261E' }]}>🗑️  {tr('Codso tirtirka akoonka', 'Request account deletion')}</Text></TouchableOpacity>
           <TouchableOpacity style={[styles.primaryButton, { marginTop: 18 }]} onPress={signOut}><Text style={styles.buttonText}>{tr("Ka bax akoonka", "Sign Out")}</Text></TouchableOpacity>
         </>
       )}
