@@ -437,7 +437,7 @@ function AppContent() {
         supabase.from('orders').select('id, customer_id, total_amount, currency, usd_total_amount, status, payment_status, payment_method, delivery_full_name, delivery_phone, delivery_county, delivery_town, delivery_address, delivery_notes, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('shop_subscriptions').select('id, shop_id, amount, currency, status, started_at, expires_at, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('wallet_transactions').select('id, seller_id, amount, transaction_type, description, order_id, created_at').order('created_at', { ascending: false }).limit(50),
-        supabase.from('payout_requests').select('id, seller_id, amount, status, payout_method, payout_account, created_at, processed_at, admin_note').order('created_at', { ascending: false }).limit(100),
+        supabase.from('payout_requests').select('id, seller_id, amount, status, payout_method, payout_account, created_at, processed_at, admin_note, paypal_batch_id, paypal_payout_amount, paypal_payout_currency, paypal_fx_rate').order('created_at', { ascending: false }).limit(100),
         supabase.from('account_deletion_requests').select('id, requester_id, requester_email, status, requested_at, processed_at, admin_note').order('requested_at', { ascending: false }).limit(100),
       ]);
       if (sellersResult.error) throw sellersResult.error;
@@ -632,7 +632,29 @@ function AppContent() {
     }
   };
 
-  const updatePayoutRequestStatus = async (requestId: string, nextStatus: 'paid' | 'rejected') => {
+  const processPayPalPayout = async (requestId: string, action: 'send' | 'check') => {
+    if (!isAdmin) return;
+    try {
+      const { data, error } = await supabase.functions.invoke('process-paypal-payout', {
+        body: { request_id: requestId, action },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      await loadAdminData();
+      if (data?.status === 'paid') {
+        Alert.alert('IMSIYA PayPal', tr('PayPal wuxuu xaqiijiyey in lacagta la diray. Wallet-ka waa laga jaray lacagta.', 'PayPal confirmed the transfer. The wallet balance has been deducted.'));
+      } else if (data?.status === 'rejected') {
+        Alert.alert('IMSIYA PayPal', tr('PayPal ma dhammaystirin lacag-dirista. Hadhaaga iibiyaha lama jarin.', 'PayPal did not complete the transfer. The seller balance was not deducted.'));
+      } else {
+        Alert.alert('IMSIYA PayPal', tr('PayPal wuu aqbalay codsiga; lacag-diristu wali way socotaa. Mar kale hubi xaaladda.', 'PayPal accepted the batch; the transfer is still processing. Check the status again shortly.'));
+      }
+    } catch (e: any) {
+      Alert.alert('IMSIYA PayPal', e.message || tr('PayPal payout lama fulin karin.', 'Could not process PayPal payout.'));
+      await loadAdminData();
+    }
+  };
+
+  const updatePayoutRequestStatus = async (requestId: string, nextStatus: 'rejected') => {
     if (!isAdmin) return;
     try {
       const { error } = await supabase.rpc('admin_process_payout', {
@@ -641,7 +663,7 @@ function AppContent() {
       });
       if (error) throw error;
       await loadAdminData();
-      Alert.alert('IMSIYA Admin', nextStatus === 'paid' ? tr('Codsiga waxaa loo calaamadeeyey in lacagta la diray.', 'The request was marked as paid.') : tr('Codsiga waa la diiday.', 'The request was rejected.'));
+      Alert.alert('IMSIYA Admin', tr('Codsiga waa la diiday.', 'The request was rejected.'));
     } catch (e: any) {
       Alert.alert('IMSIYA Admin', e.message || tr('Xaaladda codsiga lama beddeli karin.', 'Could not update request status.'));
     }
@@ -2099,14 +2121,16 @@ function AppContent() {
       <Text style={styles.sectionTitle}>{tr("Codsiyada lacag-bixinta iibiyeyaasha", "Seller Payout Requests")}</Text>
       {adminPayoutRequests.length === 0 ? <Text style={styles.emptyText}>{tr('Weli codsi lacag-bixin ma jiro.', 'No payout requests yet.')}</Text> : adminPayoutRequests.map(req => (
         <View key={req.id} style={styles.shopStatusCard}>
-          <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} · PayPal</Text>
+          <Text style={styles.shopStatusTitle}>{money(Number(req.amount || 0))} KSh · PayPal</Text>
           <Text style={styles.shopStatusText}>Seller ID: {req.seller_id}</Text>
-          <Text style={styles.shopStatusText}>{tr('Ogow: lacagta marka hore ku dir PayPal; badhanka hoose wuxuu diiwaangelinayaa oo keliya bixinta aad hore u samaysay.', 'Important: send the money through PayPal first; the button below only records a transfer you have already made.')}</Text>
-          <Text style={styles.shopStatusText}>{tr('Akoonka lacagta:', 'Payout account:')} {req.payout_account || '—'}</Text>
+          <Text style={styles.shopStatusText}>{tr('Akoonka PayPal:', 'PayPal account:')} {req.payout_account || '—'}</Text>
+          {req.paypal_payout_amount ? <Text style={styles.shopStatusText}>{tr('Lacagta PayPal:', 'PayPal amount:')} {req.paypal_payout_currency || 'USD'} {Number(req.paypal_payout_amount).toFixed(2)} · {tr('Sarifka KES/USD:', 'KES/USD rate:')} {Number(req.paypal_fx_rate || 0).toFixed(6)}</Text> : null}
           <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {req.status}</Text>
+          {req.paypal_batch_id ? <Text style={styles.shopStatusText}>PayPal Batch: {req.paypal_batch_id}</Text> : null}
+          {req.admin_note ? <Text style={styles.shopStatusText}>{req.admin_note}</Text> : null}
           {req.status === 'pending' || req.status === 'processing' ? <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'paid')}><Text style={styles.secondaryButtonText}>{tr('Xaqiiji: PayPal waa la diray', 'Confirm: PayPal transfer sent')}</Text></TouchableOpacity>
-            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'rejected')}><Text style={styles.secondaryButtonText}>{tr('Diid codsiga', 'Reject request')}</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => processPayPalPayout(req.id, req.status === 'pending' ? 'send' : 'check')}><Text style={styles.secondaryButtonText}>{req.status === 'pending' ? tr('U dir PayPal', 'Send via PayPal') : tr('Hubi xaaladda PayPal', 'Check PayPal status')}</Text></TouchableOpacity>
+            {req.status === 'pending' ? <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={() => updatePayoutRequestStatus(req.id, 'rejected')}><Text style={styles.secondaryButtonText}>{tr('Diid codsiga', 'Reject request')}</Text></TouchableOpacity> : null}
           </View> : null}
         </View>
       ))}
