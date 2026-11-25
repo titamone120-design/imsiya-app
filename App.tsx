@@ -1335,8 +1335,8 @@ function AppContent() {
 
   const toggleFavorite = (productId: string) => setFavoriteIds(current => current.includes(productId) ? current.filter(id => id !== productId) : [...current, productId]);
 
-  const renderProduct = (product: Product) => (
-    <View key={product.id} style={styles.productCard}>
+  const renderProduct = (product: Product, featured = false) => (
+    <View key={product.id} style={[styles.productCard, featured && styles.featuredProductCard]}>
       {(product.image_urls?.[0] || product.image_url) ? (
         <Image
           source={{ uri: product.image_urls?.[0] || product.image_url! }}
@@ -1392,8 +1392,8 @@ function AppContent() {
 
       <View style={styles.promoBanner}>
         <View style={styles.promoCopy}>
-          <Text style={styles.promoEyebrow}>IMSIYA SPECIAL</Text>
-          <Text style={styles.promoTitle}>{tr("Macmacaan kuu gaar ah", "Sweet Deals")}</Text>
+          <Text style={styles.promoEyebrow}>IMSIYA SWEETS MARKETPLACE</Text>
+          <Text style={styles.promoTitle}>IMSIYA</Text>
           <Text style={styles.promoSubtitle}>{tr("Soo hel macmacaanka aad jeceshahay", "Discover sweets you will love")}</Text>
           <TouchableOpacity style={styles.promoButton} onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
             <Text style={styles.promoButtonText}>{tr("Hadda iibso", "Shop Now")}  →</Text>
@@ -3009,7 +3009,7 @@ const styles = StyleSheet.create({
   searchGlyph: { color: '#6B4AA0', fontSize: 25, marginRight: 8 },
   searchFilter: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#F1EAF8', alignItems: 'center', justifyContent: 'center' },
   searchFilterText: { color: '#6B4AA0', fontSize: 22, fontWeight: '800' },
-  promoBanner: { minHeight: 205, borderRadius: 24, backgroundColor: '#FFE3EF', padding: 18, marginBottom: 22, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 2, borderWidth: 1, borderColor: '#FFD0E3' },
+  promoBanner: { minHeight: 228, borderRadius: 24, backgroundColor: '#FFE3EF', padding: 18, marginBottom: 22, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 2, borderWidth: 1, borderColor: '#FFD0E3' },
   promoCopy: { flex: 1, zIndex: 2 },
   promoEyebrow: { color: '#8A3680', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 7 },
   promoTitle: { color: '#79009B', fontSize: 27, lineHeight: 31, fontWeight: '900', marginBottom: 5 },
@@ -3022,11 +3022,11 @@ const styles = StyleSheet.create({
   promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#FFC7E0', right: -70, top: -92, opacity: 0.65 },
   seeAllText: { color: '#6B4AA0', fontSize: 12, fontWeight: '900' },
   homeCategoryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 23, gap: 6 },
-  homeCategoryCard: { flex: 1, minHeight: 108, borderRadius: 19, backgroundColor: '#F8F0FB', borderWidth: 1, borderColor: '#F1E5F5', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, paddingVertical: 10, elevation: 1 },
+  homeCategoryCard: { flex: 1, minHeight: 142, borderRadius: 19, backgroundColor: '#F8F0FB', borderWidth: 1, borderColor: '#F1E5F5', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, paddingVertical: 10, elevation: 1 },
   homeCategoryActive: { borderColor: '#6B4AA0', backgroundColor: '#F1EAF8' },
-  homeCategoryIcon: { fontSize: 31, marginBottom: 8 },
+  homeCategoryIcon: { fontSize: 39, marginBottom: 8 },
   homeCategoryAllIcon: { color: '#79009B', fontSize: 37, fontWeight: '800' },
-  homeCategoryName: { color: '#30283A', fontSize: 11, fontWeight: '800', textAlign: 'center', lineHeight: 14 },
+  homeCategoryName: { color: '#30283A', fontSize: 13, fontWeight: '800', textAlign: 'center', lineHeight: 14 },
   homeCategoryNameActive: { color: '#6B4AA0' },
   productSectionTools: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
 
