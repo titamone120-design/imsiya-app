@@ -614,7 +614,13 @@ function AppContent() {
       await loadSellerWallet();
       Alert.alert('IMSIYA Wallet', tr('Codsiga lacag-bixinta waa la gudbiyey. Maamulka ayaa hubinaya oo gacanta ku bixinaya.', 'Payout request submitted. The team will review it and process the payment manually.'));
     } catch (e: any) {
-      Alert.alert('IMSIYA Wallet', e.message || tr('Codsiga lacag-bixinta lama gudbin karin.', 'Could not submit payout request.'));
+      const rawMessage = String(e?.message || '');
+      const friendlyMessage =
+        rawMessage.includes('Lacagta la codsaday way ka badan tahay hadhaaga la heli karo') ||
+        rawMessage.includes('Hadhaaga wallet-ka kuma filna')
+          ? tr('Hadhaagaagu kuguma filna. Fadlan geli lacag ka yar hadhaaga la heli karo.', 'Your available balance is not enough. Please enter a smaller amount.')
+          : rawMessage || tr('Codsiga lacag-bixinta lama gudbin karin.', 'Could not submit payout request.');
+      Alert.alert('IMSIYA Wallet', friendlyMessage);
     } finally {
       setPayoutSubmitting(false);
     }
