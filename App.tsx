@@ -247,6 +247,12 @@ function AppContent() {
   const [productError, setProductError] = useState('');
 
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [deliveryName, setDeliveryName] = useState('');
+  const [deliveryPhone, setDeliveryPhone] = useState('');
+  const [deliveryCounty, setDeliveryCounty] = useState('');
+  const [deliveryTown, setDeliveryTown] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryNotes, setDeliveryNotes] = useState('');
   const [localDataReadyForUser, setLocalDataReadyForUser] = useState<string | null>(null);
 
   const [screen, setScreen] = useState<'home' | 'cart' | 'shop' | 'admin' | 'profile' | 'favorites' | 'orders' | 'seller-orders' | 'wallet' | 'product' | 'rewards'>('home');
@@ -428,7 +434,7 @@ function AppContent() {
     try {
       const [sellersResult, ordersResult, subscriptionsResult, walletResult, payoutsResult, deletionRequestsResult] = await Promise.all([
         supabase.from('seller_profiles').select('id, shop_name, description, approved, created_at').eq('approved', false).order('created_at', { ascending: false }).limit(50),
-        supabase.from('orders').select('id, customer_id, total_amount, currency, usd_total_amount, status, payment_status, payment_method, created_at').order('created_at', { ascending: false }).limit(50),
+        supabase.from('orders').select('id, customer_id, total_amount, currency, usd_total_amount, status, payment_status, payment_method, delivery_full_name, delivery_phone, delivery_county, delivery_town, delivery_address, delivery_notes, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('shop_subscriptions').select('id, shop_id, amount, currency, status, started_at, expires_at, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('wallet_transactions').select('id, seller_id, amount, transaction_type, description, order_id, created_at').order('created_at', { ascending: false }).limit(50),
         supabase.from('payout_requests').select('id, seller_id, amount, status, payout_method, payout_account, created_at, processed_at, admin_note').order('created_at', { ascending: false }).limit(100),
@@ -1451,6 +1457,15 @@ function AppContent() {
       return;
     }
 
+    if (!deliveryName.trim() || !deliveryPhone.trim() || !deliveryCounty.trim() || !deliveryTown.trim() || !deliveryAddress.trim()) {
+      Alert.alert('IMSIYA', tr('Fadlan buuxi magaca, telefoonka, county-ga, magaalada iyo cinwaanka gaarsiinta.', 'Please complete your name, phone, county, town and delivery address.'));
+      return;
+    }
+    if (deliveryPhone.replace(/[^0-9+]/g, '').length < 9) {
+      Alert.alert('IMSIYA', tr('Geli telefoon sax ah.', 'Enter a valid phone number.'));
+      return;
+    }
+
     setCheckoutLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke(
@@ -1458,6 +1473,14 @@ function AppContent() {
         {
           body: {
             platform: Platform.OS === 'web' ? 'web' : 'native',
+            delivery: {
+              full_name: deliveryName.trim(),
+              phone: deliveryPhone.trim(),
+              county: deliveryCounty.trim(),
+              town: deliveryTown.trim(),
+              address: deliveryAddress.trim(),
+              notes: deliveryNotes.trim() || null,
+            },
             items: cart.map(item => ({
               product_id: item.id,
               quantity: item.quantity,
@@ -1498,7 +1521,7 @@ function AppContent() {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, total_amount, currency, status, payment_status, payment_method, created_at')
+        .select('id, total_amount, currency, status, payment_status, payment_method, delivery_full_name, delivery_phone, delivery_county, delivery_town, delivery_address, delivery_notes, created_at')
         .eq('customer_id', session.user.id)
         .order('created_at', { ascending: false })
         .limit(30);
@@ -1537,7 +1560,7 @@ function AppContent() {
     try {
       const { data, error } = await supabase
         .from('order_items')
-        .select('id, order_id, product_id, quantity, unit_price, products(name), orders(id, total_amount, currency, status, payment_status, payment_method, created_at)')
+        .select('id, order_id, product_id, quantity, unit_price, products(name), orders(id, total_amount, currency, status, payment_status, payment_method, delivery_full_name, delivery_phone, delivery_county, delivery_town, delivery_address, delivery_notes, created_at)')
         .eq('seller_id', session.user.id)
         .order('created_at', { ascending: false })
         .limit(100);
@@ -1671,7 +1694,12 @@ function AppContent() {
             <Text style={styles.shopStatusText}>{tr('Tirada:', 'Quantity:')} {item.quantity} · {tr('Qiimaha:', 'Price:')} {money(Number(item.unit_price || 0) * Number(item.quantity || 0))}</Text>
             <Text style={styles.shopStatusText}>{tr('Wadarta dalabka:', 'Order total:')} {order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
             <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status, language)}</Text>
+          <Text style={styles.shopStatusText}>{tr('Gaarsiin:', 'Delivery:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
+          <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
             <Text style={styles.shopStatusText}>{tr('Bixinta:', 'Payment:')} {String(order.payment_status || '—')} · {tr('Habka:', 'Method:')} {order.payment_method || '—'}</Text>
+            <Text style={styles.shopStatusText}>{tr('Gaarsiin:', 'Delivery:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
+            <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
+            {!!order.delivery_notes && <Text style={styles.shopStatusText}>{tr('Qoraal:', 'Notes:')} {order.delivery_notes}</Text>}
             <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
             <Text style={styles.shopStatusText}>{tr('Dalab:', 'Order:')} {String(order.id).slice(0, 12)}</Text>
           </View>
@@ -1935,6 +1963,16 @@ function AppContent() {
           </View>
 
           <View style={styles.checkoutPaymentCard}>
+            <Text style={styles.checkoutSectionTitle}>{tr('Faahfaahinta gaarsiinta', 'Delivery Details')}</Text>
+            <TextInput style={styles.input} value={deliveryName} onChangeText={setDeliveryName} placeholder={tr('Magaca qofka qaadanaya', 'Recipient full name')} autoCapitalize="words" />
+            <TextInput style={styles.input} value={deliveryPhone} onChangeText={setDeliveryPhone} placeholder={tr('Telefoonka (tusaale +254...)', 'Phone number (e.g. +254...)')} keyboardType="phone-pad" />
+            <TextInput style={styles.input} value={deliveryCounty} onChangeText={setDeliveryCounty} placeholder={tr('County', 'County')} />
+            <TextInput style={styles.input} value={deliveryTown} onChangeText={setDeliveryTown} placeholder={tr('Magaalada / deegaanka', 'Town / area')} />
+            <TextInput style={styles.input} value={deliveryAddress} onChangeText={setDeliveryAddress} placeholder={tr('Cinwaanka faahfaahsan / landmark', 'Detailed address / landmark')} multiline />
+            <TextInput style={styles.input} value={deliveryNotes} onChangeText={setDeliveryNotes} placeholder={tr('Faahfaahin dheeraad ah (ikhtiyaari)', 'Additional delivery notes (optional)')} multiline />
+          </View>
+
+          <View style={styles.checkoutPaymentCard}>
             <Text style={styles.checkoutSectionTitle}>{tr("Habka lacag-bixinta", "Payment Method")}</Text>
             <View style={styles.checkoutPaypalRow}>
               <View style={styles.checkoutPaypalMark}><Text style={styles.checkoutPaypalP}>P</Text></View>
@@ -2029,6 +2067,9 @@ function AppContent() {
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {orderStatusLabel(order.status, order.payment_status, language)} · {tr('Bixin:', 'Payment:')} {order.payment_status}</Text>
           <Text style={styles.shopStatusText}>{tr('Habka:', 'Method:')} {order.payment_method || tr('Lama cayimin', 'Not specified')}</Text>
+          <Text style={styles.shopStatusText}>{tr('Qofka qaadanaya:', 'Recipient:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
+          <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
+          {!!order.delivery_notes && <Text style={styles.shopStatusText}>{tr('Qoraal gaarsiin:', 'Delivery notes:')} {order.delivery_notes}</Text>
           <Text style={styles.shopStatusText}>Order ID: {order.id}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
           {order.payment_status === 'paid' && (
