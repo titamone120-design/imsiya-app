@@ -2068,9 +2068,11 @@ function AppContent() {
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{tr('Xaalad:', 'Status:')} {orderStatusLabel(order.status, order.payment_status, language)} · {tr('Bixin:', 'Payment:')} {order.payment_status}</Text>
           <Text style={styles.shopStatusText}>{tr('Habka:', 'Method:')} {order.payment_method || tr('Lama cayimin', 'Not specified')}</Text>
-          <Text style={styles.shopStatusText}>{tr('Qofka qaadanaya:', 'Recipient:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
-          <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
-          {!!order.delivery_notes && <Text style={styles.shopStatusText}>{tr('Qoraal gaarsiin:', 'Delivery notes:')} {order.delivery_notes}</Text>
+          <View>
+            <Text style={styles.shopStatusText}>{tr('Qofka qaadanaya:', 'Recipient:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
+            <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
+            {order.delivery_notes ? <Text style={styles.shopStatusText}>{tr('Qoraal gaarsiin:', 'Delivery notes:')} {order.delivery_notes}</Text> : null}
+          </View>
           <Text style={styles.shopStatusText}>Order ID: {order.id}</Text>
           <Text style={styles.shopStatusText}>{new Date(order.created_at).toLocaleString()}</Text>
           {order.payment_status === 'paid' && (
