@@ -1394,15 +1394,14 @@ function AppContent() {
         <View style={styles.promoCopy}>
           <Text style={styles.promoEyebrow}>IMSIYA SWEETS MARKETPLACE</Text>
           <Text style={styles.promoTitle}>IMSIYA</Text>
-          <Text style={styles.promoSubtitle}>{tr("Soo hel macmacaanka aad jeceshahay", "Discover sweets you will love")}</Text>
+          <Text style={styles.promoSubtitle}>{tr("Ku iibso macmacaanka kala duwan online", "Discover and shop sweets you will love")}</Text>
           <TouchableOpacity style={styles.promoButton} onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
             <Text style={styles.promoButtonText}>{tr("Hadda iibso", "Shop Now")}  →</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.promoArt}>
-          {products[0]?.image_url ? (
-            <Image source={{ uri: products[0].image_url }} style={styles.promoImage} resizeMode="cover" />
-          ) : <Text style={styles.promoEmoji}>🍰</Text>}
+          <View style={styles.promoSweetTop}><Text style={styles.promoCakeEmoji}>🎂</Text><Text style={styles.promoDonutEmoji}>🍩</Text></View>
+          <View style={styles.promoSweetBottom}><Text style={styles.promoCookieEmoji}>🍪</Text><Text style={styles.promoCupcakeEmoji}>🧁</Text></View>
         </View>
         <View style={styles.promoOrb} />
       </View>
@@ -1429,10 +1428,9 @@ function AppContent() {
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{tr("Alaabta caanka ah", "Popular Products")}</Text>
-        <TouchableOpacity style={styles.refreshButton} onPress={() => { loadProducts(); loadCategories(); }} disabled={productsLoading} accessibilityLabel={tr("Cusboonaysii", "Refresh")}>
-          {productsLoading ? <ActivityIndicator size="small" color="#6B4AA0" /> : <Text style={styles.refreshIcon}>↻</Text>}
-          <Text style={styles.refreshButtonText}>{tr("Cusboonaysii", "Refresh")}</Text>
+        <Text style={styles.sectionTitle}>{tr("Alaabta la xushay", "Featured Products")}</Text>
+        <TouchableOpacity onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
+          <Text style={styles.seeAllText}>{tr("Eeg dhammaan", "See All")} →</Text>
         </TouchableOpacity>
       </View>
 
@@ -1453,7 +1451,9 @@ function AppContent() {
       ) : filteredProducts.length === 0 ? (
         <Text style={styles.emptyText}>{tr("Weli alaab lama helin.", "No products found yet.")}</Text>
       ) : (
-        <View style={styles.productGrid}>{filteredProducts.map(renderProduct)}</View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredProductList}>
+          {filteredProducts.map(product => renderProduct(product, true))}
+        </ScrollView>
       )}
 
       {productsHasMore && !productsLoading && (
@@ -3012,13 +3012,17 @@ const styles = StyleSheet.create({
   promoBanner: { minHeight: 228, borderRadius: 24, backgroundColor: '#FFE3EF', padding: 18, marginBottom: 22, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 2, borderWidth: 1, borderColor: '#FFD0E3' },
   promoCopy: { flex: 1, zIndex: 2 },
   promoEyebrow: { color: '#8A3680', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 7 },
-  promoTitle: { color: '#79009B', fontSize: 27, lineHeight: 31, fontWeight: '900', marginBottom: 5 },
-  promoSubtitle: { color: '#38233F', fontSize: 15, fontWeight: '700', marginBottom: 13 },
+  promoTitle: { color: '#79009B', fontSize: 38, lineHeight: 43, fontWeight: '900', marginBottom: 5, letterSpacing: 0.2 },
+  promoSubtitle: { color: '#38233F', fontSize: 16, lineHeight: 22, fontWeight: '700', marginBottom: 15 },
   promoButton: { alignSelf: 'flex-start', backgroundColor: '#79009B', borderRadius: 22, paddingVertical: 11, paddingHorizontal: 17 },
   promoButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
-  promoArt: { width: 150, height: 150, borderRadius: 75, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginLeft: 8, zIndex: 1, overflow: 'hidden' },
-  promoImage: { width: '100%', height: '100%' },
-  promoEmoji: { fontSize: 64 },
+  promoArt: { width: 172, height: 172, borderRadius: 86, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginLeft: 7, zIndex: 1, overflow: 'hidden', padding: 8 },
+  promoSweetTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: -7 },
+  promoSweetBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: -5 },
+  promoCakeEmoji: { fontSize: 64 },
+  promoDonutEmoji: { fontSize: 43, marginLeft: -7 },
+  promoCookieEmoji: { fontSize: 48 },
+  promoCupcakeEmoji: { fontSize: 49, marginLeft: -3 },
   promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#FFC7E0', right: -70, top: -92, opacity: 0.65 },
   seeAllText: { color: '#6B4AA0', fontSize: 12, fontWeight: '900' },
   homeCategoryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 23, gap: 6 },
@@ -3029,6 +3033,8 @@ const styles = StyleSheet.create({
   homeCategoryName: { color: '#30283A', fontSize: 13, fontWeight: '800', textAlign: 'center', lineHeight: 14 },
   homeCategoryNameActive: { color: '#6B4AA0' },
   productSectionTools: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
+  featuredProductList: { paddingBottom: 6, paddingRight: 4 },
+  featuredProductCard: { width: 238, marginRight: 12, marginBottom: 10 },
 
   myShopScreen: { paddingBottom: 24 },
   myShopHeader: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#4D376B', borderRadius: 22, padding: 18, marginBottom: 18, borderLeftWidth: 5, borderLeftColor: '#D5A65B', elevation: 3 },
