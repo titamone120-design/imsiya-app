@@ -1694,8 +1694,6 @@ function AppContent() {
             <Text style={styles.shopStatusText}>{tr('Tirada:', 'Quantity:')} {item.quantity} · {tr('Qiimaha:', 'Price:')} {money(Number(item.unit_price || 0) * Number(item.quantity || 0))}</Text>
             <Text style={styles.shopStatusText}>{tr('Wadarta dalabka:', 'Order total:')} {order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
             <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status, language)}</Text>
-          <Text style={styles.shopStatusText}>{tr('Gaarsiin:', 'Delivery:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
-          <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
             <Text style={styles.shopStatusText}>{tr('Bixinta:', 'Payment:')} {String(order.payment_status || '—')} · {tr('Habka:', 'Method:')} {order.payment_method || '—'}</Text>
             <Text style={styles.shopStatusText}>{tr('Gaarsiin:', 'Delivery:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
             <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
@@ -1720,6 +1718,9 @@ function AppContent() {
         <View key={order.id} style={styles.shopStatusCard}>
           <Text style={styles.shopStatusTitle}>{order.currency || 'KES'} {Number(order.total_amount || 0).toLocaleString('en-KE')}</Text>
           <Text style={styles.shopStatusText}>{orderStatusLabel(order.status, order.payment_status, language)}</Text>
+          <Text style={styles.shopStatusText}>{tr('Gaarsiin:', 'Delivery:')} {order.delivery_full_name || '—'} · {order.delivery_phone || '—'}</Text>
+          <Text style={styles.shopStatusText}>{[order.delivery_county, order.delivery_town, order.delivery_address].filter(Boolean).join(', ') || tr('Cinwaan lama hayo', 'No address')}</Text>
+          {!!order.delivery_notes && <Text style={styles.shopStatusText}>{tr('Qoraal gaarsiin:', 'Delivery notes:')} {order.delivery_notes}</Text>}
           <Text style={[styles.shopStatusText, { fontWeight: '700', marginTop: 10 }]}>{tr('Raadraaca dalabka', 'Order tracking')}</Text>
           {String(order.status || '').toLowerCase() === 'cancelled' || String(order.status || '').toLowerCase() === 'canceled' ? (
             <Text style={[styles.shopStatusText, { color: '#B42318', fontWeight: '700' }]}>{tr('Dalabkan waa la joojiyey.', 'This order was cancelled.')}</Text>
