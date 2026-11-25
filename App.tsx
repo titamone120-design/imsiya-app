@@ -1375,17 +1375,19 @@ function AppContent() {
   const renderHome = () => (
     <>
       <View style={styles.homeSearchWrap}>
-        <Text style={styles.searchGlyph}>⌕</Text>
-        <TextInput
-          style={[styles.searchInput, styles.homeSearchInput]}
-          placeholder={tr("Raadi macmacaan...", "Search sweets...")}
-          placeholderTextColor="#8A8193"
-          value={search}
-          onChangeText={setSearch}
-        />
-        <TouchableOpacity style={styles.searchFilter} onPress={() => { loadProducts(); loadCategories(); }}>
-          <Text style={styles.searchFilterText}>☷</Text>
-        </TouchableOpacity>
+        <View style={styles.homeSearchPill}>
+          <Text style={styles.searchGlyph}>⌕</Text>
+          <TextInput
+            style={[styles.searchInput, styles.homeSearchInput]}
+            placeholder={tr("Raadi macmacaan...", "Search sweets, cakes, biscuits...")}
+            placeholderTextColor="#77717F"
+            value={search}
+            onChangeText={setSearch}
+          />
+          <TouchableOpacity style={styles.searchFilter} onPress={() => { loadProducts(); loadCategories(); }} accessibilityLabel="Search filters">
+            <Text style={styles.searchFilterText}>☷</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.promoBanner}>
@@ -1413,15 +1415,15 @@ function AppContent() {
       </View>
       <View style={styles.homeCategoryGrid}>
         {[
-          { name: 'Keeg', icon: '🍰' },
           { name: 'Buskut', icon: '🍪' },
+          { name: 'Keeg', icon: '🍰' },
           { name: 'Xalwo', icon: '🍯' },
-          { name: 'Shukulaato', icon: '🍫' },
-          { name: 'Macmacaan kale', icon: '🍬' },
+          { name: 'Macmacaan kale', icon: '🍩', label: tr('Macmacaan', 'Sweets') },
+          { name: 'Dhammaan', icon: '▦', label: tr('Dhammaan qaybaha', 'All Categories') },
         ].map(item => (
           <TouchableOpacity key={item.name} style={[styles.homeCategoryCard, category === item.name && styles.homeCategoryActive]} onPress={() => setCategory(item.name)}>
-            <Text style={styles.homeCategoryIcon}>{item.icon}</Text>
-            <Text style={[styles.homeCategoryName, category === item.name && styles.homeCategoryNameActive]}>{translateSweetName(item.name, language)}</Text>
+            <Text style={[styles.homeCategoryIcon, item.name === 'Dhammaan' && styles.homeCategoryAllIcon]}>{item.icon}</Text>
+            <Text style={[styles.homeCategoryName, category === item.name && styles.homeCategoryNameActive]}>{item.label || translateSweetName(item.name, language)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -2346,17 +2348,21 @@ function AppContent() {
       </Modal>
 
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerMenuButton} onPress={() => setScreen('profile')} accessibilityLabel="Menu">
-          <Text style={styles.headerMenuIcon}>☰</Text>
-        </TouchableOpacity>
-        <View style={styles.headerBrand}>
-          <Text style={styles.headerLogo}>IMSIYA</Text>
-          <Text style={styles.headerSubtitle}>{tr("Suuqa macmacaanka", "Sweetness for Everyone")}</Text>
+        <View style={styles.headerBrandRow}>
+          <Text style={styles.headerBrandIcon}>🧁</Text>
+          <View style={styles.headerBrandCopy}>
+            <Text style={styles.headerLogo}>IMSIYA</Text>
+            <Text style={styles.headerSubtitle}>{tr("Suuqa macmacaanka", "Sweets Marketplace")}</Text>
+          </View>
         </View>
-        <TouchableOpacity style={styles.headerCartButton} onPress={() => setScreen('cart')} accessibilityLabel="Cart">
-          <Text style={styles.headerCartIcon}>🛒</Text>
-          {cart.reduce((sum, item) => sum + item.quantity, 0) > 0 && <View style={styles.cartBadge}><Text style={styles.cartBadgeText}>{cart.reduce((sum, item) => sum + item.quantity, 0)}</Text></View>}
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.headerActionButton} onPress={() => setScreen('orders')} accessibilityLabel="Notifications">
+            <Text style={styles.headerActionIcon}>♧</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerActionButton} onPress={() => setScreen('favorites')} accessibilityLabel="Favorites">
+            <Text style={styles.headerActionIcon}>♡</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <ScrollView
         style={styles.content}
@@ -2551,17 +2557,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    backgroundColor: '#F7F3FB',
-    paddingHorizontal: 18,
-    paddingVertical: 15,
-    minHeight: 72,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5DCEC',
+    backgroundColor: '#79009B',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 14 : 18,
+    paddingBottom: 17,
+    minHeight: 94,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  headerBrandRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  headerBrandIcon: { fontSize: 43, marginRight: 10 },
+  headerBrandCopy: { justifyContent: 'center' },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  headerActionButton: { width: 42, height: 44, alignItems: 'center', justifyContent: 'center' },
+  headerActionIcon: { color: '#FFFFFF', fontSize: 36, lineHeight: 42, fontWeight: '400' },
   headerLogo: {
+    color: '#FFFFFF',
     fontSize: 30,
     fontWeight: '900',
     letterSpacing: 1.4,
@@ -2569,7 +2581,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#8A75A5',
+    color: '#F7E9FF',
     fontWeight: '700',
     fontStyle: 'italic',
     letterSpacing: 0.25,
@@ -2991,7 +3003,8 @@ const styles = StyleSheet.create({
   headerCartIcon: { color: '#65458F', fontSize: 23 },
   cartBadge: { position: 'absolute', top: 0, right: 0, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: '#FF8A00', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   cartBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
-  homeSearchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1, borderColor: '#E9E2F1', paddingHorizontal: 14, paddingVertical: 8, marginTop: 12, marginBottom: 18, minHeight: 72, elevation: 1 },
+  homeSearchWrap: { backgroundColor: '#79009B', marginTop: -16, marginHorizontal: -16, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 20, marginBottom: 18 },
+  homeSearchPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 15, minHeight: 62, elevation: 2 },
   homeSearchInput: { flex: 1, minHeight: 54, paddingVertical: 13, marginBottom: 0 },
 
   searchGlyph: { color: '#6B4AA0', fontSize: 25, marginRight: 8 },
@@ -3009,11 +3022,12 @@ const styles = StyleSheet.create({
   promoEmoji: { fontSize: 64 },
   promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#E1D5EF', right: -70, top: -92, opacity: 0.95 },
   seeAllText: { color: '#6B4AA0', fontSize: 12, fontWeight: '900' },
-  homeCategoryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 23, gap: 8 },
-  homeCategoryCard: { flex: 1, minHeight: 94, borderRadius: 17, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEE7F4', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, elevation: 1 },
+  homeCategoryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 23, gap: 6 },
+  homeCategoryCard: { flex: 1, minHeight: 108, borderRadius: 19, backgroundColor: '#F8F0FB', borderWidth: 1, borderColor: '#F1E5F5', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, paddingVertical: 10, elevation: 1 },
   homeCategoryActive: { borderColor: '#6B4AA0', backgroundColor: '#F1EAF8' },
-  homeCategoryIcon: { fontSize: 29, marginBottom: 7 },
-  homeCategoryName: { color: '#30283A', fontSize: 11, fontWeight: '800', textAlign: 'center' },
+  homeCategoryIcon: { fontSize: 31, marginBottom: 8 },
+  homeCategoryAllIcon: { color: '#79009B', fontSize: 37, fontWeight: '800' },
+  homeCategoryName: { color: '#30283A', fontSize: 11, fontWeight: '800', textAlign: 'center', lineHeight: 14 },
   homeCategoryNameActive: { color: '#6B4AA0' },
   productSectionTools: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
 
