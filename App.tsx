@@ -1393,8 +1393,8 @@ function AppContent() {
       <View style={styles.promoBanner}>
         <View style={styles.promoCopy}>
           <Text style={styles.promoEyebrow}>IMSIYA SPECIAL</Text>
-          <Text style={styles.promoTitle}>{tr("Dalabyo Macaan", "Sweet Deals")}</Text>
-          <Text style={styles.promoSubtitle}>{tr("Soo hel macmacaan aad jeclaan doonto", "Discover sweets you will love")}</Text>
+          <Text style={styles.promoTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{tr("Dalabyo Macaan", "Sweet Deals")}</Text>
+          <Text style={styles.promoSubtitle} numberOfLines={2}>{tr("Soo hel macmacaan aad jeclaan doonto", "Discover sweets you will love")}</Text>
           <TouchableOpacity style={styles.promoButton} onPress={() => { setCategory('Dhammaan'); setSearch(''); }}>
             <Text style={styles.promoButtonText}>{tr("Hadda iibso", "Shop Now")}  →</Text>
           </TouchableOpacity>
@@ -2977,10 +2977,10 @@ const styles = StyleSheet.create({
   },
 
   headerMenuButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
-  headerMenuIcon: { color: '#65458F', fontSize: 25, fontWeight: '700' },
+  headerMenuIcon: { color: '#FFFFFF', fontSize: 31, fontWeight: '700' },
   headerBrand: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   headerCartButton: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  headerCartIcon: { color: '#65458F', fontSize: 23 },
+  headerCartIcon: { color: '#FFFFFF', fontSize: 29 },
   cartBadge: { position: 'absolute', top: 0, right: 0, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: '#FF8A00', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   cartBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
   homeSearchWrap: { backgroundColor: 'transparent', marginTop: 0, marginHorizontal: 0, paddingHorizontal: 0, paddingTop: 0, paddingBottom: 0, marginBottom: 24 },
@@ -2989,23 +2989,23 @@ const styles = StyleSheet.create({
   searchGlyph: { color: '#4D078C', fontSize: 25, marginRight: 8 },
   searchFilter: { width: 42, height: 42, borderRadius: 13, backgroundColor: '#F3EAF9', alignItems: 'center', justifyContent: 'center' },
   searchFilterText: { color: '#4D078C', fontSize: 22, fontWeight: '800' },
-  promoBanner: { minHeight: 228, borderRadius: 27, backgroundColor: '#4D078C', padding: 22, marginBottom: 27, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 3, borderWidth: 0 },
-  promoCopy: { flex: 1, zIndex: 2 },
-  promoEyebrow: { color: '#FFC34D', fontSize: 11, fontWeight: '900', letterSpacing: 1.8, marginBottom: 11 },
-  promoTitle: { color: '#FFFFFF', fontSize: 34, lineHeight: 40, fontWeight: '900', marginBottom: 7, letterSpacing: 0.1 },
-  promoSubtitle: { color: '#FFFFFF', fontSize: 16, lineHeight: 22, fontWeight: '700', marginBottom: 16 },
-  promoButton: { alignSelf: 'flex-start', backgroundColor: '#FFA000', borderRadius: 24, paddingVertical: 13, paddingHorizontal: 19 },
-  promoButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
-  promoArt: { width: 154, height: 154, borderRadius: 77, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginLeft: 7, zIndex: 1, overflow: 'hidden', padding: 8 },
-  promoCakeSlice: { fontSize: 88 },
-  promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#FFA000', right: -70, top: -92, opacity: 1 },
+  promoBanner: { height: 190, minHeight: 190, borderRadius: 27, backgroundColor: '#4D078C', paddingHorizontal: 20, paddingVertical: 15, marginBottom: 27, flexDirection: 'row', overflow: 'hidden', alignItems: 'center', elevation: 3, borderWidth: 0 },
+  promoCopy: { flex: 1, minWidth: 0, zIndex: 2, paddingRight: 4 },
+  promoEyebrow: { color: '#FFC34D', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 8 },
+  promoTitle: { color: '#FFFFFF', fontSize: 27, lineHeight: 32, fontWeight: '900', marginBottom: 6, letterSpacing: 0 },
+  promoSubtitle: { color: '#FFFFFF', fontSize: 14, lineHeight: 19, fontWeight: '700', marginBottom: 11 },
+  promoButton: { alignSelf: 'flex-start', backgroundColor: '#FFA000', borderRadius: 24, paddingVertical: 10, paddingHorizontal: 16 },
+  promoButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
+  promoArt: { width: 128, height: 128, borderRadius: 64, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginLeft: 5, zIndex: 1, overflow: 'hidden', padding: 6 },
+  promoCakeSlice: { fontSize: 68 },
+  promoOrb: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: '#FFA000', right: -70, top: -105, opacity: 1 },
   seeAllText: { color: '#6B4AA0', fontSize: 12, fontWeight: '900' },
   homeCategoryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 23, gap: 6 },
   homeCategoryCard: { flex: 1, minHeight: 142, borderRadius: 19, backgroundColor: '#F8F0FB', borderWidth: 1, borderColor: '#F1E5F5', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, paddingVertical: 10, elevation: 1 },
   homeCategoryActive: { borderColor: '#6B4AA0', backgroundColor: '#F1EAF8' },
   homeCategoryIcon: { fontSize: 39, marginBottom: 8 },
   homeCategoryAllIcon: { color: '#79009B', fontSize: 37, fontWeight: '800' },
-  homeCategoryName: { color: '#30283A', fontSize: 13, fontWeight: '800', textAlign: 'center', lineHeight: 14 },
+  homeCategoryName: { color: '#30283A', fontSize: 11, fontWeight: '800', textAlign: 'center', lineHeight: 13 },
   homeCategoryNameActive: { color: '#6B4AA0' },
   productSectionTools: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
   featuredProductList: { paddingBottom: 6, paddingRight: 4 },
